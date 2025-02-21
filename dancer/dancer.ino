@@ -41,21 +41,21 @@ void setup() {
 }
 
 void loop() {
-  //vyrovnanieHore();
-  //vyrovnanieDole();
-  //vyrovnanieVodorovne();
-  //vlna();
+  //up();
+  //down();
+  //horizontal();
+  //wave();
   //divaPose();
-  //sikmo();
-  //sikmoNegovane();
-  //mavanie2();
-  //mavanie1();
-  //pnohaVpred();
-  //lnohaVpred();
-  //pnohaVzad();
-  //lnohaVzad();
-  //pnohaRovno();
-  //lnohaRovno();
+  //askew();
+  //askew2();
+  //waving();
+  //waving2();
+  //rlegforward();
+  //llegforward();
+  //rlegbackward();
+  //llegbackward();
+  //rlegstraight();
+  //llegstraight();
   //forward(100);
     //delay(500);
     //stop();
@@ -68,9 +68,17 @@ void loop() {
   //digitalWrite(RR_DIR[0], LOW);
   //digitalWrite(RR_DIR[1], HIGH);
   //ledcWrite(RR_EN, 100);
+
+  forward(255);
+  walking();
+  to_left_side(255);
+  forward(255);
+  divaPose();
+  
+
 }
 
-void vyrovnanieHore() {
+void up() {
   rv.write(0);
   rd.write(30);
   lv.write(0);
@@ -78,7 +86,7 @@ void vyrovnanieHore() {
   delay(1000);
 }
 
-void vyrovnanieDole() {
+void down() {
   rv.write(180);
   rd.write(20);
   lv.write(110);
@@ -86,7 +94,7 @@ void vyrovnanieDole() {
   delay(1000);
 }
 
-void vyrovnanieVodorovne() {
+void horizontal() {
   rv.write(90);
   rd.write(10);
   lv.write(45);
@@ -94,7 +102,7 @@ void vyrovnanieVodorovne() {
   delay(1000);
 }
 
-void vlna() {
+void wave() {
   rv.write(120);  
   lv.write(70);
   delay(300);
@@ -125,7 +133,7 @@ void divaPose() {
   delay(500);
 }
 
-void sikmo() {
+void askew() {
   rv.write(50);
   rd.write(30);
   lv.write(80);
@@ -133,7 +141,7 @@ void sikmo() {
   delay(1000);
 }
 
-void sikmoNegovane() {
+void askew2() {
   rv.write(150);
   rd.write(30);
   lv.write(20);
@@ -141,44 +149,53 @@ void sikmoNegovane() {
   delay(1000);
 }
 
-void mavanie1(){
+void waving(){
   rv.write(90);
   rd.write(10);
   lv.write(20);
   ld.write(90);
 }
 
-void mavanie2(){
+void waving2(){
   rv.write(30);
   rd.write(0);
   lv.write(45);
   ld.write(50);
 }
 
-void pnohaVpred(){
+void rlegforward(){
   r.write(20);
 }
 
-void lnohaVpred(){
+void llegforward(){
   l.write(160);
 }
 
-void pnohaVzad(){
+void rlegbackward(){
   r.write(130);
 }
 
-void lnohaVzad(){
+void llegbackward(){
   l.write(50);
 }
 
-void pnohaRovno(){
+void rlegstraight(){
   r.write(100);
 }
 
-void lnohaRovno(){
+void llegstraight(){
   l.write(85);
 }
 
+void walking(){
+  r.write(20);
+  l.write(50);
+  delay(500);
+  l.write(160);
+  r.write(130);
+  delay(500);
+
+}
 
 //kolesa
 
@@ -269,3 +286,21 @@ void forward(byte speed)
     digitalWrite(LR_DIR[0], LOW);
     digitalWrite(LR_DIR[1], LOW);
   }
+
+  void to_left_side(int speed) {
+  digitalWrite(front_rightIN1, LOW);
+  digitalWrite(front_rightIN2, HIGH);
+  analogWrite(front_right_R, speed);
+
+  digitalWrite(front_leftIN1, HIGH);
+  digitalWrite(front_leftIN2, LOW);
+  analogWrite(front_left_R, speed);
+
+  digitalWrite(rear_rightIN1, HIGH);
+  digitalWrite(rear_rightIN2, LOW);
+  analogWrite(rear_right_R, speed);
+
+  digitalWrite(rear_leftIN1, LOW);
+  digitalWrite(rear_leftIN2, HIGH);
+  analogWrite(rear_left_R, speed);
+}
