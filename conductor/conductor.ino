@@ -44,11 +44,13 @@ Servo right_elbow;  //front = 180
 Servo left_elbow;  //front = 0
 
 //---variables---
-int progress = 0;  //when in the preformance we are
+int progress_music = 0;  //when in the songs we are
+int progress_performance = 0;  //when in the performance we are
 
 unsigned long pulse_time;  //time for sound to return to ultrasonic
 
 unsigned long timer;  //millis
+unsigned long timer_beats;  //during 4 beats
 
 //setup callbacks onConnect and onDisconnect
 class MyServerCallbacks: public BLEServerCallbacks
@@ -226,7 +228,7 @@ void setup()
 void loop()
 {
   //---start the performance with holding a hand on ultrasonic for 1sec---
-  /*if(progress == 0)
+  if(progress_performance == 0)
   {
     if(distance() < 10)
     {
@@ -235,46 +237,124 @@ void loop()
       {
         if((millis() - timer) > 1000)
         {
-          progress = 1;
+          progress_performance ++;
           break;
         }
       }
     }
-  }*/
-  //---go foreard till ultrasonic is close to the curtain---
+  }
 
-  //---tell curtains to open---
+  //---go foreard till ultrasonic is close to the curtain---
+  else if(progress_performance == 1)
+  {
+    forward(128);
+    controlCharacteristic.setValue(progress_performance);
+    while(distance() > 20) delay(10);
+    timer = millis();
+    controlCharacteristic.notify();  //open curtains
+    progress_performance ++;
+  }
 
   //---go to the position---
+  else if(progress_performance == 2)
+  {
+    controlCharacteristic.setValue(progress_performance);
+    for(int i=128; i<255; i+=5)
+    {
+      forward(i);  //go forward for 5sec
+      delay(20);
+    }
+    while((millis() - timer) < 5000)
+    for(int i=255; i>0; i-=5)
+    {
+      forward(i);
+      delay(20);
+    }
+
+    timer = millis();
+    left(255);  //turn left for 3sec (turn to musicians)
+    while((millis() - timer) < 3000)
+    stop();
+    delay(1000);
+    //---point to drummer---
+    leftArm(40);
+    controlCharachteristic.notify();
+    delay(3000);
+    leftArm(1);
+    progress_performance ++;
+  }
+
+  else if(progress_performance == 3)
+  {
+    controlCharacteristic.setValue(progress_performance);
+    //---point to pianist---
+    rightArm(40);
+    controlCharachteristic.notify();
+    delay(3000);
+    rightArm(1);
+    progress_performance ++;
+  }
 
   //---start music---
-  //---freedom---
-  progress = 1;
-  musicCharacteristic.setValue(progress);
-  while(progress < 17)
+  if(progress_performance == 4)
   {
-    if((millis()-timer) >= 2280)
+    controlCharacteristic.setValue(progress_performance);
+    for(int i=2; i<=20; i+=2)
     {
-      timer = millis();
-      musicCharacteristic.notify();
-      progress ++;
-      musicCharacteristic.setValue(progress);
+      rightArm(20);
+      leftArm(20);
+      delay(10);
     }
-  }
-
-  while((millis()-timer) < 1000) delay(10);
-  //---fireball---
-  musicCharacteristic.setValue(progress);
-  while(progress < 63)
-  {
-    if((millis()-timer) >= 1950)
+    controlCharachteristic.notify();
+    delay(1000);
+    //---freedom---
+    progress_music = 1;
+    musicCharacteristic.setValue(progress_music);
+    while(progress_music < 17)
     {
-      timer = millis();
-      musicCharacteristic.notify();
-      progress ++;
-      musicCharacteristic.setValue(progress);
-    }
-  }
+      if((millis()-timer) >= 2280)
+      {
+        timer = millis();
+        musicCharacteristic.notify();
+        timer_beats = millis();
 
-  delay(10000);
+        rightArm(40);
+        while((millis()-timer_beats) < 570) delay(10);
+        rightArm(20);
+        while((millis()-timer_beats) < 1140) delay(10);
+        leftArm(40);
+        while((millis()-timer_beats) < 1710) delay(10);
+        leftArm(20);
+
+        progress_music ++;
+        musicCharacteristic.setValue(progress_music);
+      }
+    }
+
+    while((millis()-timer) < 1000) delay(10);  //time between songs
+    //---fireball---
+    musicCharacteristic.setValue(progress_music);
+    while(progress_music < 63)
+    {
+      if((millis()-timer) >= 1950)
+      {
+        timer = millis();
+        musicCharacteristic.notify();
+        timer_beats = millis();
+
+        leftArm(40);
+        while((millis()-timer_beats) < 570) delay(10);
+        leftArm(20);
+        while((millis()-timer_beats) < 1140) delay(10);
+        rightArm(40);
+        while((millis()-timer_beats) < 1710) delay(10);
+        rightArm(20);
+
+        progress_music ++;
+        musicCharacteristic.setValue(progress_music);
+      }
+    }
+
+    while(true) delay(10);
+  }
 }
