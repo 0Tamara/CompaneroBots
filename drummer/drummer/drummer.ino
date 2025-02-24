@@ -1,5 +1,6 @@
-#include "BLEDevice.h"
+#include <BLEDevice.h>
 #include <ESP32Servo.h>
+#include <Adafruit_NeoPixel.h>
 
 #define bleServerName "Companero"  //name of the BLE server we are connecting to
 //UUIDs of the service and characteristics:
@@ -28,15 +29,42 @@ Servo r_arm;  //0-80 = down-front
 Servo l_arm;  //80-0 = down-front
 Servo kick;   //85-90-85 = kick
 
+#define LED_PIN_L 4     //left drum
+#define LED_COUNT_L 36
+#define LED_PIN_K 16    //kick drum
+#define LED_COUNT_K 54
+#define LED_PIN_R 17    //right drum
+#define LED_COUNT_R 36
+#define LED_PIN_EYES 16
+#define LED_COUNT_EYES 50
+
+Adafruit_NeoPixel left_ring(LED_COUNT_L, LED_PIN_L, NEO_GRB + NEO_KHZ800);
+Adafruit_NeoPixel kick_ring(LED_COUNT_K, LED_PIN_K, NEO_GRB + NEO_KHZ800);
+Adafruit_NeoPixel right_ring(LED_COUNT_R, LED_PIN_R, NEO_GRB + NEO_KHZ800);
+Adafruit_NeoPixel eyes(LED_COUNT_EYES, LED_PIN_EYES, NEO_GRB + NEO_KHZ800);
+
 unsigned long timer_kick;
 unsigned long timer_right;
 unsigned long timer_left;
 int kicks;
 int snares;
 
+byte color[] = {40, 1, 2}; //pink
+
+//---BLE functions---
 static void notifyControl(BLERemoteCharacteristic* pBLERemoteControlChar, uint8_t* data, size_t length, bool isNotify)
 {
   memcpy(&control_command, data, sizeof(control_command));
+  if(control_command == 1)
+    openEyes(color[0], color[1], color[2]);
+  if(control_command == 2)
+  {
+    startup();
+    closeEyes();
+    openEyes(color[0], color[1], color[2]);
+    closeEyes();
+    openEyes(color[0], color[1], color[2]);
+  }
 }
 static void notifyMusic(BLERemoteCharacteristic* pBLERemoteMusicChar, uint8_t* data, size_t length, bool isNotify)
 {
@@ -114,6 +142,7 @@ bool connectToServer(BLEAddress address)
   return true;
 }
 
+//---music functions---
 void freedom()
 {
   timer_kick = 0;
@@ -300,6 +329,82 @@ void fireball_chill()
   }
 }
 
+//---LEDs functions---
+void closeEyes()  //cca 300ms
+{
+  // Blink LEDs in reverse order (off in sections)
+  for (int i = 20; i < 25; i++) strip_4.setPixelColor(i, 0, 0, 0); // Left eye
+  for (int i = 45; i < 50; i++) strip_4.setPixelColor(i, 0, 0, 0); // Right eye
+  strip_4.show();
+
+  delay(50);
+
+  // Now let's go down the LED sections
+  for (int i = 15; i < 20; i++) strip_4.setPixelColor(i, 0, 0, 0);
+  for (int i = 40; i < 45; i++) strip_4.setPixelColor(i, 0, 0, 0);
+  strip_4.show();
+
+  delay(50);
+
+  for (int i = 10; i < 15; i++) strip_4.setPixelColor(i, 0, 0, 0);
+  for (int i = 35; i < 40; i++) strip_4.setPixelColor(i, 0, 0, 0);
+  strip_4.show();
+
+  delay(50);
+
+  for (int i = 5; i < 10; i++) strip_4.setPixelColor(i, 0, 0, 0);
+  for (int i = 30; i < 35; i++) strip_4.setPixelColor(i, 0, 0, 0);
+  strip_4.show();
+
+  delay(50);
+
+  for (int i = 0; i < 5; i++) strip_4.setPixelColor(i, 0, 0, 0);
+  for (int i = 25; i < 30; i++) strip_4.setPixelColor(i, 0, 0, 0);
+  strip_4.show();
+
+  delay(50);
+}
+
+void openEyes(uint8_t red, uint8_t green, uint8_t blue)  //cca 300ms
+{
+  // Blink LEDs in reverse order (turning LEDs back on)
+  for (int i = 0; i < 5; i++) strip_4.setPixelColor(i, red, green, blue); // Left eye
+  for (int i = 25; i < 30; i++) strip_4.setPixelColor(i, red, green, blue); // Right eye
+  strip_4.show();
+
+  delay(50);
+
+  for (int i = 5; i < 10; i++) strip_4.setPixelColor(i, red, green, blue);
+  for (int i = 30; i < 35; i++) strip_4.setPixelColor(i, red, green, blue);
+  strip_4.show();
+
+  delay(50);
+
+  for (int i = 10; i < 15; i++) strip_4.setPixelColor(i, red, green, blue);
+  for (int i = 35; i < 40; i++) strip_4.setPixelColor(i, red, green, blue);
+  strip_4.show();
+
+  delay(50);
+
+  for (int i = 15; i < 20; i++) strip_4.setPixelColor(i, red, green, blue);
+  for (int i = 40; i < 45; i++) strip_4.setPixelColor(i, red, green, blue);
+  strip_4.show();
+
+  delay(50);
+
+  for (int i = 20; i < 25; i++) strip_4.setPixelColor(i, red, green, blue);
+  for (int i = 45; i < 50; i++) strip_4.setPixelColor(i, red, green, blue);
+  strip_4.show();
+
+  delay(50);
+}
+
+startup()
+{
+  
+}
+
+//---main code---
 void setup()
 {
   Serial.begin(115200);
@@ -336,6 +441,15 @@ void setup()
   kick.write(85);
   r_arm.write(85);
   l_arm.write(0);
+
+  left_ring.begin();
+  left_ring.show()
+  kick_ring.begin();
+  kick_ring.show();
+  right_ring.begin();
+  right_ring.show();
+  eyes_ring.begin();
+  eyes_ring.show();
 }
 
 void loop()
