@@ -1,7 +1,7 @@
 Čo máme/nemáme; stíhame/nestíhame do BA
 
 Dirigent:
-  HW  hlava  |...|
+  HW  hlava |done|
       vypchat, vyparadit  |...|
   SW  celá choreografia dokopy  |...|
       časovanie hudby freedom -> posielanie ostatným|done|
