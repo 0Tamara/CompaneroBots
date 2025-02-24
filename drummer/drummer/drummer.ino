@@ -41,8 +41,18 @@ static void notifyControl(BLERemoteCharacteristic* pBLERemoteControlChar, uint8_
 static void notifyMusic(BLERemoteCharacteristic* pBLERemoteMusicChar, uint8_t* data, size_t length, bool isNotify)
 {
   memcpy(&music_command, data, sizeof(music_command));
-  if(music_command > 8)
+  if(9 <= music_command && music_command <= 17)
     freedom();
+  if(19 <= music_command && music_command <= 32)
+    fireball_clapping();
+  if(34 <= music_command && music_command <= 40)
+    fireball_drop();
+  if(42 <= music_command && music_command <= 44)
+    fireball_bass();
+  if(46 <= music_command && music_command <= 48)
+    fireball_bass();
+  if(50 <= music_command && music_command <= 63)
+    fireball_chill();
 }
 
 class MyAdvertisedDeviceCallbacks: public BLEAdvertisedDeviceCallbacks  //when found a server
@@ -116,7 +126,7 @@ void freedom()
     {
       timer_kick = millis();
       kick.write(90);
-      delay(50);
+      delay(100);
       kick.write(85);
       kicks ++;
     }
@@ -147,6 +157,144 @@ void freedom()
         r_arm.write(70);
         delay(100);
         r_arm.write(80);
+      }
+    }
+  }
+}
+
+void fireball_clapping()
+{
+  timer_right = 0;
+  snares = 0;
+  while(snares < 4)
+  {
+    if(!(snares%2))
+    {
+      if((millis()-timer_right) >= 480)
+      {
+        timer_right = millis();
+        r_arm.write(70);
+        delay(100);
+        r_arm.write(80);
+        snares ++;
+      }
+    }
+    else
+    {
+      if((millis()-timer_right) >= 480)
+      {
+        timer_right = millis();
+        l_arm.write(10);
+        delay(100);
+        l_arm.write(0);
+        snares ++;
+      }
+    }
+  }
+}
+
+void fireball_drop()
+{
+  timer_kick = 0;
+  kicks = 0;
+  while(kicks < 4)
+  {
+    if((millis()-timer_kick) >= 480)
+    {
+      timer_kick = millis();
+      if(!(kicks%2))
+      {
+        kick.write(90);
+        r_arm.write(70);
+        l_arm.write(10);
+        delay(100);
+        kick.write(85);
+        r_arm.write(80);
+        l_arm.write(0);
+      }
+      else
+      {
+        if(kicks == 1)
+        {
+          kick.write(90);
+          r_arm.write(70);
+          delay(100);
+          kick.write(85);
+          r_arm.write(80);
+          while((millis()-timer_kick) < 240) delay(10);
+          l_arm.write(10);
+          delay(100);
+          l_arm.write(0);
+        }
+        else
+        {
+          kick.write(90);
+          l_arm.write(10);
+          delay(100);
+          kick.write(85);
+          l_arm.write(0);
+          while((millis()-timer_kick) < 240) delay(10);
+          r_arm.write(70);
+          delay(100);
+          r_arm.write(80);
+        }
+      }
+      kicks ++;
+    }
+  }
+}
+
+void fireball_bass()
+{
+  timer_kick = 0;
+  kicks = 0;
+  while(kicks < 4)
+  {
+    if((millis()-timer_kick) >= 480)
+    {
+      timer_kick = millis();
+      kick.write(90);
+      delay(100);
+      kick.write(85);
+      kicks ++;
+    }
+  }
+}
+
+
+void fireball_chill()
+{
+  timer_kick = millis();
+  kick.write(90);
+  r_arm.write(70);
+  l_arm.write(10);
+  delay(100);
+  kick.write(85);
+  r_arm.write(80);
+  l_arm.write(0);
+  snares = 0;
+  while(snares < 3)
+  {
+    if(snares%2)
+    {
+      if((millis()-timer_right) >= 480)
+      {
+        timer_right = millis();
+        r_arm.write(70);
+        delay(100);
+        r_arm.write(80);
+        snares ++;
+      }
+    }
+    else
+    {
+      if((millis()-timer_right) >= 480)
+      {
+        timer_right = millis();
+        l_arm.write(10);
+        delay(100);
+        l_arm.write(0);
+        snares ++;
       }
     }
   }
@@ -186,7 +334,7 @@ void setup()
   kick.attach(KICK_PIN);
   
   kick.write(85);
-  r_arm.write(80);
+  r_arm.write(85);
   l_arm.write(0);
 }
 

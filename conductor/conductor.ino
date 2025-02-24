@@ -262,5 +262,19 @@ void loop()
     }
   }
 
+  while((millis()-timer) < 1000) delay(10);
+  //---fireball---
+  musicCharacteristic.setValue(progress);
+  while(progress < 63)
+  {
+    if((millis()-timer) >= 1950)
+    {
+      timer = millis();
+      musicCharacteristic.notify();
+      progress ++;
+      musicCharacteristic.setValue(progress);
+    }
+  }
+
   delay(10000);
 }
