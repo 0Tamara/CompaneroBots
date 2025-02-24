@@ -11,21 +11,20 @@ Bubeník:
   HW  vypchat, vyparadit  |...|
   SW  funkcie pre hudbu freedom|done|
       sync s dirigentom|done|
-      funkcie pre hudbu fireball|...|
+      funkcie pre hudbu fireball|done|
       LED efekty mimo hudby  |...|
       LED efekty s hudbou  |...|
 
 Klavirista:
   HW  napájanie ESP32 a EV3  |...|
       LED pásik pre klavír  |...|
-      celá konštrukcia robota  |...|
+      celá konštrukcia robota  |done|
       vypchat, vyparadit  |...|
-  SW  komunikácia medzi EV3  |...|
-      komunikácia ESP32 a EV3  |...|
+  SW  komunikácia ESP32 a EV3  |...|
       LED efekty  |...|
 
 Tanečník:
-  HW  vymeniť servo  |...|
+  HW  vymeniť servo  |done|
       hlava  |...|
       vypchat, vyparadit  |...|
   SW  komunikácia a časovanie  |...|
@@ -33,7 +32,7 @@ Tanečník:
   
 
 Kulisy:
-  HW  nozky, poriesit upevnenie  |...|
+  HW  nozky, poriesit upevnenie  |done|
   SW  komunikácia  |...|
 
 Plagat:
