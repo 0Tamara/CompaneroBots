@@ -1,11 +1,12 @@
 Čo máme/nemáme; stíhame/nestíhame do BA
 
 Dirigent:
-  HW  hlava |done|
+  HW  hlava|done|
       vypchat, vyparadit  |...|
-  SW  celá choreografia dokopy  |...|
+  SW  celá choreografia dokopy|done|
       časovanie hudby freedom -> posielanie ostatným|done|
-      časovanie hudby fireball -> posielanie ostatným  |...|
+      časovanie hudby fireball -> posielanie ostatným|done|
+      doladiť časovanie  |...|
 
 Bubeník:
   HW  vypchat, vyparadit  |...|
@@ -16,15 +17,15 @@ Bubeník:
       LED efekty s hudbou  |...|
 
 Klavirista:
-  HW  napájanie ESP32 a EV3  |...|
-      LED pásik pre klavír  |...|
-      celá konštrukcia robota  |done|
+  HW  napájanie ESP32 a EV3|done|
+      LED pásik pre klavír|done|
+      celá konštrukcia robota|done|
       vypchat, vyparadit  |...|
-  SW  komunikácia ESP32 a EV3  |...|
+  SW  komunikácia ESP32 a EV3|done|
       LED efekty  |...|
 
 Tanečník:
-  HW  vymeniť servo  |done|
+  HW  vymeniť servo|done|
       hlava  |...|
       vypchat, vyparadit  |...|
   SW  komunikácia a časovanie  |...|
@@ -33,7 +34,7 @@ Tanečník:
 
 Kulisy:
   HW  nozky, poriesit upevnenie  |done|
-  SW  komunikácia  |...|
+  SW  komunikácia|done|
 
 Plagat:
   vsetko  
