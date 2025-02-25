@@ -1,13 +1,13 @@
 #include <ESP32Servo.h>
 #include <Adafruit_NeoPixel.h>
 
-#define LED_PIN_4 26        // Changed from 18 to 4
+#define LED_PIN_4 25        // Changed from 18 to 4
 #define LED_COUNT_4 50      // Changed from 50 to 4
-#define LED_PIN_1   25
-#define LED_PIN_2   2
-#define LED_PIN_3   16
+#define LED_PIN_1   26
+#define LED_PIN_2   27
+#define LED_PIN_3   4
 
-#define LED_COUNT_1 36
+#define LED_COUNT_1 21
 #define LED_COUNT_2 54
 //36
 //54

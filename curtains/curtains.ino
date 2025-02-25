@@ -15,10 +15,10 @@ const uint8_t notificationOff[] = {0x0, 0x0};
 static bool serverFound = false;
 static bool connected = false;
 
-#define L_MOTOR_1 13
-#define L_MOTOR_2 12
-#define R_MOTOR_1 14
-#define R_MOTOR_2 27
+#define L_MOTOR_1 26
+#define L_MOTOR_2 25
+#define R_MOTOR_1 33
+#define R_MOTOR_2 32
 
 int control_command;
 
@@ -26,13 +26,13 @@ int control_command;
 static void notifyControl(BLERemoteCharacteristic* pBLERemoteControlChar, uint8_t* data, size_t length, bool isNotify)
 {
   memcpy(&control_command, data, sizeof(control_command));
-  if(control_command == 1);
+  if(control_command == 1)
   {
     digitalWrite(R_MOTOR_1, LOW);
     digitalWrite(R_MOTOR_2, HIGH);
     digitalWrite(L_MOTOR_1, LOW);
     digitalWrite(L_MOTOR_2, HIGH);
-    delay(1000);
+    delay(2000);
     digitalWrite(R_MOTOR_1, LOW);
     digitalWrite(R_MOTOR_2, LOW);
     digitalWrite(L_MOTOR_1, LOW);

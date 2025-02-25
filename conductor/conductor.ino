@@ -253,8 +253,8 @@ void loop()
   {
     forward(128);
     delay(1000);
-    controlCharacteristic.setValue(1);
-    while(distance() > 20) delay(10);
+    controlCharacteristic.setValue(progress_performance);
+    while(distance() > 50) delay(10);
     timer = millis();
     Serial.println("Open curtains");
     controlCharacteristic.notify();  //open curtains
@@ -264,7 +264,7 @@ void loop()
   //---go to the position---
   if(progress_performance == 2)
   {
-    controlCharacteristic.setValue(2);
+    controlCharacteristic.setValue(progress_performance);
     forward(255);
     while((millis() - timer) < 10000) delay(10);
     stop();
@@ -285,7 +285,7 @@ void loop()
 
   if(progress_performance == 3)
   {
-    controlCharacteristic.setValue(3);
+    controlCharacteristic.setValue(progress_performance);
     //---point to pianist---
     rightArm(40);
     controlCharacteristic.notify();
@@ -297,13 +297,9 @@ void loop()
   //---start music---
   if(progress_performance == 4)
   {
-    controlCharacteristic.setValue(4);
-    for(int i=2; i<=20; i+=2)
-    {
-      rightArm(20);
-      leftArm(20);
-      delay(10);
-    }
+    controlCharacteristic.setValue(progress_performance);
+    rightArm(20);
+    leftArm(20);
     controlCharacteristic.notify();
     delay(1000);
     //---freedom---
