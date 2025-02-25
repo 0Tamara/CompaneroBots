@@ -12,7 +12,7 @@
 #define RR_EN 18  // Right rear enable pin
 const int RR_DIR[] = {19, 21}; // Right rear direction pins
 #define LR_EN 23  // Left rear enable pin
-const int LR_DIR[] = {22, 1}; // Left rear direction pins
+const int LR_DIR[] = {22, 26}; // Left rear direction pins
 #define RF_EN 15  // Right front enable pin
 const int RF_DIR[] = {2, 4}; // Right front direction pins
 #define LF_EN 5   // Left front enable pin
@@ -216,13 +216,16 @@ void setup()
     pinMode(RF_DIR[i], OUTPUT);
     pinMode(LF_DIR[i], OUTPUT);
   }
-  ledcAttachChannel(RR_EN, 1000, 8, 1);
-  ledcAttachChannel(LR_EN, 1000, 8, 1);
-  ledcAttachChannel(RF_EN, 1000, 8, 1);
-  ledcAttachChannel(LF_EN, 1000, 8, 1);
+  ledcAttachChannel(RR_EN, 10000, 8, 1);
+  ledcAttachChannel(LR_EN, 10000, 8, 1);
+  ledcAttachChannel(RF_EN, 10000, 8, 1);
+  ledcAttachChannel(LF_EN, 10000, 8, 1);
+
+  stop();
   //ultrasonic
   pinMode(TRIG, OUTPUT);
   pinMode(ECHO, INPUT);
+  delay(1000);
 }
 
 void loop()
@@ -237,7 +240,8 @@ void loop()
       {
         if((millis() - timer) > 1000)
         {
-          progress_performance ++;
+          progress_performance = 1;
+          Serial.println("Performance start");
           break;
         }
       }
@@ -245,67 +249,62 @@ void loop()
   }
 
   //---go foreard till ultrasonic is close to the curtain---
-  else if(progress_performance == 1)
+  if(progress_performance == 1)
   {
     forward(128);
-    controlCharacteristic.setValue(progress_performance);
+    delay(1000);
+    controlCharacteristic.setValue(1);
     while(distance() > 20) delay(10);
     timer = millis();
+    Serial.println("Open curtains");
     controlCharacteristic.notify();  //open curtains
-    progress_performance ++;
+    progress_performance = 2;
   }
 
   //---go to the position---
-  else if(progress_performance == 2)
+  if(progress_performance == 2)
   {
-    controlCharacteristic.setValue(progress_performance);
-    for(int i=128; i<255; i+=5)
-    {
-      forward(i);  //go forward for 5sec
-      delay(20);
-    }
-    while((millis() - timer) < 5000)
-    for(int i=255; i>0; i-=5)
-    {
-      forward(i);
-      delay(20);
-    }
+    controlCharacteristic.setValue(2);
+    forward(255);
+    while((millis() - timer) < 10000) delay(10);
+    stop();
 
     timer = millis();
     left(255);  //turn left for 3sec (turn to musicians)
-    while((millis() - timer) < 3000)
+    while((millis() - timer) < 5000) delay(10);
     stop();
     delay(1000);
     //---point to drummer---
     leftArm(40);
-    controlCharachteristic.notify();
+    controlCharacteristic.notify();
     delay(3000);
     leftArm(1);
-    progress_performance ++;
+    delay(1000);
+    progress_performance = 3;
   }
 
-  else if(progress_performance == 3)
+  if(progress_performance == 3)
   {
-    controlCharacteristic.setValue(progress_performance);
+    controlCharacteristic.setValue(3);
     //---point to pianist---
     rightArm(40);
-    controlCharachteristic.notify();
+    controlCharacteristic.notify();
     delay(3000);
     rightArm(1);
-    progress_performance ++;
+    progress_performance = 4;
   }
 
   //---start music---
   if(progress_performance == 4)
   {
-    controlCharacteristic.setValue(progress_performance);
+    controlCharacteristic.setValue(4);
     for(int i=2; i<=20; i+=2)
     {
       rightArm(20);
       leftArm(20);
       delay(10);
     }
-    controlCharachteristic.notify();
+    controlCharacteristic.notify();
     delay(1000);
     //---freedom---
     progress_music = 1;

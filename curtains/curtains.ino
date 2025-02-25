@@ -84,24 +84,25 @@ bool connectToServer(BLEAddress address)
     return false;
   }
   Serial.println("-+-Found control characteristic!");
-  music_char = remoteService->getCharacteristic(musicCharUUID);
-  if(music_char == nullptr)
-  {
-    Serial.println("-x-Failed to find music characteristic UUID!");
-    return false;
-  }
   Serial.println("-+-Found music characteristic!");
   //turn notifications on
   control_char->registerForNotify(notifyControl);
   control_char->getDescriptor(BLEUUID((uint16_t)0x2902))->writeValue((uint8_t*)notificationOn, 2, true);
-  music_char->registerForNotify(notifyMusic);
-  music_char->getDescriptor(BLEUUID((uint16_t)0x2902))->writeValue((uint8_t*)notificationOn, 2, true);
   return true;
 }
 
 void setup() {
   Serial.begin(115200);
   Serial.println("Starting Arduino BLE Client application...");
+  
+  pinMode(R_MOTOR_1, OUTPUT);
+  digitalWrite(R_MOTOR_1, LOW);
+  pinMode(R_MOTOR_2, OUTPUT);
+  digitalWrite(R_MOTOR_2, LOW);
+  pinMode(L_MOTOR_1, OUTPUT);
+  digitalWrite(L_MOTOR_1, LOW);
+  pinMode(L_MOTOR_2, OUTPUT);
+  digitalWrite(L_MOTOR_2, LOW);
 
   //restart BLE and flash its memory
   BLEDevice::deinit(true);
@@ -128,10 +129,6 @@ void setup() {
     ESP.restart();
   }
 
-  pinMode(R_MOTOR_1, OUTPUT);
-  pinMode(R_MOTOR_2, OUTPUT);
-  pinMode(L_MOTOR_1, OUTPUT);
-  pinMode(L_MOTOR_2, OUTPUT);
 }
 
 void loop()
