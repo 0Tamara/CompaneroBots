@@ -17,6 +17,8 @@ const uint8_t notificationOff[] = {0x0, 0x0};
 static bool serverFound = false;
 static bool connected = false;
 
+bool control = 1;
+
 #define LED_PIN_KEYS 25  //led strip behind the keys
 #define LED_COUNT_KEYS 21
 #define LED_PIN_EYES 26
@@ -35,7 +37,7 @@ int music_command;
 static void notifyControl(BLERemoteCharacteristic* pBLERemoteControlChar, uint8_t* data, size_t length, bool isNotify)
 {
   memcpy(&control_command, data, sizeof(control_command));
-  if(control_command == 4);
+  if(control_command == 4 && control)
   {
     lego.setPixelColor(0, 255, 255, 255);
     lego.show();
@@ -47,7 +49,7 @@ static void notifyControl(BLERemoteCharacteristic* pBLERemoteControlChar, uint8_
 static void notifyMusic(BLERemoteCharacteristic* pBLERemoteMusicChar, uint8_t* data, size_t length, bool isNotify)
 {
   memcpy(&music_command, data, sizeof(music_command));
-  if(music_command == 17);
+  if(music_command == 19)
   {
     lego.setPixelColor(0, 255, 255, 255);
     lego.show();
@@ -121,7 +123,7 @@ void setup() {
   Serial.println("Starting Arduino BLE Client application...");
 
   //restart BLE and flash its memory
-  /*BLEDevice::deinit(true);
+  BLEDevice::deinit(true);
   delay(500);
   BLEDevice::init("");
 
@@ -143,7 +145,7 @@ void setup() {
     Serial.println("-x-Connection failed! Restarting...");
     delay(500);
     ESP.restart();
-  }*/
+  }
 
   keys.begin();
   keys.show();
@@ -155,6 +157,4 @@ void setup() {
 
 void loop()
 {
-  lego.setPixelColor(0, 255, 255, 255);
-  lego.show();
 }
