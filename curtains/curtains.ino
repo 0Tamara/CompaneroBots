@@ -15,31 +15,28 @@ const uint8_t notificationOff[] = {0x0, 0x0};
 static bool serverFound = false;
 static bool connected = false;
 
+#define L_MOTOR_1 13
+#define L_MOTOR_2 12
+#define R_MOTOR_1 14
+#define R_MOTOR_2 27
+
 int control_command;
 
 //---functions for getting notifications---
 static void notifyControl(BLERemoteCharacteristic* pBLERemoteControlChar, uint8_t* data, size_t length, bool isNotify)
 {
   memcpy(&control_command, data, sizeof(control_command));
-  if(control_command == 4);
+  if(control_command == 1);
   {
-    lego.setPixelColor(0, 255, 255, 255);
-    lego.show();
+    digitalWrite(R_MOTOR_1, LOW);
+    digitalWrite(R_MOTOR_2, HIGH);
+    digitalWrite(L_MOTOR_1, LOW);
+    digitalWrite(L_MOTOR_2, HIGH);
     delay(1000);
-    lego.setPixelColor(0, 0, 0, 0);
-    lego.show();
-  }
-}
-static void notifyMusic(BLERemoteCharacteristic* pBLERemoteMusicChar, uint8_t* data, size_t length, bool isNotify)
-{
-  memcpy(&music_command, data, sizeof(music_command));
-  if(music_command == 17);
-  {
-    lego.setPixelColor(0, 255, 255, 255);
-    lego.show();
-    delay(1000);
-    lego.setPixelColor(0, 0, 0, 0);
-    lego.show();
+    digitalWrite(R_MOTOR_1, LOW);
+    digitalWrite(R_MOTOR_2, LOW);
+    digitalWrite(L_MOTOR_1, LOW);
+    digitalWrite(L_MOTOR_2, LOW);
   }
 }
 
@@ -107,7 +104,7 @@ void setup() {
   Serial.println("Starting Arduino BLE Client application...");
 
   //restart BLE and flash its memory
-  /*BLEDevice::deinit(true);
+  BLEDevice::deinit(true);
   delay(500);
   BLEDevice::init("");
 
@@ -129,18 +126,14 @@ void setup() {
     Serial.println("-x-Connection failed! Restarting...");
     delay(500);
     ESP.restart();
-  }*/
+  }
 
-  keys.begin();
-  keys.show();
-  eyes.begin();
-  eyes.show();
-  lego.begin();
-  lego.show();
+  pinMode(R_MOTOR_1, OUTPUT);
+  pinMode(R_MOTOR_2, OUTPUT);
+  pinMode(L_MOTOR_1, OUTPUT);
+  pinMode(L_MOTOR_2, OUTPUT);
 }
 
 void loop()
 {
-  lego.setPixelColor(0, 255, 255, 255);
-  lego.show();
 }
