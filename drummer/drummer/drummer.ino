@@ -59,7 +59,7 @@ static void notifyControl(BLERemoteCharacteristic* pBLERemoteControlChar, uint8_
     openEyes(color[0], color[1], color[2]);
   if(control_command == 2)
   {
-    startup();
+    //startup();
     closeEyes();
     openEyes(color[0], color[1], color[2]);
     closeEyes();
@@ -73,13 +73,13 @@ static void notifyMusic(BLERemoteCharacteristic* pBLERemoteMusicChar, uint8_t* d
     freedom();
   if(19 <= music_command && music_command <= 32)
     fireball_clapping();
-  if(34 <= music_command && music_command <= 40)
+  if(35 <= music_command && music_command <= 41)
     fireball_drop();
-  if(42 <= music_command && music_command <= 44)
+  if(43 <= music_command && music_command <= 45)
     fireball_bass();
-  if(46 <= music_command && music_command <= 48)
+  if(47 <= music_command && music_command <= 49)
     fireball_bass();
-  if(50 <= music_command && music_command <= 63)
+  if(51 <= music_command && music_command <= 64)
     fireball_chill();
 }
 
@@ -333,34 +333,34 @@ void fireball_chill()
 void closeEyes()  //cca 300ms
 {
   // Blink LEDs in reverse order (off in sections)
-  for (int i = 20; i < 25; i++) strip_4.setPixelColor(i, 0, 0, 0); // Left eye
-  for (int i = 45; i < 50; i++) strip_4.setPixelColor(i, 0, 0, 0); // Right eye
-  strip_4.show();
+  for (int i = 20; i < 25; i++) eyes.setPixelColor(i, 0, 0, 0); // Left eye
+  for (int i = 45; i < 50; i++) eyes.setPixelColor(i, 0, 0, 0); // Right eye
+  eyes.show();
 
   delay(50);
 
   // Now let's go down the LED sections
-  for (int i = 15; i < 20; i++) strip_4.setPixelColor(i, 0, 0, 0);
-  for (int i = 40; i < 45; i++) strip_4.setPixelColor(i, 0, 0, 0);
-  strip_4.show();
+  for (int i = 15; i < 20; i++) eyes.setPixelColor(i, 0, 0, 0);
+  for (int i = 40; i < 45; i++) eyes.setPixelColor(i, 0, 0, 0);
+  eyes.show();
 
   delay(50);
 
-  for (int i = 10; i < 15; i++) strip_4.setPixelColor(i, 0, 0, 0);
-  for (int i = 35; i < 40; i++) strip_4.setPixelColor(i, 0, 0, 0);
-  strip_4.show();
+  for (int i = 10; i < 15; i++) eyes.setPixelColor(i, 0, 0, 0);
+  for (int i = 35; i < 40; i++) eyes.setPixelColor(i, 0, 0, 0);
+  eyes.show();
 
   delay(50);
 
-  for (int i = 5; i < 10; i++) strip_4.setPixelColor(i, 0, 0, 0);
-  for (int i = 30; i < 35; i++) strip_4.setPixelColor(i, 0, 0, 0);
-  strip_4.show();
+  for (int i = 5; i < 10; i++) eyes.setPixelColor(i, 0, 0, 0);
+  for (int i = 30; i < 35; i++) eyes.setPixelColor(i, 0, 0, 0);
+  eyes.show();
 
   delay(50);
 
-  for (int i = 0; i < 5; i++) strip_4.setPixelColor(i, 0, 0, 0);
-  for (int i = 25; i < 30; i++) strip_4.setPixelColor(i, 0, 0, 0);
-  strip_4.show();
+  for (int i = 0; i < 5; i++) eyes.setPixelColor(i, 0, 0, 0);
+  for (int i = 25; i < 30; i++) eyes.setPixelColor(i, 0, 0, 0);
+  eyes.show();
 
   delay(50);
 }
@@ -368,41 +368,41 @@ void closeEyes()  //cca 300ms
 void openEyes(uint8_t red, uint8_t green, uint8_t blue)  //cca 300ms
 {
   // Blink LEDs in reverse order (turning LEDs back on)
-  for (int i = 0; i < 5; i++) strip_4.setPixelColor(i, red, green, blue); // Left eye
-  for (int i = 25; i < 30; i++) strip_4.setPixelColor(i, red, green, blue); // Right eye
-  strip_4.show();
+  for (int i = 0; i < 5; i++) eyes.setPixelColor(i, red, green, blue); // Left eye
+  for (int i = 25; i < 30; i++) eyes.setPixelColor(i, red, green, blue); // Right eye
+  eyes.show();
 
   delay(50);
 
-  for (int i = 5; i < 10; i++) strip_4.setPixelColor(i, red, green, blue);
-  for (int i = 30; i < 35; i++) strip_4.setPixelColor(i, red, green, blue);
-  strip_4.show();
+  for (int i = 5; i < 10; i++) eyes.setPixelColor(i, red, green, blue);
+  for (int i = 30; i < 35; i++) eyes.setPixelColor(i, red, green, blue);
+  eyes.show();
 
   delay(50);
 
-  for (int i = 10; i < 15; i++) strip_4.setPixelColor(i, red, green, blue);
-  for (int i = 35; i < 40; i++) strip_4.setPixelColor(i, red, green, blue);
-  strip_4.show();
+  for (int i = 10; i < 15; i++) eyes.setPixelColor(i, red, green, blue);
+  for (int i = 35; i < 40; i++) eyes.setPixelColor(i, red, green, blue);
+  eyes.show();
 
   delay(50);
 
-  for (int i = 15; i < 20; i++) strip_4.setPixelColor(i, red, green, blue);
-  for (int i = 40; i < 45; i++) strip_4.setPixelColor(i, red, green, blue);
-  strip_4.show();
+  for (int i = 15; i < 20; i++) eyes.setPixelColor(i, red, green, blue);
+  for (int i = 40; i < 45; i++) eyes.setPixelColor(i, red, green, blue);
+  eyes.show();
 
   delay(50);
 
-  for (int i = 20; i < 25; i++) strip_4.setPixelColor(i, red, green, blue);
-  for (int i = 45; i < 50; i++) strip_4.setPixelColor(i, red, green, blue);
-  strip_4.show();
+  for (int i = 20; i < 25; i++) eyes.setPixelColor(i, red, green, blue);
+  for (int i = 45; i < 50; i++) eyes.setPixelColor(i, red, green, blue);
+  eyes.show();
 
   delay(50);
 }
 
-startup()
+/*startup()
 {
   
-}
+}*/
 
 //---main code---
 void setup()
@@ -443,13 +443,13 @@ void setup()
   l_arm.write(0);
 
   left_ring.begin();
-  left_ring.show()
+  left_ring.show();
   kick_ring.begin();
   kick_ring.show();
   right_ring.begin();
   right_ring.show();
-  eyes_ring.begin();
-  eyes_ring.show();
+  eyes.begin();
+  eyes.show();
 }
 
 void loop()

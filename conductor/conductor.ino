@@ -297,11 +297,11 @@ void loop()
   //---start music---
   if(progress_performance == 4)
   {
-    controlCharacteristic.setValue(progress_performance);
     rightArm(20);
     leftArm(20);
+    controlCharacteristic.setValue(progress_performance);
     controlCharacteristic.notify();
-    delay(1000);
+    delay(5000);
     //---freedom---
     progress_music = 1;
     musicCharacteristic.setValue(progress_music);
@@ -329,7 +329,7 @@ void loop()
     while((millis()-timer) < 1000) delay(10);  //time between songs
     //---fireball---
     musicCharacteristic.setValue(progress_music);
-    while(progress_music < 63)
+    while(progress_music < 64)
     {
       if((millis()-timer) >= 1950)
       {
