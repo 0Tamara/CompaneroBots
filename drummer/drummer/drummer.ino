@@ -49,41 +49,81 @@ unsigned long timer_left;
 int kicks;
 int snares;
 
-byte color[] = {40, 1, 2}; //pink
+byte color_eyes[] = {40, 1, 2}; //pink
+byte colors_drums[6][3] = {{255, 0, 0},  //colors that will be cycling over
+                           {128, 128, 0},
+                           {0, 255, 0},
+                           {0, 128, 128},
+                           {0, 0, 255},
+                           {128, 0, 128}};
+int color_index_kick = 0;
+int color_index_left = 0;
+int color_index_right = 0;
 
 // Zapína LED na všetkých pásikoch naraz
 void ledky_vedlajsie() {
-  int max_led = max(PRAVY_BUBON, LAVY_BUBON);  // Najväčší počet LED
+  int max_led = max(LED_COUNT_R, LED_COUNT_L);  // Najväčší počet LED
 
   for (int i = 0; i < max_led; i++) {
-    if (i < PRAVY_BUBON) pravy.setPixelColor(i, 255, 0, 0);
-    if (i < LAVY_BUBON) lavy.setPixelColor(i, 255, 0, 0);
+    if (i < LED_COUNT_R) right_ring.setPixelColor(i, 255, 0, 0);
+    if (i < LED_COUNT_L) left_ring.setPixelColor(i, 255, 0, 0);
 
-    pravy.show();
-    lavy.show();
+    right_ring.show();
+    left_ring.show();
     delay(50);
   }
 
   for (int i = max_led - 1; i >= 0; i--) {
-    if (i < PRAVY_BUBON) pravy.setPixelColor(i, 0, 0, 0);
-    if (i < LAVY_BUBON) lavy.setPixelColor(i, 0, 0, 0);
+    if (i < LED_COUNT_R) right_ring.setPixelColor(i, 0, 0, 0);
+    if (i < LED_COUNT_L) left_ring.setPixelColor(i, 0, 0, 0);
 
-    pravy.show();
-    lavy.show();
+    right_ring.show();
+    left_ring.show();
     delay(50);
   }
 }
-void hlavny_bubon() {
-  for (int i = 0; i < KOPAK; i++) {
-    hlavny.setPixelColor(i, 255, 0, 0);
-    hlavny.show();
+void kick_ring_bubon() {
+  for (int i = 0; i < LED_COUNT_K; i++) {
+    kick_ring.setPixelColor(i, 255, 0, 0);
+    kick_ring.show();
     delay(50);
   }
-  for (int i = KOPAK - 1; i >= 0; i--) {
-    hlavny.setPixelColor(i, 0, 0, 0);
-    hlavny.show();
+  for (int i = LED_COUNT_K - 1; i >= 0; i--) {
+    kick_ring.setPixelColor(i, 0, 0, 0);
+    kick_ring.show();
     delay(50);
   }
+}
+
+void changeColorsKick()
+{
+  if(color_index_kick < 5)
+    color_index_kick++;
+  else
+    color_index_kick = 0;
+  for(int i=0; i<LED_COUNT_K; i++)
+    kick_ring.setPixelColor(i, colors_drums[color_index_kick][0], colors_drums[color_index_kick][1], colors_drums[color_index_kick][2]);
+  kick_ring.show();
+}
+void changeColorsLeft()
+{
+  if(color_index_left < 5)
+    color_index_left++;
+  else
+    color_index_left = 0;
+  for(int i=0; i<LED_COUNT_L; i++)
+    left_ring.setPixelColor(i, colors_drums[color_index_left][0], colors_drums[color_index_left][1], colors_drums[color_index_left][2]);
+  left_ring.show();
+}
+void changeColorsRight()
+{
+  if(color_index_right < 5)
+    color_index_right++;
+  else
+    color_index_right = 0;
+  for(int i=0; i<LED_COUNT_R; i++)
+    right_ring.setPixelColor(i, colors_drums[0][color_index_right], colors_drums[1][color_index_right], colors_drums[2][color_index_right]);
+  right_ring.show();
 }
 
 //---BLE functions---
@@ -91,15 +131,15 @@ static void notifyControl(BLERemoteCharacteristic* pBLERemoteControlChar, uint8_
 {
   memcpy(&control_command, data, sizeof(control_command));
   if(control_command == 1)
-    openEyes(color[0], color[1], color[2]);
+    openEyes(color_eyes[0], color_eyes[1], color_eyes[2]);
   if(control_command == 2)
   {
     ledky_vedlajsie();
-    hlavny_bubon();
+    kick_ring_bubon();
     closeEyes();
-    openEyes(color[0], color[1], color[2]);
+    openEyes(color_eyes[0], color_eyes[1], color_eyes[2]);
     closeEyes();
-    openEyes(color[0], color[1], color[2]);
+    openEyes(color_eyes[0], color_eyes[1], color_eyes[2]);
   }
 }
 static void notifyMusic(BLERemoteCharacteristic* pBLERemoteMusicChar, uint8_t* data, size_t length, bool isNotify)
@@ -191,6 +231,7 @@ void freedom()
     {
       timer_kick = millis();
       kick.write(90);
+      changeColorsKick();
       delay(100);
       kick.write(85);
       kicks ++;
