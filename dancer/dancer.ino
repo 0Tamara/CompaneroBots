@@ -45,7 +45,6 @@ void setup()
   
     
     void loop() {
-
       //up();
       //down();
       //horizontal();
@@ -153,17 +152,17 @@ stop(); */
 
 
 void up() {
-  rv.write(30);
+  rv.write(0);
   rd.write(0);
-  lv.write(0);
+  lv.write(10);
   ld.write(30);
 }
 
 void down() {
-      rv.write(40);
-      rd.write(180);
-      lv.write(180);
-      ld.write(30);
+    rv.write(40);
+    rd.write(180);
+    lv.write(130);
+    ld.write(30);
 }
 
 void horizontal() {
@@ -176,26 +175,23 @@ void horizontal() {
 void wave() {
  rd.write(30);
  rv.write(120);
- delay(300);
+ delay(500);
  lv.write(150);
  ld.write(0);
- delay(300);
+ delay(500);
  rd.write(150);
  lv.write(30);
- delay(300);
+ delay(500);
  rv.write(0);
  ld.write(100); 
- delay(300);
+ delay(500);
 }
 
 void divaPose() {
-  rv.write(150);
-  rd.write(150);
-  lv.write(0);
-  ld.write(60);
-  delay(500);
-  ld.write(30);
-  delay(500);
+  rv.write(0);
+  rd.write(0);
+  lv.write(110);
+  ld.write(90);
 }
 
 void askew() {
@@ -208,12 +204,12 @@ void askew() {
 void askew2() {
   rv.write(50);
   rd.write(30);
-  lv.write(130);
+  lv.write(100);
   ld.write(40);
 }
 
 void waving(){
-  rv.write(0);
+  rv.write(100);
   rd.write(30);
   lv.write(70);
   ld.write(30);
