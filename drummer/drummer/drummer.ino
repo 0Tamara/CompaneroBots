@@ -51,7 +51,7 @@ int snares;
 
 byte color_eyes[] = {40, 1, 2}; //pink
 byte colors_drums[6][3] = {{255, 0, 0},  //colors that will be cycling over
-                           {128, 128, 0},
+                           {192, 64, 0},
                            {0, 255, 0},
                            {0, 128, 128},
                            {0, 0, 255},
@@ -242,6 +242,8 @@ void freedom()
         timer_right = millis();
         r_arm.write(70);
         l_arm.write(10);
+        changeColorsLeft();
+        changeColorsRight();
         delay(100);
         r_arm.write(80);
         l_arm.write(0);
@@ -254,12 +256,15 @@ void freedom()
       {
         delay(300);
         r_arm.write(70);
+        changeColorsRight();
         delay(100);
         r_arm.write(80);
         l_arm.write(10);
+        changeColorsLeft();
         delay(100);
         l_arm.write(0);
         r_arm.write(70);
+        changeColorsRight();
         delay(100);
         r_arm.write(80);
       }
@@ -279,6 +284,7 @@ void fireball_clapping()
       {
         timer_right = millis();
         r_arm.write(70);
+        changeColorsRight();
         delay(100);
         r_arm.write(80);
         snares ++;
@@ -290,6 +296,7 @@ void fireball_clapping()
       {
         timer_right = millis();
         l_arm.write(10);
+        changeColorsLeft();
         delay(100);
         l_arm.write(0);
         snares ++;
@@ -312,6 +319,9 @@ void fireball_drop()
         kick.write(90);
         r_arm.write(70);
         l_arm.write(10);
+        changeColorsKick();
+        changeColorsRight();
+        changeColorsLeft();
         delay(100);
         kick.write(85);
         r_arm.write(80);
@@ -323,11 +333,14 @@ void fireball_drop()
         {
           kick.write(90);
           r_arm.write(70);
+          changeColorsKick();
+          changeColorsRight();
           delay(100);
           kick.write(85);
           r_arm.write(80);
           while((millis()-timer_kick) < 240) delay(10);
           l_arm.write(10);
+          changeColorsLeft();
           delay(100);
           l_arm.write(0);
         }
@@ -335,11 +348,14 @@ void fireball_drop()
         {
           kick.write(90);
           l_arm.write(10);
+          changeColorsKick();
+          changeColorsLeft();
           delay(100);
           kick.write(85);
           l_arm.write(0);
           while((millis()-timer_kick) < 240) delay(10);
           r_arm.write(70);
+          changeColorsRight();
           delay(100);
           r_arm.write(80);
         }
@@ -359,6 +375,7 @@ void fireball_bass()
     {
       timer_kick = millis();
       kick.write(90);
+      changeColorsKick();
       delay(100);
       kick.write(85);
       kicks ++;
@@ -373,6 +390,9 @@ void fireball_chill()
   kick.write(90);
   r_arm.write(70);
   l_arm.write(10);
+  changeColorsKick();
+  changeColorsRight();
+  changeColorsLeft();
   delay(100);
   kick.write(85);
   r_arm.write(80);
@@ -386,6 +406,7 @@ void fireball_chill()
       {
         timer_right = millis();
         r_arm.write(70);
+        changeColorsRight();
         delay(100);
         r_arm.write(80);
         snares ++;
@@ -397,6 +418,7 @@ void fireball_chill()
       {
         timer_right = millis();
         l_arm.write(10);
+        changeColorsLeft();
         delay(100);
         l_arm.write(0);
         snares ++;
@@ -474,11 +496,6 @@ void openEyes(uint8_t red, uint8_t green, uint8_t blue)  //cca 300ms
 
   delay(50);
 }
-
-/*startup()
-{
-  
-}*/
 
 //---main code---
 void setup()
