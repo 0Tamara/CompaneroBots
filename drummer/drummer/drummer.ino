@@ -62,20 +62,19 @@ int color_index_right = 0;
 
 // Zapína LED na všetkých pásikoch naraz
 void ledky_vedlajsie() {
-  int max_led = max(LED_COUNT_R, LED_COUNT_L);  // Najväčší počet LED
 
-  for (int i = 0; i < max_led; i++) {
-    if (i < LED_COUNT_R) right_ring.setPixelColor(i, 255, 0, 0);
-    if (i < LED_COUNT_L) left_ring.setPixelColor(i, 255, 0, 0);
+  for (int i = 0; i < LED_COUNT_R; i++) {
+    right_ring.setPixelColor(i, 255, 0, 0);
+    left_ring.setPixelColor(i, 255, 0, 0);
 
     right_ring.show();
     left_ring.show();
     delay(50);
   }
 
-  for (int i = max_led - 1; i >= 0; i--) {
-    if (i < LED_COUNT_R) right_ring.setPixelColor(i, 0, 0, 0);
-    if (i < LED_COUNT_L) left_ring.setPixelColor(i, 0, 0, 0);
+  for (int i = LED_COUNT_R - 1; i >= 0; i--) {
+    right_ring.setPixelColor(i, 0, 0, 0);
+    left_ring.setPixelColor(i, 0, 0, 0);
 
     right_ring.show();
     left_ring.show();
