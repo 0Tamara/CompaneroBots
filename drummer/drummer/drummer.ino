@@ -31,7 +31,7 @@ Servo kick;   //85-90-85 = kick
 
 #define LED_PIN_L 4     //left drum
 #define LED_COUNT_L 36
-#define LED_PIN_K 16    //kick drum
+#define LED_PIN_K 5    //kick drum
 #define LED_COUNT_K 54
 #define LED_PIN_R 17    //right drum
 #define LED_COUNT_R 36
