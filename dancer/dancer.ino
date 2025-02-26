@@ -167,7 +167,7 @@ void setup()
 
 //prichod
    timer_reset = millis(); 
-    while ((millis() - timer_reset) < 6000) {
+    while ((millis() - timer_reset) < 12000) {
        forward(255);  
        walking();    
        divaPose();   
