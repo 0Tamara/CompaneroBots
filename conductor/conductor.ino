@@ -267,7 +267,7 @@ void loop()
   {
     controlCharacteristic.setValue(progress_performance);
     forward(255);
-    while((millis() - timer) < 10000) delay(10);
+    while((millis() - timer) < 20000) delay(10);
     stop();
 
     timer = millis();
