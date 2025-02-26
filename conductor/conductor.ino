@@ -241,7 +241,7 @@ void loop()
         if((millis() - timer) > 1000)
         {
           progress_performance = 1;
-          Serial.println("Performance start");
+          //Serial.println("Performance start");
           break;
         }
       }
@@ -256,7 +256,8 @@ void loop()
     controlCharacteristic.setValue(progress_performance);
     while(distance() > 50) delay(10);
     timer = millis();
-    Serial.println("Open curtains");
+    //Serial.println("Open curtains");
+    Serial.print(progress_performance);
     controlCharacteristic.notify();  //open curtains
     progress_performance = 2;
   }
@@ -300,7 +301,8 @@ void loop()
     rightArm(20);
     leftArm(20);
     controlCharacteristic.setValue(progress_performance);
-    controlCharacteristic.notify();
+    Serial.print(progress_performance);
+    controlCharacteristic.notify();  //turn on music
     delay(5000);
     //---freedom---
     progress_music = 1;

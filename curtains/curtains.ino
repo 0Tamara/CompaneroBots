@@ -4,7 +4,6 @@
 //UUIDs of the service and characteristics:
 static BLEUUID serviceUUID("edddc3d6-5d4a-4677-87c5-f4f7d40b6111");
 static BLEUUID controlCharUUID("b4389ca3-0414-43a6-87d2-146c704e8353");
-static BLEUUID musicCharUUID("90c43130-b419-4bfd-bcf4-bb9c8373ddd6");
 
 static BLEAddress* serverAddress;  //address of the device
 static BLERemoteCharacteristic* control_char;  //characteristic for preformance control

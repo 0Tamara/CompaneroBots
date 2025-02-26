@@ -6,7 +6,8 @@ Dirigent:
   SW  celá choreografia dokopy|done|
       časovanie hudby freedom -> posielanie ostatným|done|
       časovanie hudby fireball -> posielanie ostatným|done|
-      doladiť časovanie  |...|
+      doladiť časovanie|done|
+      druhe esp na bluetooth  |...|
 
 Bubeník:
   HW  vypchat, vyparadit  |...|
@@ -26,14 +27,13 @@ Klavirista:
 
 Tanečník:
   HW  vymeniť servo|done|
-      hlava  |...|
+      hlava|done|
       vypchat, vyparadit  |...|
-  SW  komunikácia a časovanie  |...|
-      sériová komunikácia s očami  |...|
+  SW  komunikácia a časovanie|done|
   
 
 Kulisy:
-  HW  nozky, poriesit upevnenie  |done|
+  HW  nozky, poriesit upevnenie|done|
   SW  komunikácia|done|
 
 Plagat:
