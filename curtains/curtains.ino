@@ -104,7 +104,7 @@ void setup() {
   digitalWrite(L_MOTOR_2, LOW);
 
   //restart BLE and flash its memory
-  zBLEDevice::deinit(true);
+  BLEDevice::deinit(true);
   delay(500);
   BLEDevice::init("");
 
