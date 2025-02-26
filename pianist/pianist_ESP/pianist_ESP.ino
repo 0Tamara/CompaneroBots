@@ -65,7 +65,10 @@ static void notifyControl(BLERemoteCharacteristic* pBLERemoteControlChar, uint8_
 {
   memcpy(&control_command, data, sizeof(control_command));
   if(control_command == 3)
-    knightRiderEffect();
+  {
+    for(int i=0; i<4; i++)
+      knightRiderEffect();
+  }
 
   if(control_command == 4)
   {
@@ -83,10 +86,12 @@ static void notifyMusic(BLERemoteCharacteristic* pBLERemoteMusicChar, uint8_t* d
   {
     lego.setPixelColor(0, 255, 255, 255);
     lego.show();
-    delay(1000);
+    knightRiderEffect();
     lego.setPixelColor(0, 0, 0, 0);
     lego.show();
   }
+  else
+    knightRiderEffect();
 }
 
 class MyAdvertisedDeviceCallbacks: public BLEAdvertisedDeviceCallbacks  //when found a server

@@ -15,7 +15,7 @@ Bubeník:
       sync s dirigentom|done|
       funkcie pre hudbu fireball|done|
       LED efekty mimo hudby|done|
-      LED efekty s hudbou  |...|
+      LED efekty s hudbou|done|
 
 Klavirista:
   HW  napájanie ESP32 a EV3|done|
@@ -24,7 +24,7 @@ Klavirista:
       vypchat, vyparadit  |...|
   SW  komunikácia ESP32 a EV3|done|
       LED efekty mimo hudby|done|
-      LED efekty s hudbou  |...|
+      LED efekty s hudbou|done|
 
 Tanečník:
   HW  vymeniť servo|done|
