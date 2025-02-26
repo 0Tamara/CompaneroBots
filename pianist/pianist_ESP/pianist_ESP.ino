@@ -33,11 +33,41 @@ Adafruit_NeoPixel lego(LED_COUNT_LEGO, LED_PIN_LEGO, NEO_GRB + NEO_KHZ800);
 int control_command;
 int music_command;
 
+// Funkcia pre efekt "Night Rider"
+void knightRiderEffect() {
+  int mid = LED_COUNT / 2;  // Nájdeme strednú LED
+  
+  // Prvá fáza: od stredu smerom von
+  for (int step = 0; step <= mid; step++) {
+    strip.clear();
+    
+    if (mid - step >= 0) strip.setPixelColor(mid - step, 255, 0, 0); // Červená
+    if (mid + step < LED_COUNT) strip.setPixelColor(mid + step, 255, 0, 0);
+
+    strip.show();  // Aktualizujeme LEDky až po nastavení všetkých
+    delay(45);
+  }
+
+  // Druhá fáza: z okrajov späť do stredu
+  for (int step = mid; step >= 0; step--) {
+    strip.clear();
+    
+    if (mid - step >= 0) strip.setPixelColor(mid - step, 255, 0, 0);
+    if (mid + step < LED_COUNT) strip.setPixelColor(mid + step, 255, 0, 0);
+
+    strip.show();  // Aktualizujeme LEDky až po nastavení všetkých
+    delay(45);
+  }
+}
+
 //---functions for getting notifications---
 static void notifyControl(BLERemoteCharacteristic* pBLERemoteControlChar, uint8_t* data, size_t length, bool isNotify)
 {
   memcpy(&control_command, data, sizeof(control_command));
-  if(control_command == 4 && control)
+  if(control_command == 3)
+    knightRiderEffect();
+
+  if(control_command == 4)
   {
     lego.setPixelColor(0, 255, 255, 255);
     lego.show();

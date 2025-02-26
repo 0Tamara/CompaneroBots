@@ -51,6 +51,41 @@ int snares;
 
 byte color[] = {40, 1, 2}; //pink
 
+// Zapína LED na všetkých pásikoch naraz
+void ledky_vedlajsie() {
+  int max_led = max(PRAVY_BUBON, LAVY_BUBON);  // Najväčší počet LED
+
+  for (int i = 0; i < max_led; i++) {
+    if (i < PRAVY_BUBON) pravy.setPixelColor(i, 255, 0, 0);
+    if (i < LAVY_BUBON) lavy.setPixelColor(i, 255, 0, 0);
+
+    pravy.show();
+    lavy.show();
+    delay(50);
+  }
+
+  for (int i = max_led - 1; i >= 0; i--) {
+    if (i < PRAVY_BUBON) pravy.setPixelColor(i, 0, 0, 0);
+    if (i < LAVY_BUBON) lavy.setPixelColor(i, 0, 0, 0);
+
+    pravy.show();
+    lavy.show();
+    delay(50);
+  }
+}
+void hlavny_bubon() {
+  for (int i = 0; i < KOPAK; i++) {
+    hlavny.setPixelColor(i, 255, 0, 0);
+    hlavny.show();
+    delay(50);
+  }
+  for (int i = KOPAK - 1; i >= 0; i--) {
+    hlavny.setPixelColor(i, 0, 0, 0);
+    hlavny.show();
+    delay(50);
+  }
+}
+
 //---BLE functions---
 static void notifyControl(BLERemoteCharacteristic* pBLERemoteControlChar, uint8_t* data, size_t length, bool isNotify)
 {
@@ -59,7 +94,8 @@ static void notifyControl(BLERemoteCharacteristic* pBLERemoteControlChar, uint8_
     openEyes(color[0], color[1], color[2]);
   if(control_command == 2)
   {
-    //startup();
+    ledky_vedlajsie();
+    hlavny_bubon();
     closeEyes();
     openEyes(color[0], color[1], color[2]);
     closeEyes();

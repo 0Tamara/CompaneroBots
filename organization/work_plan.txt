@@ -7,14 +7,14 @@ Dirigent:
       časovanie hudby freedom -> posielanie ostatným|done|
       časovanie hudby fireball -> posielanie ostatným|done|
       doladiť časovanie|done|
-      druhe esp na bluetooth  |...|
+      druhe esp na bluetooth |done|
 
 Bubeník:
   HW  vypchat, vyparadit  |...|
   SW  funkcie pre hudbu freedom|done|
       sync s dirigentom|done|
       funkcie pre hudbu fireball|done|
-      LED efekty mimo hudby  |...|
+      LED efekty mimo hudby|done|
       LED efekty s hudbou  |...|
 
 Klavirista:
@@ -23,7 +23,8 @@ Klavirista:
       celá konštrukcia robota|done|
       vypchat, vyparadit  |...|
   SW  komunikácia ESP32 a EV3|done|
-      LED efekty  |...|
+      LED efekty mimo hudby|done|
+      LED efekty s hudbou  |...|
 
 Tanečník:
   HW  vymeniť servo|done|
