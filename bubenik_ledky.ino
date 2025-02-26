@@ -2,9 +2,10 @@
 
 #define PIN_LAVY 4
 #define PIN_PRAVY 16
-#define PIN_KOPAK 17        // Pin pripojený na hlavný LED pásik
-#define PRAVY_BUBON 36      // Počet LED diód
-#define LAVY_BUBON 36 // Pin pre druhý LED pásik (senzor)
+#define PIN_KOPAK 17
+
+#define PRAVY_BUBON 36
+#define LAVY_BUBON 36
 #define KOPAK 54
 
 Adafruit_NeoPixel pravy(PRAVY_BUBON, PIN_PRAVY, NEO_GRB + NEO_KHZ800);
@@ -13,59 +14,53 @@ Adafruit_NeoPixel hlavny(KOPAK, PIN_KOPAK, NEO_GRB + NEO_KHZ800);
 
 void setup() {
   pravy.begin();
-  pravy.clear();  // Vypne všetky LEDky
-  pravy.show();
-
   lavy.begin();
-  lavy.clear();  // Vypne všetky LEDky
-  lavy.show();
-
   hlavny.begin();
-  hlavny.clear();  // Vypne všetky LEDky
+
+  pravy.clear();
+  lavy.clear();
+  hlavny.clear();
+
+  pravy.show();
+  lavy.show();
   hlavny.show();
 }
 
 void loop() {
-  pravy_bubon();
-  lavy_bubon();
+  ledky_vedlajsie();
   hlavny_bubon();
 }
 
-// Funkcia pre efekt "Night Rider"
-void pravy_bubon() {
-  for(int i = 0; i < PRAVY_BUBON; i++){
-    pravy.setPixelColor(i, 255, 0, 0); 
-    pravy.show();
-    delay(50);
-  }
-  for(int i = PRAVY_BUBON; i > 0; i--){
-    pravy.setPixelColor(i, 0, 0, 0); 
-    pravy.show();
-    delay(50);
-  }
-}
+// Zapína LED na všetkých pásikoch naraz
+void ledky_vedlajsie() {
+  int max_led = max(PRAVY_BUBON, LAVY_BUBON);  // Najväčší počet LED
 
-void lavy_bubon() {
-  for(int i = 0; i < LAVY_BUBON; i++){
-    lavy.setPixelColor(i, 255, 0, 0); 
+  for (int i = 0; i < max_led; i++) {
+    if (i < PRAVY_BUBON) pravy.setPixelColor(i, 255, 0, 0);
+    if (i < LAVY_BUBON) lavy.setPixelColor(i, 255, 0, 0);
+
+    pravy.show();
     lavy.show();
     delay(50);
   }
-  for(int i = LAVY_BUBON; i > 0; i--){
-    lavy.setPixelColor(i, 0, 0, 0); 
+
+  for (int i = max_led - 1; i >= 0; i--) {
+    if (i < PRAVY_BUBON) pravy.setPixelColor(i, 0, 0, 0);
+    if (i < LAVY_BUBON) lavy.setPixelColor(i, 0, 0, 0);
+
+    pravy.show();
     lavy.show();
     delay(50);
   }
 }
-
 void hlavny_bubon() {
-  for(int i = 0; i < PRAVY_BUBON; i++){
-    hlavny.setPixelColor(i, 255, 0, 0); 
+  for (int i = 0; i < KOPAK; i++) {
+    hlavny.setPixelColor(i, 255, 0, 0);
     hlavny.show();
     delay(50);
   }
-  for(int i = PRAVY_BUBON; i > 0; i--){
-    hlavny.setPixelColor(i, 0, 0, 0); 
+  for (int i = KOPAK - 1; i >= 0; i--) {
+    hlavny.setPixelColor(i, 0, 0, 0);
     hlavny.show();
     delay(50);
   }
