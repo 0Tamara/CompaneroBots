@@ -35,27 +35,27 @@ int music_command;
 
 // Funkcia pre efekt "Night Rider"
 void knightRiderEffect() {
-  int mid = LED_COUNT / 2;  // Nájdeme strednú LED
+  int mid = LED_COUNT_KEYS / 2;  // Nájdeme strednú LED
   
   // Prvá fáza: od stredu smerom von
   for (int step = 0; step <= mid; step++) {
-    strip.clear();
+    keys.clear();
     
-    if (mid - step >= 0) strip.setPixelColor(mid - step, 255, 0, 0); // Červená
-    if (mid + step < LED_COUNT) strip.setPixelColor(mid + step, 255, 0, 0);
+    if (mid - step >= 0) keys.setPixelColor(mid - step, 255, 0, 0); // Červená
+    if (mid + step < LED_COUNT_KEYS) keys.setPixelColor(mid + step, 255, 0, 0);
 
-    strip.show();  // Aktualizujeme LEDky až po nastavení všetkých
+    keys.show();  // Aktualizujeme LEDky až po nastavení všetkých
     delay(45);
   }
 
   // Druhá fáza: z okrajov späť do stredu
   for (int step = mid; step >= 0; step--) {
-    strip.clear();
+    keys.clear();
     
-    if (mid - step >= 0) strip.setPixelColor(mid - step, 255, 0, 0);
-    if (mid + step < LED_COUNT) strip.setPixelColor(mid + step, 255, 0, 0);
+    if (mid - step >= 0) keys.setPixelColor(mid - step, 255, 0, 0);
+    if (mid + step < LED_COUNT_KEYS) keys.setPixelColor(mid + step, 255, 0, 0);
 
-    strip.show();  // Aktualizujeme LEDky až po nastavení všetkých
+    keys.show();  // Aktualizujeme LEDky až po nastavení všetkých
     delay(45);
   }
 }

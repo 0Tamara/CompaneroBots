@@ -1,9 +1,9 @@
 #include <BLEDevice.h>
 
-#define bleServerName "Companero"  //name of the BLE server we are connecting to
+#define bleServerName "Companero_aux"  //name of the BLE server we are connecting to
 //UUIDs of the service and characteristics:
-static BLEUUID serviceUUID("edddc3d6-5d4a-4677-87c5-f4f7d40b6111");
-static BLEUUID controlCharUUID("b4389ca3-0414-43a6-87d2-146c704e8353");
+static BLEUUID serviceUUID("89cf8ec9-04a9-4814-93be-f092e7a5272f");
+static BLEUUID controlCharUUID("76745552-3961-4938-9f0a-09a6181dc352");
 
 static BLEAddress* serverAddress;  //address of the device
 static BLERemoteCharacteristic* control_char;  //characteristic for preformance control
@@ -93,6 +93,8 @@ bool connectToServer(BLEAddress address)
 void setup() {
   Serial.begin(115200);
   Serial.println("Starting Arduino BLE Client application...");
+  pinMode(2, OUTPUT);
+  digitalWrite(2, LOW);
   
   pinMode(R_MOTOR_1, OUTPUT);
   digitalWrite(R_MOTOR_1, LOW);
@@ -119,6 +121,7 @@ void setup() {
   {
     Serial.println("-+-Successfully connected to BLE Server!");
     connected = true;
+    digitalWrite(2, HIGH);
     serverFound = false;
   }
   else
