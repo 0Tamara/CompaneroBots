@@ -267,14 +267,14 @@ void loop()
   {
     controlCharacteristic.setValue(progress_performance);
     forward(255);
-    while((millis() - timer) < 20000) delay(10);
+    while((millis() - timer) < 15000) delay(10);
     stop();
 
     timer = millis();
     left(255);  //turn left for 3sec (turn to musicians)
-    while((millis() - timer) < 4000) delay(10);
+    while((millis() - timer) < 5000) delay(10);
     forward(255);
-    delay(6000);
+    delay(5000);
     stop();
     delay(500);
     //---point to drummer---

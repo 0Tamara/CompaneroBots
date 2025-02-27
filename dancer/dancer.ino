@@ -404,11 +404,11 @@ void forward(byte speed)
 {
   digitalWrite(RF_DIR[0], LOW);
   digitalWrite(RF_DIR[1], HIGH);
-  ledcWrite(RF_EN, speed);
+  ledcWrite(RF_EN, speed/2);
 
   digitalWrite(LF_DIR[0], LOW);
   digitalWrite(LF_DIR[1], HIGH);
-  ledcWrite(LF_EN, speed);
+  ledcWrite(LF_EN, speed/2);
 
   digitalWrite(RR_DIR[0], LOW);
   digitalWrite(RR_DIR[1], HIGH);
@@ -416,17 +416,17 @@ void forward(byte speed)
 
   digitalWrite(LR_DIR[0], LOW);
   digitalWrite(LR_DIR[1], HIGH);
-  ledcWrite(LR_EN, speed);
+  ledcWrite(LR_EN, speed/2);
 }
 void backward(byte speed)
 {
   digitalWrite(RF_DIR[0], HIGH);
   digitalWrite(RF_DIR[1], LOW);
-  ledcWrite(RF_EN, speed);
+  ledcWrite(RF_EN, speed/2);
 
   digitalWrite(LF_DIR[0], HIGH);
   digitalWrite(LF_DIR[1], LOW);
-  ledcWrite(LF_EN, speed);
+  ledcWrite(LF_EN, speed/2);
 
   digitalWrite(RR_DIR[0], HIGH);
   digitalWrite(RR_DIR[1], LOW);
@@ -434,13 +434,13 @@ void backward(byte speed)
 
   digitalWrite(LR_DIR[0], HIGH);
   digitalWrite(LR_DIR[1], LOW);
-  ledcWrite(LR_EN, speed);
+  ledcWrite(LR_EN, speed/2);
 }
 void left(byte speed)
 {
   digitalWrite(RF_DIR[0], LOW);
   digitalWrite(RF_DIR[1], HIGH);
-  ledcWrite(RF_EN, speed);
+  ledcWrite(RF_EN, speed/2);
 
   digitalWrite(LF_DIR[0], HIGH);
   digitalWrite(LF_DIR[1], LOW);
@@ -448,17 +448,17 @@ void left(byte speed)
 
   digitalWrite(RR_DIR[0], LOW);
   digitalWrite(RR_DIR[1], HIGH);
-  ledcWrite(RR_EN, speed);
+  ledcWrite(RR_EN, speed/2);
 
   digitalWrite(LR_DIR[0], HIGH);
   digitalWrite(LR_DIR[1], LOW);
-  ledcWrite(LR_EN, speed);
+  ledcWrite(LR_EN, speed/2);
 }
 void right(byte speed)
 {
   digitalWrite(RF_DIR[0], HIGH);
   digitalWrite(RF_DIR[1], LOW);
-  ledcWrite(RF_EN, speed);
+  ledcWrite(RF_EN, speed/2);
 
   digitalWrite(LF_DIR[0], LOW);
   digitalWrite(LF_DIR[1], HIGH);
@@ -466,11 +466,11 @@ void right(byte speed)
 
   digitalWrite(RR_DIR[0], HIGH);
   digitalWrite(RR_DIR[1], LOW);
-  ledcWrite(RR_EN, speed);
+  ledcWrite(RR_EN, speed/2);
 
   digitalWrite(LR_DIR[0], LOW);
   digitalWrite(LR_DIR[1], HIGH);
-  ledcWrite(LR_EN, speed);
+  ledcWrite(LR_EN, speed/2);
 }
 void stop()
 {
@@ -489,11 +489,11 @@ void stop()
   void to_left_side(int speed) {
   digitalWrite(RF_DIR[0], LOW);
   digitalWrite(RF_DIR[1], HIGH);
-  analogWrite(RF_EN, speed);
+  analogWrite(RF_EN, speed/2);
 
   digitalWrite(LF_DIR[0], HIGH);
   digitalWrite(LF_DIR[1], LOW);
-  analogWrite(LF_EN, speed);
+  analogWrite(LF_EN, speed/2);
 
   digitalWrite(RR_DIR[0], HIGH);
   digitalWrite(RR_DIR[1], LOW);
@@ -501,17 +501,17 @@ void stop()
 
   digitalWrite(LR_DIR[0], LOW);
   digitalWrite(LR_DIR[1], HIGH);
-  analogWrite(LR_EN, speed);
+  analogWrite(LR_EN, speed/2);
 }
 
 void to_right_side(int speed) {
   digitalWrite(RF_DIR[0], HIGH);
   digitalWrite(RF_DIR[1], LOW);
-  analogWrite(RF_EN, speed);
+  analogWrite(RF_EN, speed/2);
 
   digitalWrite(LF_DIR[0], LOW);
   digitalWrite(LF_DIR[1], HIGH);
-  analogWrite(LF_EN, speed);
+  analogWrite(LF_EN, speed/2);
 
   digitalWrite(RR_DIR[0], LOW);
   digitalWrite(RR_DIR[1], HIGH);
@@ -519,5 +519,5 @@ void to_right_side(int speed) {
 
   digitalWrite(LR_DIR[0], HIGH);
   digitalWrite(LR_DIR[1], LOW);
-  analogWrite(LR_EN, speed);
+  analogWrite(LR_EN, speed/2);
 }
