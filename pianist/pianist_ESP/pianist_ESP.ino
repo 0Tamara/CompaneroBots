@@ -33,6 +33,8 @@ Adafruit_NeoPixel lego(LED_COUNT_LEGO, LED_PIN_LEGO, NEO_GRB + NEO_KHZ800);
 int control_command;
 int music_command;
 
+byte color_eyes[] = {40, 1, 2}; //pink
+
 // Funkcia pre efekt "Night Rider"
 void knightRiderEffect() {
   int mid = LED_COUNT_KEYS / 2;  // Nájdeme strednú LED
@@ -45,7 +47,7 @@ void knightRiderEffect() {
     if (mid + step < LED_COUNT_KEYS) keys.setPixelColor(mid + step, 255, 0, 0);
 
     keys.show();  // Aktualizujeme LEDky až po nastavení všetkých
-    delay(45);
+    delay(40);
   }
 
   // Druhá fáza: z okrajov späť do stredu
@@ -56,18 +58,93 @@ void knightRiderEffect() {
     if (mid + step < LED_COUNT_KEYS) keys.setPixelColor(mid + step, 255, 0, 0);
 
     keys.show();  // Aktualizujeme LEDky až po nastavení všetkých
-    delay(45);
+    delay(40);
   }
+}
+
+void closeEyes()  //cca 300ms
+{
+  // Blink LEDs in reverse order (off in sections)
+  for (int i = 20; i < 25; i++) eyes.setPixelColor(i, 0, 0, 0); // Left eye
+  for (int i = 45; i < 50; i++) eyes.setPixelColor(i, 0, 0, 0); // Right eye
+  eyes.show();
+
+  delay(50);
+
+  // Now let's go down the LED sections
+  for (int i = 15; i < 20; i++) eyes.setPixelColor(i, 0, 0, 0);
+  for (int i = 40; i < 45; i++) eyes.setPixelColor(i, 0, 0, 0);
+  eyes.show();
+
+  delay(50);
+
+  for (int i = 10; i < 15; i++) eyes.setPixelColor(i, 0, 0, 0);
+  for (int i = 35; i < 40; i++) eyes.setPixelColor(i, 0, 0, 0);
+  eyes.show();
+
+  delay(50);
+
+  for (int i = 5; i < 10; i++) eyes.setPixelColor(i, 0, 0, 0);
+  for (int i = 30; i < 35; i++) eyes.setPixelColor(i, 0, 0, 0);
+  eyes.show();
+
+  delay(50);
+
+  for (int i = 0; i < 5; i++) eyes.setPixelColor(i, 0, 0, 0);
+  for (int i = 25; i < 30; i++) eyes.setPixelColor(i, 0, 0, 0);
+  eyes.show();
+
+  delay(50);
+}
+
+void openEyes(uint8_t red, uint8_t green, uint8_t blue)  //cca 300ms
+{
+  // Blink LEDs in reverse order (turning LEDs back on)
+  for (int i = 0; i < 5; i++) eyes.setPixelColor(i, red, green, blue); // Left eye
+  for (int i = 25; i < 30; i++) eyes.setPixelColor(i, red, green, blue); // Right eye
+  eyes.show();
+
+  delay(50);
+
+  for (int i = 5; i < 10; i++) eyes.setPixelColor(i, red, green, blue);
+  for (int i = 30; i < 35; i++) eyes.setPixelColor(i, red, green, blue);
+  eyes.show();
+
+  delay(50);
+
+  for (int i = 10; i < 15; i++) eyes.setPixelColor(i, red, green, blue);
+  for (int i = 35; i < 40; i++) eyes.setPixelColor(i, red, green, blue);
+  eyes.show();
+
+  delay(50);
+
+  for (int i = 15; i < 20; i++) eyes.setPixelColor(i, red, green, blue);
+  for (int i = 40; i < 45; i++) eyes.setPixelColor(i, red, green, blue);
+  eyes.show();
+
+  delay(50);
+
+  for (int i = 20; i < 25; i++) eyes.setPixelColor(i, red, green, blue);
+  for (int i = 45; i < 50; i++) eyes.setPixelColor(i, red, green, blue);
+  eyes.show();
+
+  delay(50);
 }
 
 //---functions for getting notifications---
 static void notifyControl(BLERemoteCharacteristic* pBLERemoteControlChar, uint8_t* data, size_t length, bool isNotify)
 {
   memcpy(&control_command, data, sizeof(control_command));
+  if(control_command == 1)
+    openEyes(color_eyes[0], color_eyes[1], color_eyes[2]);
   if(control_command == 3)
   {
     for(int i=0; i<4; i++)
       knightRiderEffect();
+    closeEyes();
+    openEyes(color_eyes[0], color_eyes[1], color_eyes[2]);
+    closeEyes();
+    openEyes(color_eyes[0], color_eyes[1], color_eyes[2]);
   }
 
   if(control_command == 4)

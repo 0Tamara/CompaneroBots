@@ -25,6 +25,11 @@ int music_command;
 #define L_ARM_PIN 21
 #define KICK_PIN 19
 
+#define R_UP 80
+#define R_DOWN 80
+#define L_UP 80
+#define L_DOWN 80
+
 Servo r_arm;  //0-80 = down-front
 Servo l_arm;  //80-0 = down-front
 Servo kick;   //85-90-85 = kick
@@ -240,13 +245,13 @@ void freedom()
       if((millis()-timer_right) >= 430)
       {
         timer_right = millis();
-        r_arm.write(70);
-        l_arm.write(10);
+        r_arm.write(R_DOWN);
+        l_arm.write(L_DOWN);
         changeColorsLeft();
         changeColorsRight();
         delay(100);
-        r_arm.write(80);
-        l_arm.write(0);
+        r_arm.write(R_UP);
+        l_arm.write(L_UP);
         snares ++;
       }
     }
@@ -255,18 +260,18 @@ void freedom()
       if(kicks == 3)
       {
         delay(300);
-        r_arm.write(70);
+        r_arm.write(R_DOWN);
         changeColorsRight();
         delay(100);
-        r_arm.write(80);
-        l_arm.write(10);
+        r_arm.write(R_UP);
+        l_arm.write(L_DOWN);
         changeColorsLeft();
         delay(100);
-        l_arm.write(0);
-        r_arm.write(70);
+        l_arm.write(L_UP);
+        r_arm.write(R_DOWN);
         changeColorsRight();
         delay(100);
-        r_arm.write(80);
+        r_arm.write(R_UP);
       }
     }
   }
@@ -283,10 +288,10 @@ void fireball_clapping()
       if((millis()-timer_right) >= 480)
       {
         timer_right = millis();
-        r_arm.write(70);
+        r_arm.write(R_DOWN);
         changeColorsRight();
         delay(100);
-        r_arm.write(80);
+        r_arm.write(R_UP);
         snares ++;
       }
     }
@@ -295,10 +300,10 @@ void fireball_clapping()
       if((millis()-timer_right) >= 480)
       {
         timer_right = millis();
-        l_arm.write(10);
+        l_arm.write(L_DOWN);
         changeColorsLeft();
         delay(100);
-        l_arm.write(0);
+        l_arm.write(L_UP);
         snares ++;
       }
     }
@@ -317,47 +322,47 @@ void fireball_drop()
       if(!(kicks%2))
       {
         kick.write(90);
-        r_arm.write(70);
-        l_arm.write(10);
+        r_arm.write(R_DOWN);
+        l_arm.write(L_DOWN);
         changeColorsKick();
         changeColorsRight();
         changeColorsLeft();
         delay(100);
         kick.write(85);
-        r_arm.write(80);
-        l_arm.write(0);
+        r_arm.write(R_UP);
+        l_arm.write(L_UP);
       }
       else
       {
         if(kicks == 1)
         {
           kick.write(90);
-          r_arm.write(70);
+          r_arm.write(R_DOWN);
           changeColorsKick();
           changeColorsRight();
           delay(100);
           kick.write(85);
-          r_arm.write(80);
+          r_arm.write(R_UP);
           while((millis()-timer_kick) < 240) delay(10);
-          l_arm.write(10);
+          l_arm.write(L_DOWN);
           changeColorsLeft();
           delay(100);
-          l_arm.write(0);
+          l_arm.write(L_UP);
         }
         else
         {
           kick.write(90);
-          l_arm.write(10);
+          l_arm.write(L_DOWN);
           changeColorsKick();
           changeColorsLeft();
           delay(100);
           kick.write(85);
-          l_arm.write(0);
+          l_arm.write(L_UP);
           while((millis()-timer_kick) < 240) delay(10);
-          r_arm.write(70);
+          r_arm.write(R_DOWN);
           changeColorsRight();
           delay(100);
-          r_arm.write(80);
+          r_arm.write(R_UP);
         }
       }
       kicks ++;
@@ -388,15 +393,15 @@ void fireball_chill()
 {
   timer_kick = millis();
   kick.write(90);
-  r_arm.write(70);
-  l_arm.write(10);
+  r_arm.write(R_DOWN);
+  l_arm.write(L_DOWN);
   changeColorsKick();
   changeColorsRight();
   changeColorsLeft();
   delay(100);
   kick.write(85);
-  r_arm.write(80);
-  l_arm.write(0);
+  r_arm.write(R_UP);
+  l_arm.write(L_UP);
   snares = 0;
   while(snares < 3)
   {
@@ -405,10 +410,10 @@ void fireball_chill()
       if((millis()-timer_right) >= 480)
       {
         timer_right = millis();
-        r_arm.write(70);
+        r_arm.write(R_DOWN);
         changeColorsRight();
         delay(100);
-        r_arm.write(80);
+        r_arm.write(R_UP);
         snares ++;
       }
     }
@@ -417,10 +422,10 @@ void fireball_chill()
       if((millis()-timer_right) >= 480)
       {
         timer_right = millis();
-        l_arm.write(10);
+        l_arm.write(L_DOWN);
         changeColorsLeft();
         delay(100);
-        l_arm.write(0);
+        l_arm.write(L_UP);
         snares ++;
       }
     }
@@ -533,7 +538,7 @@ void setup()
   
   kick.write(85);
   r_arm.write(85);
-  l_arm.write(0);
+  l_arm.write(L_UP);
 
   left_ring.begin();
   left_ring.show();
