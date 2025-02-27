@@ -273,8 +273,10 @@ void loop()
     timer = millis();
     left(255);  //turn left for 3sec (turn to musicians)
     while((millis() - timer) < 4000) delay(10);
+    forward(255);
+    delay(6000);
     stop();
-    delay(1000);
+    delay(500);
     //---point to drummer---
     leftArm(40);
     controlCharacteristic.notify();
