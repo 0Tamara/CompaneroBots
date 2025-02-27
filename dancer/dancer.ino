@@ -139,93 +139,69 @@ void setup() {
 void loop() {
   while(!go) delay(10);
     timer_reset = millis();
-    while ((millis() - timer_reset) < 5000) {
+    while ((millis() - timer_reset) < 12000) {
        forward(255);  
        walking();    
        divaPose();   
        delay(300);    
     }
     stop(); 
+    delay(2000);
+
+   delay(500);
+    left(255);
+    delay(11000);
+    stop();
+    delay(2000);
+
+    unsigned long startTime = millis();
+    while (millis() - startTime < 5000) { 
+      waving();
+    delay(1000);
+      waving2();
+      delay(1000);
+    }
+    stop();
 
     delay(500);
     left(255);
-    delay(4000);
+    delay(11000);
     stop();
-
-    unsigned long startTime = millis();
-    while (millis() - startTime < 3000) { 
-      waving();
-      delay(500);
-      waving2();
-      delay(500);
-    }
-    stop();
-
+    delay(2000);
+   
     timer_reset = millis();
     while ((millis() - timer_reset) < 4000) {
-      to_right_side(255);          
-      walking();          
-      delay(300);        
-    }
-    stop(); 
-
-    timer_reset = millis();
-    while ((millis() - timer_reset) < 4000) {
-      to_left_side(255);            
-      walking();         
-      delay(300);      
-    }
-    stop(); 
-
-    timer_reset = millis();
-    while ((millis() - timer_reset) < 4000) {
-      right(255);  
       waving();    
-      delay(500);  
+      delay(1000);  
       waving2(); 
-      delay(500);
+      delay(1000);
     }
     stop();
-
-    timer_reset = millis();
-    while ((millis() - timer_reset) < 3500) {
-      to_right_side(255);          
-      walking();          
-      delay(300);  
-    }
-    stop();
-
-    timer_reset = millis();
-    while ((millis() - timer_reset) < 3500) {
-      to_left_side(255);            
-      walking();         
-      delay(300);      
-    }
-    stop(); 
 
     delay(1000);
 
     timer_reset = millis();
     while (millis() - timer_reset < 15000) {  
       askew();
-      delay(800);
+      delay(1000);
       askew2();
-      delay(800);
+      delay(1000);
       askew();
-      delay(800);
+      delay(1000);
       up();
-      delay(800);
+      delay(1500);
       down();
-      delay(800);
+      delay(1500);
       up();
-      delay(800);
+      delay(1500);
       down();
-      delay(800);
+      delay(1500);
       delay(1000);
     }
     stop();
-
-    timer_reset = millis();
+    delay(1000);
+    
+    /*timer_reset = millis();
     while (millis() - timer_reset < 3000) {  
       horizontal();
       delay(500);
@@ -309,7 +285,7 @@ void loop() {
 
     backward(255);
     delay(4000);
-    stop();
+    stop();*/
 
     go = 0;
 }
