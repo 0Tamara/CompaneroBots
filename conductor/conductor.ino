@@ -272,7 +272,7 @@ void loop()
 
     timer = millis();
     left(255);  //turn left for 3sec (turn to musicians)
-    while((millis() - timer) < 5000) delay(10);
+    while((millis() - timer) < 4000) delay(10);
     stop();
     delay(1000);
     //---point to drummer---
