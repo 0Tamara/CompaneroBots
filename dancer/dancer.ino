@@ -139,7 +139,7 @@ void setup() {
 void loop() {
   while(!go) delay(10);
     timer_reset = millis();
-    while ((millis() - timer_reset) < 12000) {
+    while ((millis() - timer_reset) < 5000) {
        forward(255);  
        walking();    
        divaPose();   
@@ -181,7 +181,7 @@ void loop() {
     delay(1000);
 
     timer_reset = millis();
-    while (millis() - timer_reset < 15000) {  
+    while (millis() - timer_reset < 20000) {  
       askew();
       delay(1000);
       askew2();
