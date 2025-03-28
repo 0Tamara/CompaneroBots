@@ -1,0 +1,24 @@
+What needs to be done:
+
+  DANCER:
+    problem-servos keep braking
+      -replacing with something different (stepper motors)
+      -3d printing new (lighter) arms
+      -enhancing software
+    problem-bad construction
+      -mounting new profiles
+      -different system of mounitng servos in arms
+
+  DRUMMER:
+    problem-servos keep braking
+      -replacing with larger servos
+      -3d printing new (lighter) arms
+    feature-prettier LED effects (more drums simultaiously)
+      -using paralel processes and/or 2 cores on ESP32
+
+  PIANIST:
+    -make the whole thing
+
+  CONDUCTOR:
+    problem-can't connect all devices with 1 ESP32
+      -changing bluetooth for ESP-NOW (is it within the rules???)
