@@ -1,3 +1,9 @@
+4 chosen features:
+  dancing
+  camera
+  synchronization
+  visual and sound effects
+
 What needs to be done:
 
   DANCER:
