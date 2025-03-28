@@ -26,9 +26,9 @@ int music_command;
 #define KICK_PIN 19
 
 #define R_UP 80
-#define R_DOWN 80
-#define L_UP 80
-#define L_DOWN 80
+#define R_DOWN 70
+#define L_UP 0
+#define L_DOWN 10
 
 Servo r_arm;  //0-80 = down-front
 Servo l_arm;  //80-0 = down-front
@@ -537,7 +537,7 @@ void setup()
   kick.attach(KICK_PIN);
   
   kick.write(85);
-  r_arm.write(85);
+  r_arm.write(R_UP);
   l_arm.write(L_UP);
 
   left_ring.begin();
