@@ -6,25 +6,31 @@
 
 What needs to be done:
 
-  DANCER:
-    problem-servos keep braking
-      -replacing with something different (stepper motors)
-      -3d printing new (lighter) arms
-      -enhancing software
-    problem-bad construction
-      -mounting new profiles
-      -different system of mounitng servos in arms
+  construction
+    mount camera somewhere
+    dancer:
+      replace profiles
+    drummer:
+      better mounting of side drums
+    conductor:
+      replace wheels with classic ones
+    
 
-  DRUMMER:
-    problem-servos keep braking
-      -replacing with larger servos
-      -3d printing new (lighter) arms
-    feature-prettier LED effects (more drums simultaiously)
-      -using paralel processes and/or 2 cores on ESP32
-
-  PIANIST:
-    -make the whole thing
-
-  CONDUCTOR:
-    problem-can't connect all devices with 1 ESP32
-      -changing bluetooth for ESP-NOW (is it within the rules???)
+  hardware
+    dancer:
+      servos cable management
+      power wires system (PCB)
+    drummer:
+      cable management and connectors for head and drums
+    connect camera with Raspberry and esp32
+  
+  software
+    communication via esp-NOW
+    dancer:
+      slower acceleration with servos on arms -> not braking servos
+    drummer:
+      better LED effects with parallel processes (2nd core)
+    camera:
+      recognize gestures
+      play music and background video
+      combine recognition with sending to esp32 and recievening from esp32 with playing media
