@@ -10,16 +10,17 @@ What needs to be done:
     mount camera somewhere
     dancer:
       replace profiles
+      make head with matrix eyes
     drummer:
       better mounting of side drums
     conductor:
       replace wheels with classic ones
-    
 
   hardware
     dancer:
       servos cable management
       power wires system (PCB)
+      add matrixes for eyes
     drummer:
       cable management and connectors for head and drums
     connect camera with Raspberry and esp32
