@@ -48,8 +48,6 @@ void moveToOctave(int targetOctave) {
 //toto len stlaci notu
 void playNote(int noteIndex, int octave, int wait) {
   moveToOctave(octave);
-  
-  // simuluj stlačenie noty
   servos[noteIndex].write(30);  // dolu
   delay(wait / 2);                
   servos[noteIndex].write(90);  // hore
