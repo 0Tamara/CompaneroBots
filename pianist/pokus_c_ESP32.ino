@@ -46,31 +46,40 @@ void moveToOctave(int targetOctave) {
   currentOctave = targetOctave;
 }
 //toto len stlaci notu
-void playNote(int noteIndex, int octave, int wait) {
+void playNote(int noteIndex1, int noteIndex2, int noteIndex3, int octave, int wait) {
   moveToOctave(octave);
-  servos[noteIndex].write(30);  // dolu
-  delay(wait / 2);                
-  servos[noteIndex].write(90);  // hore
-  delay(wait / 2);
+  int notes[3] = {noteIndex1, noteIndex2, noteIndex3};
+  // simuluj stlačenie noty
+  for(int i = 0; i < 3; i++){
+    if(notes[i] != -1) {
+      int note = notes[i];
+      servos[note].write(30);
+      delay(wait / 6);
+      servos[note].write(90);
+      delay(wait / 6);
+    }
+  }
 }
 
 
 //tu bude cela melodia, zatial tu je ze prazdnô
 void playMelody() {
-  int melody[][3] = {
-    {5, 0, osm}, // A
-    {0, 1, stv}, // C 
-    {6, 3, pol}, // H
-    {6, 1, pol}  // H
+  int melody[][5] = {
+    {5, 0, 2, 2, osm}, 
+    {0, 1, 2, 1, stv}, 
+    {6, 4, 2, 1, pol}, 
+    {6, 1, 5, 1, pol}  
   };
 
   int length = sizeof(melody) / sizeof(melody[0]);
 
   for (int i = 0; i < length; i++) {
-    int note = melody[i][0];
-    int octave = melody[i][1];
-    int wait = melody[i][2];
-    playNote(note, octave, wait);
+    int note1 = melody[i][0];
+    int note2 = melody[i][1];
+    int note3 = melody[i][2];
+    int octave = melody[i][3];
+    int wait = melody[i][4];
+    playNote(note1, note2, note3, octave, wait);
   }
 }
 
