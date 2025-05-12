@@ -58,6 +58,9 @@ void playNote(int noteIndex1, int noteIndex2, int noteIndex3, int octave, int wa
       servos[note].write(90);
       delay(wait / 6);
     }
+    else{
+      delay(wait / 3);
+    }
   }
 }
 
@@ -65,7 +68,7 @@ void playNote(int noteIndex1, int noteIndex2, int noteIndex3, int octave, int wa
 //tu bude cela melodia, zatial tu je ze prazdnô
 void playMelody() {
   int melody[][5] = {
-    {5, 0, 2, 2, osm}, 
+    {5, -1, -1, 2, osm}, 
     {0, 1, 2, 1, stv}, 
     {6, 4, 2, 1, pol}, 
     {6, 1, 5, 1, pol}  
