@@ -49,7 +49,6 @@ void moveToOctave(int targetOctave) {
 void playNote(int noteIndex1, int noteIndex2, int noteIndex3, int octave, int wait) {
   moveToOctave(octave);
   int notes[3] = {noteIndex1, noteIndex2, noteIndex3};
-  // simuluj stlačenie noty
   for(int i = 0; i < 3; i++){
     if(notes[i] != -1) {
       int note = notes[i];
