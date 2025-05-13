@@ -56,17 +56,14 @@ void playNote(int noteIndex1, int noteIndex2, int noteIndex3, int octave, int wa
       servos[notes[i]].write(30);
     }
   }
-  while(millis() - lastTime >= wait - rezerva){
-    for(int i = 0; i < 3; i++){
-      if(notes[i] != -1){
-        servos[notes[i]].write(90);
-      }
-      else{
-        delay(rezerva);
-      }
-    }
-    lastTime = millis();
+  while(millis() - lastTime <= wait -rezerva){
   }
+  for(int i = 0; i < 3; i++){
+    if(notes[i] != -1){
+      servos[notes[i]].write(90);
+    }
+  }
+  lastTime = millis();
 }
 
 
@@ -93,4 +90,5 @@ void playMelody() {
 
 void loop() {
   playMelody();
+  
 }
