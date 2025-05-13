@@ -3,16 +3,17 @@
 #define numServos 8
 Servo servos[numServos];
 
-
+int rezerva = 50; // lubovolne, treba odskusat
+unsigned long lastTime;
 //noty
 int time = 1000;
 int osm = time / 8;
 int stv = time / 4;
 int pol = time/2;
 int cel = time;
-
+//serva
 int servoPins[numServos] = {2, 3, 4, 5, 6, 7, 8, 9}; // dal som nech viem menit podla schemy
-
+//krokovy motor
 int stepPin = 10;
 int dirPin = 11;
 int stepsPerOctave = 200;  //toto treba vypocitat alebo odskuksat
@@ -48,18 +49,23 @@ void moveToOctave(int targetOctave) {
 //toto len stlaci notu
 void playNote(int noteIndex1, int noteIndex2, int noteIndex3, int octave, int wait) {
   moveToOctave(octave);
+  lastTime = millis();
   int notes[3] = {noteIndex1, noteIndex2, noteIndex3};
   for(int i = 0; i < 3; i++){
     if(notes[i] != -1) {
-      int note = notes[i];
-      servos[note].write(30);
-      delay(wait / 6);
-      servos[note].write(90);
-      delay(wait / 6);
+      servos[notes[i]].write(30);
     }
-    else{
-      delay(wait / 3);
+  }
+  while(millis() - lastTime >= wait - rezerva){
+    for(int i = 0; i < 3; i++){
+      if(notes[i] != -1){
+        servos[notes[i]].write(90);
+      }
+      else{
+        delay(rezerva);
+      }
     }
+    lastTime = millis();
   }
 }
 
