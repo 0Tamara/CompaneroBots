@@ -1,24 +1,25 @@
 #include <Servo.h>
 
 #define numServos 8
-Servo servos[numServos];
+#define rezerva 50
 
-int rezerva = 50; // lubovolne, treba odskusat
+Servo servos[numServos];
+int countRezerva = 0;  // lubovolne, treba odskusat
 unsigned long lastTime;
 //noty
 int time = 1000;
 int osm = time / 8;
 int stv = time / 4;
-int pol = time/2;
+int pol = time / 2;
 int cel = time;
 //serva
-int servoPins[numServos] = {2, 3, 4, 5, 6, 7, 8, 9}; // dal som nech viem menit podla schemy
+int servoPins[numServos] = { 2, 3, 4, 5, 6, 7, 8, 9 };  // dal som nech viem menit podla schemy
 //krokovy motor
 int stepPin = 10;
 int dirPin = 11;
 int stepsPerOctave = 200;  //toto treba vypocitat alebo odskuksat
 
-int currentOctave = 0;  
+int currentOctave = 0;
 
 void setup() {
   for (int i = 0; i < numServos; i++) {
@@ -46,20 +47,22 @@ void moveToOctave(int targetOctave) {
 
   currentOctave = targetOctave;
 }
-//toto len stlaci notu
 void playNote(int noteIndex1, int noteIndex2, int noteIndex3, int octave, int wait) {
   moveToOctave(octave);
   lastTime = millis();
-  int notes[3] = {noteIndex1, noteIndex2, noteIndex3};
-  for(int i = 0; i < 3; i++){
-    if(notes[i] != -1) {
+  int notes[3] = { noteIndex1, noteIndex2, noteIndex3 };
+  countRezerva = 0;
+  for (int i = 0; i < 3; i++) {
+    if (notes[i] != -1) {
       servos[notes[i]].write(30);
+      countRezerva += 1;
     }
   }
-  while(millis() - lastTime <= wait -rezerva){
+
+  while (millis() - lastTime <= wait - rezerva * countRezerva) {
   }
-  for(int i = 0; i < 3; i++){
-    if(notes[i] != -1){
+  for (int i = 0; i < 3; i++) {
+    if (notes[i] != -1) {
       servos[notes[i]].write(90);
     }
   }
@@ -70,10 +73,11 @@ void playNote(int noteIndex1, int noteIndex2, int noteIndex3, int octave, int wa
 //tu bude cela melodia, zatial tu je ze prazdnô
 void playMelody() {
   int melody[][5] = {
-    {5, -1, -1, 2, osm}, 
-    {0, 1, 2, 1, stv}, 
-    {6, 4, 2, 1, pol}, 
-    {6, 1, 5, 1, pol}  
+    { 5, -1, -1, 2, osm },
+    { 0, 1, 2, 1, stv },
+    { 6, 4, 2, 1, pol },
+    { 6, 1, 5, 1, pol },
+    { -1, -1, -1, 1, osm }
   };
 
   int length = sizeof(melody) / sizeof(melody[0]);
@@ -90,5 +94,4 @@ void playMelody() {
 
 void loop() {
   playMelody();
-  
 }
