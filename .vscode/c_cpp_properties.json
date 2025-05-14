@@ -3,7 +3,7 @@
         {
             "name": "Win32",
             "includePath": [
-                "C:/Users/marti/Documents/Arduino/libraries/**"
+                "C:/Users/marti/Documents/Arduino/Libraries/libraries**"
             ],
             "defines": [
                 "_DEBUG",
