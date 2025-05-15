@@ -1,23 +1,25 @@
 #include <Servo.h>
 
 #define numServos 8
+#define rezerva 50
+
 Servo servos[numServos];
-
-
+int countRezerva = 0;  // lubovolne, treba odskusat
+unsigned long lastTime;
 //noty
 int time = 1000;
 int osm = time / 8;
 int stv = time / 4;
-int pol = time/2;
+int pol = time / 2;
 int cel = time;
-
-int servoPins[numServos] = {2, 3, 4, 5, 6, 7, 8, 9}; // dal som nech viem menit podla schemy
-
+//serva
+int servoPins[numServos] = { 2, 3, 4, 5, 6, 7, 8, 9 };  // dal som nech viem menit podla schemy
+//krokovy motor
 int stepPin = 10;
 int dirPin = 11;
 int stepsPerOctave = 200;  //toto treba vypocitat alebo odskuksat
 
-int currentOctave = 0;  
+int currentOctave = 0;
 
 void setup() {
   for (int i = 0; i < numServos; i++) {
@@ -45,32 +47,48 @@ void moveToOctave(int targetOctave) {
 
   currentOctave = targetOctave;
 }
-//toto len stlaci notu
-void playNote(int noteIndex, int octave, int wait) {
+void playNote(int noteIndex1, int noteIndex2, int noteIndex3, int octave, int wait) {
   moveToOctave(octave);
-  servos[noteIndex].write(30);  // dolu
-  delay(wait / 2);                
-  servos[noteIndex].write(90);  // hore
-  delay(wait / 2);
+  lastTime = millis();
+  int notes[3] = { noteIndex1, noteIndex2, noteIndex3 };
+  countRezerva = 0;
+  for (int i = 0; i < 3; i++) {
+    if (notes[i] != -1) {
+      servos[notes[i]].write(30);
+      countRezerva += 1;
+    }
+  }
+
+  while (millis() - lastTime <= wait - rezerva * countRezerva) {
+  }
+  for (int i = 0; i < 3; i++) {
+    if (notes[i] != -1) {
+      servos[notes[i]].write(90);
+    }
+  }
+  lastTime = millis();
 }
 
 
 //tu bude cela melodia, zatial tu je ze prazdnô
 void playMelody() {
-  int melody[][3] = {
-    {5, 0, osm}, // A
-    {0, 1, stv}, // C 
-    {6, 3, pol}, // H
-    {6, 1, pol}  // H
+  int melody[][5] = {
+    { 5, -1, -1, 2, osm },
+    { 0, 1, 2, 1, stv },
+    { 6, 4, 2, 1, pol },
+    { 6, 1, 5, 1, pol },
+    { -1, -1, -1, 1, osm }
   };
 
   int length = sizeof(melody) / sizeof(melody[0]);
 
   for (int i = 0; i < length; i++) {
-    int note = melody[i][0];
-    int octave = melody[i][1];
-    int wait = melody[i][2];
-    playNote(note, octave, wait);
+    int note1 = melody[i][0];
+    int note2 = melody[i][1];
+    int note3 = melody[i][2];
+    int octave = melody[i][3];
+    int wait = melody[i][4];
+    playNote(note1, note2, note3, octave, wait);
   }
 }
 
