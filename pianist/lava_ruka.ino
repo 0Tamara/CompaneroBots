@@ -56,7 +56,7 @@ void moveToNote(int targetNote, int targetOctave) {
 void playDualNote(int noteIndex1 int octave, int wait) {
   moveToNote(noteIndex1, octave);
   lastTime = millis();
-  while (millis() - lastTime <= wait - rezerva) {
+  while (millis() - lastTime <= (wait - rezerva)) {
     servos[noteIndex1].write(90);
     servos[noteIndex2].write(90);
   }

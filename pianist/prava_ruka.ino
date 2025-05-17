@@ -17,7 +17,7 @@ int servoPins[numServos] = { 2, 3, 4, 5, 6, 7, 8, 9 };  // dal som nech viem men
 //krokovy motor
 int stepPin = 10;
 int dirPin = 11;
-int stepsPerOctave = 250;  //toto treba vypocitat alebo odskuksat
+int stepsPerOctave = 250;  //toto treba vypocitat alebo odskuksat - spravim sam samozrejme
 
 int currentOctave = 0;
 
@@ -76,8 +76,8 @@ void playMelody() {
   int melody[][5] = {
     { 5, -1, -1, 2, osm },
     { 0, 1, 2, 1, stv },
-    { 6, 4, 2, 1, pol },
-    { 6, 1, 5, 1, pol },
+    { 6, 4, -1, 1, pol },
+    { 6, 1, -1, 0, pol },
     { -1, -1, -1, 0, osm }
   };
 
