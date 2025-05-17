@@ -9,7 +9,6 @@ What needs to be done:
   construction
     mount camera somewhere
     dancer:
-      replace profiles
       make head with matrix eyes
     drummer:
       better mounting of side drums
@@ -19,7 +18,6 @@ What needs to be done:
   hardware
     dancer:
       servos cable management
-      power wires system (PCB)
       add matrixes for eyes
     drummer:
       cable management and connectors for head and drums
