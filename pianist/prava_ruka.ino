@@ -1,12 +1,12 @@
-#include <Servo.h>
+#include <ESP32Servo.h>
 
 #define numServos 8
-#define rezerva 50
+#define rezerva 50 //treba odskusat
 
 Servo servos[numServos];
-int countRezerva = 0;  // lubovolne, treba odskusat
+int countRezerva = 0;  
 unsigned long lastTime;
-//noty
+//casy
 int time = 1000;
 int osm = time / 8;
 int stv = time / 4;
@@ -17,7 +17,7 @@ int servoPins[numServos] = { 2, 3, 4, 5, 6, 7, 8, 9 };  // dal som nech viem men
 //krokovy motor
 int stepPin = 10;
 int dirPin = 11;
-int stepsPerOctave = 200;  //toto treba vypocitat alebo odskuksat
+int stepsPerOctave = 250;  //toto treba vypocitat alebo odskuksat
 
 int currentOctave = 0;
 
@@ -49,24 +49,25 @@ void moveToOctave(int targetOctave) {
 }
 void playNote(int noteIndex1, int noteIndex2, int noteIndex3, int octave, int wait) {
   moveToOctave(octave);
-  lastTime = millis();
   int notes[3] = { noteIndex1, noteIndex2, noteIndex3 };
-  countRezerva = 0;
-  for (int i = 0; i < 3; i++) {
-    if (notes[i] != -1) {
-      servos[notes[i]].write(30);
-      countRezerva += 1;
-    }
-  }
-
+  lastTime = millis();
   while (millis() - lastTime <= wait - rezerva * countRezerva) {
-  }
-  for (int i = 0; i < 3; i++) {
-    if (notes[i] != -1) {
-      servos[notes[i]].write(90);
+    countRezerva = 0;
+    for (int i = 0; i < 3; i++) {
+      if (notes[i] != -1 && notes[i] < numServos) {
+        servos[notes[i]].write(90);
+        countRezerva += 1;
+      }
     }
   }
   lastTime = millis();
+  while (millis() - lastTime <= rezerva * countRezerva) {
+    for (int i = 0; i < 3; i++) {
+      if (notes[i] != -1 && notes[i] < numServos) {
+        servos[notes[i]].write(0);
+      }
+    }
+  }
 }
 
 
@@ -77,7 +78,7 @@ void playMelody() {
     { 0, 1, 2, 1, stv },
     { 6, 4, 2, 1, pol },
     { 6, 1, 5, 1, pol },
-    { -1, -1, -1, 1, osm }
+    { -1, -1, -1, 0, osm }
   };
 
   int length = sizeof(melody) / sizeof(melody[0]);
