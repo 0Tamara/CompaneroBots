@@ -3,7 +3,7 @@
         {
             "name": "Linux",
             "includePath": [
-                "/home/kali/libraries/**"
+                "${workspaceFolder}/pianist/libraries/**"
             ],
             "defines": [],
             "cStandard": "c17",
