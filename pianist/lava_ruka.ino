@@ -11,7 +11,7 @@ int currentOctave = 0;
 int currentNote = 0;
 //serva
 Servo servos[numServos];
-int servoPins[numServos] = { 2, 3, 4, 5, 6, 7, 8, 9 };  
+int leftServoPins[numServos] = { 2, 3, 4, 5, 6, 7, 8, 9 };  
 //krok motor
 int stepPin = 10;
 int dirPin = 11;
@@ -26,7 +26,7 @@ int cel = time;
 
 void setup() {
   for (int i = 0; i < numServos; i++) {
-    servos[i].attach(servoPins[i]);
+    servos[i].attach(leftServoPins[i]);
   }
   pinMode(stepPin, OUTPUT);
   pinMode(dirPin, OUTPUT);
