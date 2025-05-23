@@ -109,36 +109,58 @@ void playMelody(int melody[][3], int length) {
   }
 }
 int dualMelody1[][3] = {
-    { 1, stv, 2 },
-    { 5, osm, 3 },
-    { 1, stv, 4 },
-    { 5, osm, 5 },
-    { 1, stv, 6 },
-    { 5, osm, 7 },
-    { 1, stv, 5 },
-    { 5, osm, 4 },
-    { 0, osm, 0} // aby potom nemal problemy s dalsou melodiou
+  { 1, stv, 2 },
+  { 5, osm, 3 },
+  { 1, stv, 4 },
+  { 5, osm, 5 },
+  { 1, stv, 6 },
+  { 5, osm, 7 },
+  { 1, stv, 5 },
+  { 5, osm, 4 },
+  { 0, osm, 0} // aby potom nemal problemy s dalsou melodiou
 };
 
 int melody1[][3] = {
   //h
-    { 1, stv, 0 },
-    { 1, osm, 1 },
-    { 1, stv, 2 },
-    { 1, osm, 3 },
-    { 1, stv, 4 },
-    { 1, osm, 5 },
-    { 1, stv, 6 },
-    { 1, osm, 7 }
-  //d
-    { 1, stv, 7 },
-    { 1, osm, 6 },
-    { 1, stv, 5 },
-    { 1, osm, 4 },
-    { 1, stv, 3 },
-    { 1, osm, 2 },
-    { 1, stv, 1 },
-    { 1, osm, 0 }
+  { 1, stv, 0 },
+  { 1, osm, 1 },
+  { 1, stv, 2 },
+  { 1, osm, 3 },
+  { 1, stv, 4 },
+  { 1, osm, 5 },
+  { 1, stv, 6 },
+  { 1, osm, 7 }
+//d
+  { 1, stv, 7 },
+  { 1, osm, 6 },
+  { 1, stv, 5 },
+  { 1, osm, 4 },
+  { 1, stv, 3 },
+  { 1, osm, 2 },
+  { 1, stv, 1 },
+  { 1, osm, 0 }
+};
+int melody2[][5] = {
+//hore
+  { 2, cel, 0},
+  { 2, cel, 2},
+  { 2, cel, 4},
+  { 2, cel, 2},
+  { 2, cel, 4},
+  { 2, cel, 7},
+  { 3, cel, 0},
+  { 3, cel, 2},
+  { 3, cel, 4},
+//dolu  
+  { 3, cel, 4},
+  { 3, cel, 2},
+  { 3, cel, 0},
+  { 2, cel, 7},
+  { 2, cel, 4},
+  { 2, cel, 2},
+  { 2, cel, 4},
+  { 2, cel, 2},
+  { 2, cel, 0}
 };
 void loop() {
   playDualMelody(dualMelody1, sizeof(dualMelody1) / sizeof(dualMelody1[0]));
