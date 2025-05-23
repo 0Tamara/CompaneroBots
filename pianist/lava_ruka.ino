@@ -116,7 +116,8 @@ int dualMelody1[][3] = {
     { 1, stv, 6 },
     { 5, osm, 7 },
     { 1, stv, 5 },
-    { 5, osm, 4 }
+    { 5, osm, 4 },
+    { 0, osm, 0}
 };
 
 int melody1[][3] = {
