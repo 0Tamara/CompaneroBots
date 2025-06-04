@@ -1,0 +1,6 @@
+dancer:
+  2x eyes: https://techfun.sk/produkt/rgb-led-matrix-5x5-ws2812b-25-bit/
+pianist:
+  servo driver: https://techfun.sk/produkt/pca9685-servo-driver-16-kanalov-i2c/
+camera:
+  tripod: https://www.alza.sk/mozos-st-selfie-d7223823.htm
