@@ -117,7 +117,7 @@ int dualMelody1[][3] = {
   { 5, osm, 7 },
   { 1, stv, 5 },
   { 5, osm, 4 },
-  { 0, osm, 0} // aby potom nemal problemy s dalsou melodiou
+  { 0, osm, 0} 
 };
 
 int melody1[][3] = {
@@ -165,4 +165,5 @@ int melody2[][5] = {
 void loop() {
   playDualMelody(dualMelody1, sizeof(dualMelody1) / sizeof(dualMelody1[0]));
   playMelody(melody1, sizeof(melody1) / sizeof(melody1[0]));
+  playMelody(melody2, sizeof(melody2) / sizeof(melody2[0]));
 }
