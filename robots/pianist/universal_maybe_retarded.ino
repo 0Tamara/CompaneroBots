@@ -1,5 +1,5 @@
 #include <ESP32Servo.h>
-#include <Arduino.h>
+
 #include<AccelStepper.h>
 
 #define numServos 8
@@ -9,15 +9,15 @@
 unsigned long lastTime;
 
 // casy
-int time = 2000;
-int osm = time / 8;
-int stv = time / 4;
-int pol = time / 2;
-int cel = time;
-const int leftHandStepPin = 10;
-const int leftHandDirPin = 11;
-const int rightHandStepPin = 20;
-const int rightHandDirPin = 21;
+int tempo = 2000;
+int osm = tempo / 8;
+int stv = tempo / 4;
+int pol = tempo / 2;
+int cel = tempo;
+const int leftHandStepPin = 16; 
+const int leftHandDirPin = 17;
+const int rightHandStepPin = 18;
+const int rightHandDirPin = 19;
 
 AccelStepper stepperLeft(AccelStepper::DRIVER, leftHandStepPin, leftHandDirPin);
 AccelStepper stepperRight(AccelStepper::DRIVER, rightHandStepPin, rightHandDirPin);
@@ -39,13 +39,13 @@ struct Hand
 };
 
 Hand leftHand = {
-  .servoPins = { 2, 3, 4, 5, 6, 7, 8, 9 },
+  .servoPins = { 2, 4, 5, 12, 13, 14, 15, 25 },
   .currentOctave = 0,
   .currentNote = 0,
   .stepper = stepperLeft,
 };
 Hand rightHand = {
-  .servoPins = { 12, 13, 14, 15, 16, 17, 18, 19 },
+  .servoPins = { 26, 27, 32, 33, 21, 22, 23, 3 },
   .currentOctave = 0,
   .currentNote = 0,
   .stepper = stepperRight,
@@ -130,6 +130,7 @@ void playMelody(Hand& hand, int melody[][6], int length) {
 int melodyLeft1[][6] = {
     {D, 5, osm, NIC, NIC, SERVO2},
     {C, 4, stv, SERVO2, NIC, SERVO5}
+    
 
 };
 int melodyRight1[][6] = {
