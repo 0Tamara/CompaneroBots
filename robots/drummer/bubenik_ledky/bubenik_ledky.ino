@@ -1,8 +1,8 @@
 #include <Adafruit_NeoPixel.h>
 
-#define PIN_LAVY 4
-#define PIN_PRAVY 16
-#define PIN_KOPAK 17
+#define PIN_LAVY 27
+#define PIN_PRAVY 14
+#define PIN_KOPAK 32
 
 #define PRAVY_BUBON 36
 #define LAVY_BUBON 36
@@ -17,13 +17,16 @@ void setup() {
   lavy.begin();
   hlavny.begin();
 
-  pravy.clear();
-  lavy.clear();
-  hlavny.clear();
+  for (int i = 0; i < 54; i++) {
+    if (i < PRAVY_BUBON) pravy.setPixelColor(i, 255, 255, 255);
+    if (i < LAVY_BUBON) lavy.setPixelColor(i, 255, 255, 255);
+    if (i < KOPAK) hlavny.setPixelColor(i, 255, 255, 255);
+  }
 
   pravy.show();
   lavy.show();
   hlavny.show();
+  delay(5000);
 }
 
 void loop() {
