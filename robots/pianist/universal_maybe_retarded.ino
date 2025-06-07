@@ -4,8 +4,8 @@
 
 #define numServos 8
 #define rezerva 20
-#define stepsPerNote 25
-#define stepsPerOctave 200
+#define stepsPerNote 123 // vypocitane, ale neodskusane, klavesa ma 24 mm, sirka medzi klavesami je 0.5 mm, krok motora je 1.8 stupna... a tak dalej 
+#define stepsPerOctave 855  //takisto
 unsigned long lastTime;
 
 // casy
@@ -148,6 +148,5 @@ void loop() {
     [] (void *) {
       playMelody(rightHand, melodyRight1, sizeof(melodyRight1) / sizeof(melodyRight1[0]));
       vTaskDelete(NULL);
-    }, "RightHandTask", 4096, NULL, 1, NULL, 1);
-    while(true); //konec programu
+    }, "RightHandTask", 4096, NULL, 1, NULL, 1); //konec
 }
