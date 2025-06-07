@@ -1,6 +1,6 @@
 4 chosen features:
-  dancing
-  camera
+  camera controlling musicians
+  camera controlling dancer
   synchronization
   visual and sound effects
 
@@ -8,15 +8,12 @@ What needs to be done:
 
   construction
     mount camera on a tripod
-    drummer:
-      3d print better mounting of side drums
 
   hardware
     connect camera with Raspberry and esp32
     dancer:
       connect matrixes for eyes
     drummer:
-      cable management and connectors for head and drums
       connect matrixes for eyes
     connect the whole pianist
   
