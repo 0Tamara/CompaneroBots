@@ -2,5 +2,6 @@ dancer:
   2x eyes: https://techfun.sk/produkt/rgb-led-matrix-5x5-ws2812b-25-bit/
 drummer:
   kick drum connector 4pin: https://techfun.sk/produkt/konektor-s-kablikom-xh2-54-rozne-typy/
+  power switch: https://techfun.sk/produkt/prepinac-s-led-kcd3-15a/
 camera:
   tripod: https://www.alza.sk/mozos-st-selfie-d7223823.htm

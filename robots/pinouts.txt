@@ -1,0 +1,25 @@
+dancer
+  ESP32 MAC addr:
+  pins:
+
+drummer
+  ESP32 MAC addr: a8:42:e3:a8:e4:10
+  pins:
+    13 servo right arm (green)
+    12 servo left arm (yellow)
+    14 LEDs right drum (green)
+    27 LEDS left drum (yellow)
+    33 servo kick drum
+    32 LEDs kick drum
+    23 eyes
+
+pianist
+  ESP32 MAC addr:
+  pins:
+
+camera_ESP
+  ESP32 MAC addr:
+  pins:
+
+camera_Raspberry
+  pins:
