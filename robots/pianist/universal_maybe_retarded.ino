@@ -73,7 +73,7 @@ void setup() {
 unsigned long moveToNote(Hand& hand, int targetNote, int targetOctave) {
   unsigned long start = millis();
   int steps = (targetOctave * stepsPerOctave + targetNote * stepsPerNote) - 
-                    (hand.currentOctave * stepsPerOctave + hand.currentNote * stepsPerNote);
+                    (hand.currentOctave * stepsPerOctave + hand.currentNote * stepsPerNote); 
 
   if (steps == 0) return 0;
   hand.stepper.move(steps);
