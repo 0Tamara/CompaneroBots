@@ -24,9 +24,9 @@ Servo kick;   //85-90-85 = kick
 #define LED_COUNT_EYES 50
 
 Adafruit_NeoPixel left_ring(LED_COUNT_L, LED_PIN_L, NEO_GRB + NEO_KHZ800);
-Adafruit_NeoPixel kick_ring(LED_COUNT_K, LED_PIN_K, NEO_GRB + NEO_KHZ800);
+//Adafruit_NeoPixel kick_ring(LED_COUNT_K, LED_PIN_K, NEO_GRB + NEO_KHZ800);
 Adafruit_NeoPixel right_ring(LED_COUNT_R, LED_PIN_R, NEO_GRB + NEO_KHZ800);
-Adafruit_NeoPixel eyes(LED_COUNT_EYES, LED_PIN_EYES, NEO_GRB + NEO_KHZ800);
+//Adafruit_NeoPixel eyes(LED_COUNT_EYES, LED_PIN_EYES, NEO_GRB + NEO_KHZ800);
 
 unsigned long timer_kick;
 unsigned long timer_right;
@@ -35,40 +35,52 @@ int kicks;
 int snares;
 
 byte color_eyes[] = {40, 1, 2}; //pink
-byte colors_drums[6][3] = {{255, 0, 0},  //colors that will be cycling over
-                           {192, 64, 0},
-                           {0, 255, 0},
-                           {0, 128, 128},
-                           {0, 0, 255},
-                           {128, 0, 128}};
+byte colors_drums[6][3] = {{10, 0, 0},  //colors that will be cycling over
+                           {5, 5, 0},
+                           {0, 10, 0},
+                           {0, 5, 5},
+                           {0, 0, 10},
+                           {5, 0, 5}};
 int color_index_kick = 0;
 int color_index_left = 0;
 int color_index_right = 0;
 
+TaskHandle_t Task1;
+
 // Zapína LED na všetkých pásikoch naraz
-void ledky_vedlajsie() {
-
+void ledky_vedlajsie_left() {
   for (int i = 0; i < LED_COUNT_R; i++) {
-    right_ring.setPixelColor(i, 255, 0, 0);
-    left_ring.setPixelColor(i, 255, 0, 0);
+    left_ring.setPixelColor(i, 10, 0, 0);
 
-    right_ring.show();
     left_ring.show();
     delay(50);
   }
 
   for (int i = LED_COUNT_R - 1; i >= 0; i--) {
-    right_ring.setPixelColor(i, 0, 0, 0);
     left_ring.setPixelColor(i, 0, 0, 0);
 
-    right_ring.show();
     left_ring.show();
     delay(50);
   }
 }
-void kick_ring_bubon() {
+void ledky_vedlajsie_right() {
+  for (int i = 0; i < LED_COUNT_R; i++) {
+    right_ring.setPixelColor(i, 10, 0, 0);
+
+    right_ring.show();
+    delay(50);
+  }
+
+  for (int i = LED_COUNT_R - 1; i >= 0; i--) {
+    right_ring.setPixelColor(i, 0, 0, 0);
+
+    right_ring.show();
+    delay(50);
+  }
+}
+/*void kick_ring_bubon() {
   for (int i = 0; i < LED_COUNT_K; i++) {
-    kick_ring.setPixelColor(i, 255, 0, 0);
+    kick_ring.setPixelColor(i, 10, 0, 0);
     kick_ring.show();
     delay(50);
   }
@@ -88,7 +100,7 @@ void changeColorsKick()
   for(int i=0; i<LED_COUNT_K; i++)
     kick_ring.setPixelColor(i, colors_drums[color_index_kick][0], colors_drums[color_index_kick][1], colors_drums[color_index_kick][2]);
   kick_ring.show();
-}
+}*/
 void changeColorsLeft()
 {
   if(color_index_left < 5)
@@ -318,7 +330,7 @@ void fireball_chill()
       }
     }
   }
-}*/
+}
 
 //---LEDs functions---
 void closeEyes()  //cca 300ms
@@ -388,6 +400,15 @@ void openEyes(uint8_t red, uint8_t green, uint8_t blue)  //cca 300ms
   eyes.show();
 
   delay(50);
+}*/
+
+void loop_2(void * pvParameters)
+{
+  for(;;)
+  {
+    ledky_vedlajsie_left();
+    delay(500);
+  }
 }
 
 //---main code---
@@ -404,32 +425,38 @@ void setup()
   r_arm.write(R_UP);
   l_arm.write(L_UP);
 
+  xTaskCreatePinnedToCore(
+      loop_2, /* Function to implement the task */
+      "Task1", /* Name of the task */
+      10000,  /* Stack size in words */
+      NULL,  /* Task input parameter */
+      0,  /* Priority of the task */
+      &Task1,  /* Task handle. */
+      0); /* Core where the task should run */
+
   left_ring.begin();
-  kick_ring.begin();
+  //kick_ring.begin();
   right_ring.begin();
-  /*eyes.begin();
-  eyes.show();*/
+  //eyes.begin();
+  //eyes.show();
   Serial.println("I'm set");
 
   for (int i = 0; i < 54; i++) {
-    if (i < LED_COUNT_R) right_ring.setPixelColor(i, 255, 255, 255);
-    if (i < LED_COUNT_L) left_ring.setPixelColor(i, 255, 255, 255);
-    if (i < LED_COUNT_K) kick_ring.setPixelColor(i, 255, 255, 255);
+    if (i < LED_COUNT_R) right_ring.setPixelColor(i, 10, 10, 10);
+    if (i < LED_COUNT_L) left_ring.setPixelColor(i, 10, 10, 10);
+    //if (i < LED_COUNT_K) kick_ring.setPixelColor(i, 10, 10, 10);
   }
 
   left_ring.show();
-  kick_ring.show();
+  //kick_ring.show();
   right_ring.show();
   Serial.println("I'm white");
   delay(1000);
-
+  
 }
 
 void loop()
-{
-  ledky_vedlajsie();
-  Serial.println("left and right");
-  kick_ring_bubon();
-  Serial.println("kick");
-  delay(1000);
+{ 
+  ledky_vedlajsie_right();
+  delay(700);
 }

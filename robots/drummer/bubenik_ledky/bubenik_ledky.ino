@@ -18,9 +18,9 @@ void setup() {
   hlavny.begin();
 
   for (int i = 0; i < 54; i++) {
-    if (i < PRAVY_BUBON) pravy.setPixelColor(i, 255, 255, 255);
-    if (i < LAVY_BUBON) lavy.setPixelColor(i, 255, 255, 255);
-    if (i < KOPAK) hlavny.setPixelColor(i, 255, 255, 255);
+    if (i < PRAVY_BUBON) pravy.setPixelColor(i, 10, 10, 10);
+    if (i < LAVY_BUBON) lavy.setPixelColor(i, 10, 10, 10);
+    if (i < KOPAK) hlavny.setPixelColor(i, 10, 10, 10);
   }
 
   pravy.show();
@@ -39,8 +39,8 @@ void ledky_vedlajsie() {
   int max_led = max(PRAVY_BUBON, LAVY_BUBON);  // Najväčší počet LED
 
   for (int i = 0; i < max_led; i++) {
-    if (i < PRAVY_BUBON) pravy.setPixelColor(i, 255, 0, 0);
-    if (i < LAVY_BUBON) lavy.setPixelColor(i, 255, 0, 0);
+    if (i < PRAVY_BUBON) pravy.setPixelColor(i, 10, 0, 0);
+    if (i < LAVY_BUBON) lavy.setPixelColor(i, 10, 0, 0);
 
     pravy.show();
     lavy.show();
@@ -58,7 +58,7 @@ void ledky_vedlajsie() {
 }
 void hlavny_bubon() {
   for (int i = 0; i < KOPAK; i++) {
-    hlavny.setPixelColor(i, 255, 0, 0);
+    hlavny.setPixelColor(i, 10, 0, 0);
     hlavny.show();
     delay(50);
   }
