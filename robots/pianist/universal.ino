@@ -1,5 +1,4 @@
 #include <ESP32Servo.h>
-    
 #define numServos 8
 #define rezerva 20
 #define stepsPerNote 25
