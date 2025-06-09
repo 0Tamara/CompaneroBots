@@ -8,7 +8,8 @@
 #include <WiFi.h>
 
 // REPLACE WITH YOUR RECEIVER MAC Address
-uint8_t broadcastAddress[] = {0xE8, 0x6B, 0xEA, 0xC3, 0x0B, 0xB0};
+uint8_t broadcastAddress1[] = {0xE8, 0x6B, 0xEA, 0xC3, 0x0B, 0xB0};  //external esp
+uint8_t broadcastAddress2[] = {0xA8, 0x42, 0xE3, 0xA8, 0xE4, 0x10};  //drummer
 
 // Structure example to send data
 // Must match the receiver structure
@@ -48,11 +49,17 @@ void setup() {
   esp_now_register_send_cb(OnDataSent);
   
   // Register peer
-  memcpy(peerInfo.peer_addr, broadcastAddress, 6);
-  peerInfo.channel = 0;  
+  peerInfo.channel = 0;
   peerInfo.encrypt = false;
   
-  // Add peer        
+  // Add peer 1
+  memcpy(peerInfo.peer_addr, broadcastAddress1, 6);
+  if (esp_now_add_peer(&peerInfo) != ESP_OK){
+    Serial.println("Failed to add peer");
+    return;
+  }
+  // Add peer 2
+  memcpy(peerInfo.peer_addr, broadcastAddress2, 6);
   if (esp_now_add_peer(&peerInfo) != ESP_OK){
     Serial.println("Failed to add peer");
     return;
@@ -61,19 +68,14 @@ void setup() {
  
 void loop() {
   // Set values to send
-  strcpy(myData.a, "THIS IS A CHAR");
-  myData.b = random(1,20);
+  strcpy(myData.a, "QWERTYUIOPASDFGHJKLZXCVBNMQWERT");
+  myData.b = 0x7FFFFFFF;
   myData.c = 1.2;
-  myData.d = false;
+  myData.d = true;
   
   // Send message via ESP-NOW
-  esp_err_t result = esp_now_send(broadcastAddress, (uint8_t *) &myData, sizeof(myData));
-   
-  if (result == ESP_OK) {
-    Serial.println("Sent with success");
-  }
-  else {
-    Serial.println("Error sending the data");
-  }
+  esp_now_send(broadcastAddress1, (uint8_t *) &myData, sizeof(myData));
+  esp_now_send(broadcastAddress2, (uint8_t *) &myData, sizeof(myData));
+
   delay(2000);
 }
