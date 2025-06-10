@@ -404,7 +404,7 @@ void openEyes(uint8_t red, uint8_t green, uint8_t blue)  //cca 300ms
 
 void loop_2(void * pvParameters)
 {
-  for(;;)
+  while(1)
   {
     ledky_vedlajsie_left();
     delay(500);
