@@ -7,21 +7,43 @@
 What needs to be done:
 
   construction
-    mount camera on a tripod
+    dancer: complete the head
+    drummer:
+      complete the head
+      complete the drums stands
+      think up how to pack drums (remake the kick drum?)
+    pianist:
+      mount the hardware on hands
+      make a system for cables (metering tape)
+      think up how to pack it to plane
+    curtains: print pulleys and mount it there
+    camera: mount all
+      on a tripod
+      with raspberry, esp32, sensors, power supply
 
   hardware
-    connect camera with Raspberry and esp32
     dancer:
       connect matrixes for eyes
     drummer:
       connect matrixes for eyes
-    connect the whole pianist
+    pianist: connect all
+      power, hands, cables to hands
+    curtains: done
+    camera: connect all
+      power, camera and sesors to raspberry, raspberry to esp32
   
   software
-    communication via esp-NOW
     dancer:
       slower acceleration with servos on arms -> not braking servos
+      dancing by camera (communication on 2nd core??)
     drummer:
-      better LED effects with parallel processes (2nd core)
+      communication: listening from camera and sending sync to pianist
+      music functions
+      LED effects on 2nd core
+    pianist:
+      haven't seen the codes yet (-Tomas)
+    curtains:
+      opening and closing
     camera:
-      play music and background video
+      communication: raspberry -> esp32 -> others
+      playing music and background video
