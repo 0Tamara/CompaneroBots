@@ -1,8 +1,7 @@
-#include <ESP32Servo.h>
 #include <Adafruit_NeoPixel.h>
 
-#define LED_PIN_4 25        // Changed from 18 to 4
-#define LED_COUNT_4 50      // Changed from 50 to 4
+#define LED_PIN_4   23
+#define LED_COUNT_4 50
 #define LED_PIN_1   27
 #define LED_PIN_2   32
 #define LED_PIN_3   14
@@ -17,7 +16,6 @@ Adafruit_NeoPixel strip_2(LED_COUNT_2, LED_PIN_2, NEO_GRB + NEO_KHZ800);
 Adafruit_NeoPixel strip_3(LED_COUNT_1, LED_PIN_3, NEO_GRB + NEO_KHZ800);
 
 Adafruit_NeoPixel strip_4(LED_COUNT_4, LED_PIN_4, NEO_GRB + NEO_KHZ800);
-Servo r, l;
 
 // Color settings (easily changeable)
 uint8_t red = 40, green = 1, blue = 2;  // Modify these values to change the color
@@ -27,15 +25,13 @@ unsigned long previousMillis = 0;
 const int interval = 2000;  // Millis interval for blinking
 
 void setup() {
+  Serial.begin(115200);
   strip_1.begin();
   strip_1.show();
   strip_2.begin();
   strip_2.show();
   strip_3.begin();
   strip_3.show();
-  Serial.begin(9600);
-  r.attach(5);
-  l.attach(17);
   strip_4.begin();  // Now using strip_4 instead of strip_1
   strip_4.show();   // Initialize all pixels to off
 }
@@ -47,6 +43,7 @@ void loop() {
   fillStrip(red, green, blue);
   delay(2000); // Initial delay before blinking starts
   
+  drums();
   // Blink effects (non-blocking)
   if (currentMillis - previousMillis >= interval) {
     previousMillis = currentMillis;

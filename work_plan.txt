@@ -22,10 +22,6 @@ What needs to be done:
       with raspberry, esp32, sensors, power supply
 
   hardware
-    dancer:
-      connect matrixes for eyes
-    drummer:
-      connect matrixes for eyes
     pianist: connect all
       power, hands, cables to hands
     curtains: done

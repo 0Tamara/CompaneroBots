@@ -1,6 +1,7 @@
 dancer
   ESP32 MAC addr:
   pins:
+    
 
 drummer
   ESP32 MAC addr: a8:42:e3:a8:e4:10

@@ -9,19 +9,18 @@
 
 // REPLACE WITH YOUR RECEIVER MAC Address
 uint8_t broadcastAddress1[] = {0xE8, 0x6B, 0xEA, 0xC3, 0x0B, 0xB0};  //external esp
-uint8_t broadcastAddress2[] = {0xA8, 0x42, 0xE3, 0xA8, 0xE4, 0x10};  //drummer
+uint8_t broadcastAddress2[] = {0xA0, 0xDD, 0x6C, 0x0E, 0xFA, 0xA8};  //external esp
+//uint8_t broadcastAddress2[] = {0xA8, 0x42, 0xE3, 0xA8, 0xE4, 0x10};  //drummer
 
 // Structure example to send data
 // Must match the receiver structure
-typedef struct struct_message {
-  char a[32];
-  int b;
-  float c;
-  bool d;
-} struct_message;
+typedef struct struct_message_1 {
+  bool on; //time during being on/off
+  int time; //ms
+} struct_message_1;
 
 // Create a struct_message called myData
-struct_message myData;
+struct_message_1 time_mess;
 
 esp_now_peer_info_t peerInfo;
 
@@ -67,15 +66,19 @@ void setup() {
 }
  
 void loop() {
-  // Set values to send
-  strcpy(myData.a, "QWERTYUIOPASDFGHJKLZXCVBNMQWERT");
-  myData.b = 0x7FFFFFFF;
-  myData.c = 1.2;
-  myData.d = true;
-  
+  if(Serial.available())
+  {
+    time_mess.time = Serial.read() - 0x30;
+    while(Serial.available())
+    {
+      time_mess.time *= 10;
+      time_mess.time += Serial.read() - 0x30;
+    }
+    Serial.println(time_mess.time);
+    time_mess.on = !time_mess.on;
+    esp_now_send(broadcastAddress1, (uint8_t *) &time_mess, sizeof(time_mess));
+  }
   // Send message via ESP-NOW
-  esp_now_send(broadcastAddress1, (uint8_t *) &myData, sizeof(myData));
-  esp_now_send(broadcastAddress2, (uint8_t *) &myData, sizeof(myData));
-
-  delay(2000);
+  //esp_now_send(broadcastAddress1, (uint8_t *) &myData, sizeof(myData));
+  //esp_now_send(broadcastAddress2, (uint8_t *) &myData, sizeof(myData));
 }
