@@ -65,10 +65,11 @@ void ledky_vedlajsie_left() {
 }
 void ledky_vedlajsie_right() {
   for (int i = 0; i < LED_COUNT_R; i++) {
-    right_ring.setPixelColor(i, 10, 0, 0);
+    right_ring.setPixelColor(i, 10, 0, 0); 
 
     right_ring.show();
     delay(50);
+    Serial.println("-");
   }
 
   for (int i = LED_COUNT_R - 1; i >= 0; i--) {
@@ -76,6 +77,7 @@ void ledky_vedlajsie_right() {
 
     right_ring.show();
     delay(50);
+    Serial.println("+");
   }
 }
 void kick_ring_bubon() {
@@ -459,6 +461,7 @@ void setup()
 void loop()
 { 
   ledky_vedlajsie_right();
+  Serial.println("jhd");
   //closeEyes();
   //openEyes(32, 32, 32);
 }

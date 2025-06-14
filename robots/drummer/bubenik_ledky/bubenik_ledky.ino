@@ -1,3 +1,5 @@
+#include <Adafruit_GFX.h>
+#include <Adafruit_NeoMatrix.h>
 #include <Adafruit_NeoPixel.h>
 
 #define PIN_LAVY  27
@@ -13,44 +15,44 @@
 Adafruit_NeoPixel pravy(PRAVY_BUBON, PIN_PRAVY, NEO_GRB + NEO_KHZ800);
 Adafruit_NeoPixel lavy(LAVY_BUBON, PIN_LAVY, NEO_GRB + NEO_KHZ800);
 Adafruit_NeoPixel hlavny(KOPAK, PIN_KOPAK, NEO_GRB + NEO_KHZ800);
-Adafruit_NeoPixel eyes_LEDs(EYES, PIN_EYES, NEO_GRB + NEO_KHZ800);
+//Adafruit_NeoPixel eyesx(EYES, PIN_EYES, NEO_GRB + NEO_KHZ800);
+//Adafruit_NeoPixel eyesx(KOPAK, PIN_KOPAK, NEO_GRB + NEO_KHZ800);
+Adafruit_NeoMatrix eyesx = Adafruit_NeoMatrix(10, 5, PIN_EYES,
+  NEO_MATRIX_TOP     + NEO_MATRIX_RIGHT +
+  NEO_MATRIX_ROWS + NEO_MATRIX_ZIGZAG,
+  NEO_GRB            + NEO_KHZ800);
 
 void setup() {
   Serial.begin(115200);
   pravy.begin();
-  delay(20);
   lavy.begin();
-  delay(20);
   hlavny.begin();
-  delay(20);
-  eyes_LEDs.begin();
-  delay(20);
+  eyesx.begin();
 
-  for (int i = 0; i < 54; i++) {
-    if (i < PRAVY_BUBON) pravy.setPixelColor(i, 32, 32, 32);
-    delay(20);
-    if (i < LAVY_BUBON) lavy.setPixelColor(i, 32, 32, 32);
-    delay(20);
-    if (i < KOPAK) hlavny.setPixelColor(i, 32, 32, 32);
-    delay(20);
-    if (i < EYES) eyes_LEDs.setPixelColor(i, 32, 32, 32);
-    delay(20);
-    pravy.show();
-    delay(20);
-    lavy.show();
-    delay(20);
-    hlavny.show();
-    delay(20);
-    eyes_LEDs.show();
-    delay(20);
-  }
+  //pravy.show();
+  //lavy.show();
+  //hlavny.show();
+  //eyes_LEDs.show();
 }
 
 void loop() {
-  ledky_vedlajsie();
-  hlavny_bubon();
+  for (int i = 0; i < 300; i++)
+  {
+    pravy.setPixelColor(i, 32, 32, 32);
+    eyesx.fillScreen(0x0080FF);
+    pravy.show();
+    delay(20);
+    //Serial.println("1");
+    pravy.show();
+    //Serial.println("2");
+    //lavy.show();
+    //Serial.println("3");
+    //hlavny.show();
+    //Serial.println("4");
+    eyesx.show();
+  }
 }
-
+/*
 // Zapína LED na všetkých pásikoch naraz
 void ledky_vedlajsie() {
   int max_led = max(PRAVY_BUBON, LAVY_BUBON);  // Najväčší počet LED
@@ -84,4 +86,4 @@ void hlavny_bubon() {
     //hlavny.show();
     delay(50);
   }
-}
+}*/
