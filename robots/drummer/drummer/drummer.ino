@@ -1,5 +1,5 @@
 #include <ESP32Servo.h>
-#include <Adafruit_NeoPixel.h>
+#include <FastLED.h>
 
 #define R_ARM_PIN 13
 #define L_ARM_PIN 12
@@ -16,17 +16,16 @@ Servo kick;   //85-90-85 = kick
 
 #define LED_PIN_L 27     //left drum
 #define LED_COUNT_L 36
+CRGB left_ring[LED_COUNT_L];
 #define LED_PIN_K 32    //kick drum
 #define LED_COUNT_K 54
+CRGB kick_ring[LED_COUNT_K];
 #define LED_PIN_R 14    //right drum
 #define LED_COUNT_R 36
+CRGB right_ring[LED_COUNT_R];
 #define LED_PIN_EYES 23
 #define LED_COUNT_EYES 50
-
-Adafruit_NeoPixel left_ring(LED_COUNT_L, LED_PIN_L, NEO_GRB + NEO_KHZ800);
-Adafruit_NeoPixel kick_ring(LED_COUNT_K, LED_PIN_K, NEO_GRB + NEO_KHZ800);
-Adafruit_NeoPixel right_ring(LED_COUNT_R, LED_PIN_R, NEO_GRB + NEO_KHZ800);
-Adafruit_NeoPixel eyes(LED_COUNT_EYES, LED_PIN_EYES, NEO_GRB + NEO_KHZ800);
+CRGB eyes[LED_COUNT_EYES];
 
 unsigned long timer_kick;
 unsigned long timer_right;
@@ -34,13 +33,13 @@ unsigned long timer_left;
 int kicks;
 int snares;
 
-byte color_eyes[] = {40, 1, 2}; //pink
-byte colors_drums[6][3] = {{10, 0, 0},  //colors that will be cycling over
-                           {5, 5, 0},
-                           {0, 10, 0},
-                           {0, 5, 5},
-                           {0, 0, 10},
-                           {5, 0, 5}};
+uint color_eyes = 0x200102; //pink
+uint colors_drums[6] = {0xFF0000,  //colors that will be cycling over
+                        0x808000,
+                        0x00FF00,
+                        0x008080,
+                        0x0000FF,
+                        0x800080};
 int color_index_kick = 0;
 int color_index_left = 0;
 int color_index_right = 0;
@@ -50,45 +49,43 @@ TaskHandle_t Task1;
 // Zapína LED na všetkých pásikoch naraz
 void ledky_vedlajsie_left() {
   for (int i = 0; i < LED_COUNT_R; i++) {
-    left_ring.setPixelColor(i, 10, 0, 0);
+    left_ring[i] = 0x100000;
 
-    left_ring.show();
+    FastLED.show();
     delay(50);
   }
 
   for (int i = LED_COUNT_R - 1; i >= 0; i--) {
-    left_ring.setPixelColor(i, 0, 0, 0);
+    left_ring[i] = 0x000000;
 
-    left_ring.show();
+    FastLED.show();
     delay(50);
   }
 }
 void ledky_vedlajsie_right() {
   for (int i = 0; i < LED_COUNT_R; i++) {
-    right_ring.setPixelColor(i, 10, 0, 0); 
+    right_ring[i] = 0x100000; 
 
-    right_ring.show();
+    FastLED.show();
     delay(50);
-    Serial.println("-");
   }
 
   for (int i = LED_COUNT_R - 1; i >= 0; i--) {
-    right_ring.setPixelColor(i, 0, 0, 0);
+    right_ring[i] = 0x000000;
 
-    right_ring.show();
+    FastLED.show();
     delay(50);
-    Serial.println("+");
   }
 }
 void kick_ring_bubon() {
   for (int i = 0; i < LED_COUNT_K; i++) {
-    kick_ring.setPixelColor(i, 10, 0, 0);
-    kick_ring.show();
+    kick_ring[i] = 0x100000;
+    FastLED.show();
     delay(50);
   }
   for (int i = LED_COUNT_K - 1; i >= 0; i--) {
-    kick_ring.setPixelColor(i, 0, 0, 0);
-    kick_ring.show();
+    kick_ring[i] = 0x000000;
+    FastLED.show();
     delay(50);
   }
 }
@@ -100,8 +97,8 @@ void changeColorsKick()
   else
     color_index_kick = 0;
   for(int i=0; i<LED_COUNT_K; i++)
-    kick_ring.setPixelColor(i, colors_drums[color_index_kick][0], colors_drums[color_index_kick][1], colors_drums[color_index_kick][2]);
-  kick_ring.show();
+    kick_ring[i] = colors_drums[color_index_kick];
+  FastLED.show();
 }
 void changeColorsLeft()
 {
@@ -110,8 +107,8 @@ void changeColorsLeft()
   else
     color_index_left = 0;
   for(int i=0; i<LED_COUNT_L; i++)
-    left_ring.setPixelColor(i, colors_drums[color_index_left][0], colors_drums[color_index_left][1], colors_drums[color_index_left][2]);
-  left_ring.show();
+    left_ring[i] = colors_drums[color_index_left];
+  FastLED.show();
 }
 void changeColorsRight()
 {
@@ -120,8 +117,8 @@ void changeColorsRight()
   else
     color_index_right = 0;
   for(int i=0; i<LED_COUNT_R; i++)
-    right_ring.setPixelColor(i, colors_drums[0][color_index_right], colors_drums[1][color_index_right], colors_drums[2][color_index_right]);
-  right_ring.show();
+    right_ring[i] = colors_drums[color_index_right];
+  FastLED.show();
 }
 /*
 //---music functions---
@@ -338,68 +335,68 @@ void fireball_chill()
 void closeEyes()  //cca 300ms
 {
   // Blink LEDs in reverse order (off in sections)
-  for (int i = 20; i < 25; i++) eyes.setPixelColor(i, 0, 0, 0); // Left eye
-  for (int i = 45; i < 50; i++) eyes.setPixelColor(i, 0, 0, 0); // Right eye
-  eyes.show();
+  for (int i = 20; i < 25; i++) eyes[i] = 0x000000; // Left eye
+  for (int i = 45; i < 50; i++) eyes[i] = 0x000000; // Right eye
+  FastLED.show();
 
   delay(50);
 
   // Now let's go down the LED sections
-  for (int i = 15; i < 20; i++) eyes.setPixelColor(i, 0, 0, 0);
-  for (int i = 40; i < 45; i++) eyes.setPixelColor(i, 0, 0, 0);
-  eyes.show();
+  for (int i = 15; i < 20; i++) eyes[i] = 0x000000;
+  for (int i = 40; i < 45; i++) eyes[i] = 0x000000;
+  FastLED.show();
 
   delay(50);
 
-  for (int i = 10; i < 15; i++) eyes.setPixelColor(i, 0, 0, 0);
-  for (int i = 35; i < 40; i++) eyes.setPixelColor(i, 0, 0, 0);
-  eyes.show();
+  for (int i = 10; i < 15; i++) eyes[i] = 0x000000;
+  for (int i = 35; i < 40; i++) eyes[i] = 0x000000;
+  FastLED.show();
 
   delay(50);
 
-  for (int i = 5; i < 10; i++) eyes.setPixelColor(i, 0, 0, 0);
-  for (int i = 30; i < 35; i++) eyes.setPixelColor(i, 0, 0, 0);
-  eyes.show();
+  for (int i = 5; i < 10; i++) eyes[i] = 0x000000;
+  for (int i = 30; i < 35; i++) eyes[i] = 0x000000;
+  FastLED.show();
 
   delay(50);
 
-  for (int i = 0; i < 5; i++) eyes.setPixelColor(i, 0, 0, 0);
-  for (int i = 25; i < 30; i++) eyes.setPixelColor(i, 0, 0, 0);
-  eyes.show();
+  for (int i = 0; i < 5; i++) eyes[i] = 0x000000;
+  for (int i = 25; i < 30; i++) eyes[i] = 0x000000;
+  FastLED.show();
 
   delay(50);
 }
 
-void openEyes(uint8_t red, uint8_t green, uint8_t blue)  //cca 300ms
+void openEyes(uint color)  //cca 300ms
 {
   // Blink LEDs in reverse order (turning LEDs back on)
-  for (int i = 0; i < 5; i++) eyes.setPixelColor(i, red, green, blue); // Left eye
-  for (int i = 25; i < 30; i++) eyes.setPixelColor(i, red, green, blue); // Right eye
-  eyes.show();
+  for (int i = 0; i < 5; i++) eyes[i] = color; // Left eye
+  for (int i = 25; i < 30; i++) eyes[i] = color; // Right eye
+  FastLED.show();
 
   delay(50);
 
-  for (int i = 5; i < 10; i++) eyes.setPixelColor(i, red, green, blue);
-  for (int i = 30; i < 35; i++) eyes.setPixelColor(i, red, green, blue);
-  eyes.show();
+  for (int i = 5; i < 10; i++) eyes[i] = color;
+  for (int i = 30; i < 35; i++) eyes[i] = color;
+  FastLED.show();
 
   delay(50);
 
-  for (int i = 10; i < 15; i++) eyes.setPixelColor(i, red, green, blue);
-  for (int i = 35; i < 40; i++) eyes.setPixelColor(i, red, green, blue);
-  eyes.show();
+  for (int i = 10; i < 15; i++) eyes[i] = color;
+  for (int i = 35; i < 40; i++) eyes[i] = color;
+  FastLED.show();
 
   delay(50);
 
-  for (int i = 15; i < 20; i++) eyes.setPixelColor(i, red, green, blue);
-  for (int i = 40; i < 45; i++) eyes.setPixelColor(i, red, green, blue);
-  eyes.show();
+  for (int i = 15; i < 20; i++) eyes[i] = color;
+  for (int i = 40; i < 45; i++) eyes[i] = color;
+  FastLED.show();
 
   delay(50);
 
-  for (int i = 20; i < 25; i++) eyes.setPixelColor(i, red, green, blue);
-  for (int i = 45; i < 50; i++) eyes.setPixelColor(i, red, green, blue);
-  eyes.show();
+  for (int i = 20; i < 25; i++) eyes[i] = color;
+  for (int i = 45; i < 50; i++) eyes[i] = color;
+  FastLED.show();
 
   delay(50);
 }
@@ -436,23 +433,19 @@ void setup()
       &Task1,  /* Task handle. */
       0); /* Core where the task should run */
 
-  left_ring.begin();
-  Serial.println();
-  kick_ring.begin();
-  right_ring.begin();
-  eyes.begin();
-  eyes.show();
+  FastLED.addLeds<WS2811, LED_PIN_L, GRB>(left_ring, LED_COUNT_L);
+  FastLED.addLeds<WS2811, LED_PIN_K, GRB>(kick_ring, LED_COUNT_K);
+  FastLED.addLeds<WS2811, LED_PIN_R, GRB>(right_ring, LED_COUNT_R);
+  FastLED.addLeds<WS2811, LED_PIN_EYES, GRB>(eyes, LED_COUNT_EYES);
   Serial.println("I'm set");
 
   for (int i = 0; i < 54; i++) {
-    if (i < LED_COUNT_R) right_ring.setPixelColor(i, 10, 10, 10);
-    if (i < LED_COUNT_L) left_ring.setPixelColor(i, 10, 10, 10);
-    if (i < LED_COUNT_K) kick_ring.setPixelColor(i, 10, 10, 10);
+    if (i < LED_COUNT_R) right_ring[i] = 0x101010;
+    if (i < LED_COUNT_L) left_ring[i] = 0x101010;
+    if (i < LED_COUNT_K) kick_ring[i] = 0x101010;
   }
 
-  left_ring.show();
-  kick_ring.show();
-  right_ring.show();
+  FastLED.show();
   Serial.println("I'm white");
   delay(1000);
   
@@ -461,7 +454,6 @@ void setup()
 void loop()
 { 
   ledky_vedlajsie_right();
-  Serial.println("jhd");
-  //closeEyes();
-  //openEyes(32, 32, 32);
+  closeEyes();
+  openEyes(color_eyes);
 }
