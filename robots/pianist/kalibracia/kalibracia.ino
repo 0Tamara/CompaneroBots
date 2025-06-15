@@ -1,30 +1,34 @@
 #include <ESP32Servo.h>
-#include <AccelStepper.h>
+#include <FastAccelStepper.h>
 
 #define numServos 8
 #define stepsPerNote 123
 #define stepsPerOctave 855
 
-const int leftHandStepPin = 16; 
-const int leftHandDirPin = 17;
+const int leftHandStepPin = 14; 
+const int leftHandDirPin = 12;
 const int rightHandStepPin = 18;
 const int rightHandDirPin = 19;
 
-AccelStepper stepperLeft(AccelStepper::DRIVER, leftHandStepPin, leftHandDirPin);
-AccelStepper stepperRight(AccelStepper::DRIVER, rightHandStepPin, rightHandDirPin);
+//AccelStepper stepperLeft(AccelStepper::DRIVER, leftHandStepPin, leftHandDirPin);
+//AccelStepper stepperRight(AccelStepper::DRIVER, rightHandStepPin, rightHandDirPin);
+
+FastAccelStepperEngine engine = FastAccelStepperEngine();
+FastAccelStepper *stepperLeft = NULL;
+FastAccelStepper *stepperRight = NULL;
 
 struct Hand {
   Servo servos[numServos];
   int servoPins[numServos];
   int currentOctave;
   int currentNote;
-  AccelStepper& stepper;
+  FastAccelStepper& stepper;
   unsigned long timeFromMoving;
   unsigned long lastTime;
 };
 
 Hand leftHand = {
-  .servoPins = {2, 4, 5, 12, 13, 14, 15, 25},
+  .servoPins = {2, 4, 5, 16, 13, 17, 15, 25},
   .currentOctave = 0,
   .currentNote = 0,
   .timeFromMoving = 0,
@@ -62,35 +66,35 @@ void setup() {
   // Test krokových motorov
   unsigned long start = millis();
   lavy_doprava(stepsPerOctave);
-  Serial.println("Čas pohybu: %lu ms", millis() - start);
+  Serial.printf("Čas pohybu: %lu ms\n", millis() - start);
   delay(1000);
   start = millis();
   lavy_dolava(stepsPerOctave);
-  Serial.println("Čas pohybu: %lu ms", millis() - start);
+  Serial.printf("Čas pohybu: %lu ms\n", millis() - start);
   delay(1000);
   start = millis();
   pravy_doprava(stepsPerOctave);
-  Serial.println("Čas pohybu: %lu ms", millis() - start);
+  Serial.printf("Čas pohybu: %lu ms\n", millis() - start);
   delay(1000);
   start = millis();
   pravy_dolava(stepsPerOctave);
-  Serial.println("Čas pohybu: %lu ms", millis() - start);
+  Serial.printf("Čas pohybu: %lu ms\n", millis() - start);
   delay(1000);
   start = millis();
   lavy_doprava(stepsPerNote);
-  Serial.println("Čas pohybu: %lu ms", millis() - start);
+  Serial.printf("Čas pohybu: %lu ms\n", millis() - start);
   delay(1000);
   start = millis();
   lavy_dolava(stepsPerNote);
-  Serial.println("Čas pohybu: %lu ms", millis() - start);
+  Serial.printf("Čas pohybu: %lu ms\n", millis() - start);
   delay(1000);
   start = millis();
   pravy_doprava(stepsPerNote);
-  Serial.println("Čas pohybu: %lu ms", millis() - start);
+  Serial.printf("Čas pohybu: %lu ms\n", millis() - start);
   delay(1000);
   start = millis();
   pravy_dolava(stepsPerNote);
-  Serial.println("Čas pohybu: %lu ms", millis() - start);
+  Serial.printf("Čas pohybu: %lu ms\n", millis() - start);
   delay(1000);
 
   // Test serv
