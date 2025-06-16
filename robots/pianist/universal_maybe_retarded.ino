@@ -1,23 +1,16 @@
 #include <ESP32Servo.h>
-
-#include<AccelStepper.h>
+#include <FastAccelStepper.h>
 
 #define numServos 8
-#define rezerva 20
-#define stepsPerNote 123 // vypocitane, ale neodskusane, klavesa ma 24 mm, sirka medzi klavesami je 0.5 mm, krok motora je 1.8 stupna... a tak dalej 
-#define stepsPerOctave 855  //takisto
-unsigned long lastTime;
+#define stepsPerNote 123
+#define stepsPerOctave 855
 
-// casy
-int tempo = 2000;
-int osm = tempo / 8;
-int stv = tempo / 4;
-int pol = tempo / 2;
-int cel = tempo;
-const int leftHandStepPin = 16; 
-const int leftHandDirPin = 17;
-const int rightHandStepPin = 18;
-const int rightHandDirPin = 19;
+const int leftHandStepPin = 14; 
+const int leftHandDirPin = 12; 
+const int leftHandEnPin = 18;
+const int rightHandStepPin = 14;
+const int rightHandDirPin = 12;
+const int rightHandEnPin = 19;
 
 AccelStepper stepperLeft(AccelStepper::DRIVER, leftHandStepPin, leftHandDirPin);
 AccelStepper stepperRight(AccelStepper::DRIVER, rightHandStepPin, rightHandDirPin);
