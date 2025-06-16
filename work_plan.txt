@@ -7,16 +7,14 @@
 What needs to be done:
 
   construction
-    dancer: complete the head
+    dancer: done
     drummer:
-      complete the head
-      complete the drums stands
       think up how to pack drums (remake the kick drum?)
     pianist:
       mount the hardware on hands
       make a system for cables (metering tape)
-      think up how to pack it to plane
-    curtains: print pulleys and mount it there
+      think up how to pack it to plane (cut it in half)
+    curtains: pulleys and mount it there
     camera: mount all
       on a tripod
       with raspberry, esp32, sensors, power supply
@@ -37,7 +35,7 @@ What needs to be done:
       music functions
       LED effects on 2nd core
     pianist:
-      haven't seen the codes yet (-Tomas)
+      fix the codes and use diferent libraries
     curtains:
       opening and closing
     camera:

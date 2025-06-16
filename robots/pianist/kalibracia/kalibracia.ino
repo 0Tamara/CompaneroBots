@@ -6,14 +6,17 @@
 #define stepsPerOctave 855
 
 const int leftHandStepPin = 14; 
-const int leftHandDirPin = 12;
-const int rightHandStepPin = 18;
-const int rightHandDirPin = 19;
+const int leftHandDirPin = 12; 
+const int leftHandEnPin = 18;
+const int rightHandStepPin = 14;
+const int rightHandDirPin = 12;
+const int rightHandEnPin = 19;
 
 //AccelStepper stepperLeft(AccelStepper::DRIVER, leftHandStepPin, leftHandDirPin);
 //AccelStepper stepperRight(AccelStepper::DRIVER, rightHandStepPin, rightHandDirPin);
 
-FastAccelStepperEngine engine = FastAccelStepperEngine();
+FastAccelStepperEngine engineLeft = FastAccelStepperEngine();
+FastAccelStepperEngine engineRight = FastAccelStepperEngine();
 FastAccelStepper *stepperLeft = NULL;
 FastAccelStepper *stepperRight = NULL;
 
@@ -22,7 +25,7 @@ struct Hand {
   int servoPins[numServos];
   int currentOctave;
   int currentNote;
-  FastAccelStepper& stepper;
+  //FastAccelStepper *stepper;
   unsigned long timeFromMoving;
   unsigned long lastTime;
 };
@@ -33,7 +36,7 @@ Hand leftHand = {
   .currentNote = 0,
   .timeFromMoving = 0,
   .lastTime = 0,
-  .stepper = stepperLeft
+  //.stepper = stepperLeft
 };
 Hand rightHand = {
   .servoPins = {26, 27, 32, 33, 21, 22, 23, 4},
@@ -41,7 +44,7 @@ Hand rightHand = {
   .currentNote = 0,
   .timeFromMoving = 0,
   .lastTime = 0,
-  .stepper = stepperRight
+  //.stepper = stepperRight
 };
 
 void setup() {
@@ -56,12 +59,24 @@ void setup() {
     leftHand.servos[i].write(0);
     rightHand.servos[i].write(0);
   }
-  stepperLeft.setMaxSpeed(1000);
-  stepperLeft.setAcceleration(500);
-  stepperLeft.setCurrentPosition(0);
-  stepperRight.setMaxSpeed(1000);
-  stepperRight.setAcceleration(500);
-  stepperRight.setCurrentPosition(0);
+  engineLeft.init();
+  engineRight.init();
+  stepperLeft = engineLeft.stepperConnectToPin(leftHandStepPin);
+  stepperRight = engineRight.stepperConnectToPin(rightHandStepPin);
+
+  stepperLeft->setDirectionPin(leftHandDirPin);
+  stepperLeft->setEnablePin(leftHandEnPin);
+  stepperLeft->setAutoEnable(true);
+  stepperRight->setDirectionPin(rightHandDirPin);
+  stepperRight->setEnablePin(rightHandEnPin);
+  stepperRight->setAutoEnable(true);
+
+  stepperLeft->setSpeedInUs(1000);
+  stepperLeft->setAcceleration(500);
+  stepperLeft->setCurrentPosition(0);
+  stepperRight->setSpeedInUs(1000);
+  stepperRight->setAcceleration(500);
+  stepperRight->setCurrentPosition(0);
 
   // Test krokových motorov
   unsigned long start = millis();
@@ -73,11 +88,11 @@ void setup() {
   Serial.printf("Čas pohybu: %lu ms\n", millis() - start);
   delay(1000);
   start = millis();
-  pravy_doprava(stepsPerOctave);
+  pravy_dolava(stepsPerOctave);
   Serial.printf("Čas pohybu: %lu ms\n", millis() - start);
   delay(1000);
   start = millis();
-  pravy_dolava(stepsPerOctave);
+  pravy_doprava(stepsPerOctave);
   Serial.printf("Čas pohybu: %lu ms\n", millis() - start);
   delay(1000);
   start = millis();
@@ -89,11 +104,11 @@ void setup() {
   Serial.printf("Čas pohybu: %lu ms\n", millis() - start);
   delay(1000);
   start = millis();
-  pravy_doprava(stepsPerNote);
+  pravy_dolava(stepsPerNote);
   Serial.printf("Čas pohybu: %lu ms\n", millis() - start);
   delay(1000);
   start = millis();
-  pravy_dolava(stepsPerNote);
+  pravy_doprava(stepsPerNote);
   Serial.printf("Čas pohybu: %lu ms\n", millis() - start);
   delay(1000);
 
@@ -155,29 +170,21 @@ void loop() {
 }
 
 void lavy_doprava(int steps) {
-  stepperLeft.move(steps);
-  while (stepperLeft.distanceToGo() != 0) {
-    stepperLeft.run();
-  }
+  stepperLeft->move(steps);
+  while (stepperLeft->isRunning());
 }
 
 void lavy_dolava(int steps) {
-  stepperLeft.move(-steps);
-  while (stepperLeft.distanceToGo() != 0) {
-    stepperLeft.run();
-  }
+  stepperLeft->move(-steps);
+  while (stepperLeft->isRunning());
 }
 
 void pravy_doprava(int steps) {
-  stepperRight.move(steps);
-  while (stepperRight.distanceToGo() != 0) {
-    stepperRight.run();
-  }
+  stepperRight->move(steps);
+  while (stepperRight->isRunning());
 }
 
 void pravy_dolava(int steps) {
-  stepperRight.move(-steps);
-  while (stepperRight.distanceToGo() != 0) {
-    stepperRight.run();
-  }
+  stepperRight->move(-steps);
+  while (stepperRight->isRunning());
 }
