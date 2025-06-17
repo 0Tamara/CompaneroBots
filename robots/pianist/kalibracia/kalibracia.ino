@@ -7,7 +7,7 @@
 
 const int leftHandStepPin = 14; 
 const int leftHandDirPin = 12; 
-const int leftHandEnPin = 18;
+const int leftHandEnPin = 13;
 const int rightHandStepPin = 14;
 const int rightHandDirPin = 12;
 const int rightHandEnPin = 19;
@@ -31,7 +31,7 @@ struct Hand {
 };
 
 Hand leftHand = {
-  .servoPins = {2, 4, 5, 16, 13, 17, 15, 25},
+  .servoPins = {2, 4, 5, 16, 18, 17, 15, 25},
   .currentOctave = 0,
   .currentNote = 0,
   .timeFromMoving = 0,

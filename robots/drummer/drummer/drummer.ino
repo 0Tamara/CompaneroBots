@@ -49,7 +49,7 @@ TaskHandle_t Task1;
 // Zapína LED na všetkých pásikoch naraz
 void ledky_vedlajsie_left() {
   for (int i = 0; i < LED_COUNT_R; i++) {
-    left_ring[i] = 0x100000;
+    left_ring[i] = 0xFF0000;
 
     FastLED.show();
     delay(50);
@@ -64,7 +64,7 @@ void ledky_vedlajsie_left() {
 }
 void ledky_vedlajsie_right() {
   for (int i = 0; i < LED_COUNT_R; i++) {
-    right_ring[i] = 0x100000; 
+    right_ring[i] = 0xFF0000; 
 
     FastLED.show();
     delay(50);
@@ -79,7 +79,7 @@ void ledky_vedlajsie_right() {
 }
 void kick_ring_bubon() {
   for (int i = 0; i < LED_COUNT_K; i++) {
-    kick_ring[i] = 0x100000;
+    kick_ring[i] = 0xFF0000;
     FastLED.show();
     delay(50);
   }
@@ -440,9 +440,9 @@ void setup()
   Serial.println("I'm set");
 
   for (int i = 0; i < 54; i++) {
-    if (i < LED_COUNT_R) right_ring[i] = 0x101010;
-    if (i < LED_COUNT_L) left_ring[i] = 0x101010;
-    if (i < LED_COUNT_K) kick_ring[i] = 0x101010;
+    if (i < LED_COUNT_R) right_ring[i] = 0x808080;
+    if (i < LED_COUNT_L) left_ring[i] = 0x808080;
+    if (i < LED_COUNT_K) kick_ring[i] = 0x808080;
   }
 
   FastLED.show();
