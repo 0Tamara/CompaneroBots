@@ -1,20 +1,28 @@
 #include <ESP32Servo.h>
 #include <FastAccelStepper.h>
-#include <
 
 #define numServos 8
 #define stepsPerNote 123
 #define stepsPerOctave 855
 
+// casy
+int time = 2000;
+int osm = time / 8;
+int stv = time / 4;
+int pol = time / 2;
+int cel = time;
+
+int rezerva = 50; 
 const int leftHandStepPin = 14; 
 const int leftHandDirPin = 12; 
 const int leftHandEnPin = 18;
-const int rightHandStepPin = 14;
-const int rightHandDirPin = 12;
+const int rightHandStepPin = 15;
+const int rightHandDirPin = 13;
 const int rightHandEnPin = 19;
 
-AccelStepper stepperLeft(AccelStepper::DRIVER, leftHandStepPin, leftHandDirPin);
-AccelStepper stepperRight(AccelStepper::DRIVER, rightHandStepPin, rightHandDirPin);
+FastAccelStepperEngine engine = FastAccelStepperEngine();
+FastAccelStepper *stepperLeft = NULL;
+FastAccelStepper *stepperRight = NULL;
 
 enum moveNotes { C=0, D=1, E=2, F=3, G=4, A=5, H=6 };
 enum actualServos { NIC = -1, SERVO1 = 0, SERVO2 = 1, SERVO3 = 2, SERVO4 = 3, SERVO5 = 4, SERVO6 = 5, SERVO7 = 6, SERVO8 = 7 };
@@ -27,53 +35,72 @@ struct Hand
   //int dirPin;
   int currentOctave;
   int currentNote;
-  AccelStepper& stepper;
+  FastAccelStepper* stepper;
   unsigned long timeFromMoving;
   unsigned long lastTime;
 };
 
 Hand leftHand = {
-  .servoPins = { 2, 4, 5, 12, 13, 14, 15, 25 },
+  .servoPins = { 2, 4, 5, 12, 13, 16, 15, 25 },
   .currentOctave = 0,
   .currentNote = 0,
-  .stepper = stepperLeft,
+  .stepper = NULL,
 };
 Hand rightHand = {
-  .servoPins = { 26, 27, 32, 33, 21, 22, 23, 3 },
+  .servoPins = { 26, 27, 32, 33, 21, 22, 23, 24 },
   .currentOctave = 0,
   .currentNote = 0,
-  .stepper = stepperRight,
+  .stepper = NULL,
 };
-
-
 void setup() {
+  Serial.begin(115200);
   for (int i = 0; i < numServos; i++) {
-    leftHand.servos[i].attach(leftHand.servoPins[i]);
-    rightHand.servos[i].attach(rightHand.servoPins[i]); 
-  
+    if (!leftHand.servos[i].attach(leftHand.servoPins[i])) {
+      Serial.printf("Servo %d na pine %d (lava ruka) nepripojeno\n", i, leftHand.servoPins[i]);
+    }
+    if (!rightHand.servos[i].attach(rightHand.servoPins[i])) {
+      Serial.printf("Servo %d na pine %d (prava ruka) nepripojeno\n", i, rightHand.servoPins[i]);
+    }
     leftHand.servos[i].write(0);
     rightHand.servos[i].write(0);
   }
-  stepperLeft.setMaxSpeed(1000);
-  stepperLeft.setAcceleration(500);
-  stepperLeft.setCurrentPosition(0);
 
-  stepperRight.setMaxSpeed(1000);
-  stepperRight.setAcceleration(500);
-  stepperRight.setCurrentPosition(0);
+  engine.init();
+  stepperLeft = engine.stepperConnectToPin(leftHandStepPin);
+  stepperRight = engine.stepperConnectToPin(rightHandStepPin);
+  leftHand.stepper = stepperLeft;
+  rightHand.stepper = stepperRight;
+  if (stepperRight == NULL || stepperLeft == NULL) {
+    Serial.println("Chyba pri pripojeni krokovych motorov.");
+    while (1);
+  }
+
+  stepperLeft->setDirectionPin(leftHandDirPin);
+  stepperLeft->setEnablePin(leftHandEnPin);
+  stepperLeft->setAutoEnable(true);
+
+  stepperLeft->setSpeedInUs(700);
+  stepperLeft->setAcceleration(4000);
+  stepperLeft->setCurrentPosition(0);
   
+  stepperRight->setDirectionPin(rightHandDirPin);
+  stepperRight->setEnablePin(rightHandEnPin);
+  stepperRight->setAutoEnable(true);
+
+  stepperRight->setSpeedInUs(700);
+  stepperRight->setAcceleration(4000);
+  stepperRight->setCurrentPosition(0);
 }
+
 
 unsigned long moveToNote(Hand& hand, int targetNote, int targetOctave) {
   unsigned long start = millis();
-  int steps = (targetOctave * stepsPerOctave + targetNote * stepsPerNote) - 
-                    (hand.currentOctave * stepsPerOctave + hand.currentNote * stepsPerNote); 
-
-  if (steps == 0) return 0;
-  hand.stepper.move(steps);
-  while (hand.stepper.distanceToGo() != 0) {
-    hand.stepper.run();
-  }
+  int lastSteps = hand.currentOctave * stepsPerOctave + hand.currentNote * stepsPerNote;
+  int steps = targetOctave * stepsPerOctave + targetNote * stepsPerNote;
+  if (steps - lastSteps == 0) return 0;
+  hand.stepper->moveTo(steps);
+  while (hand.stepper->isRunning());
+  
   hand.currentOctave = targetOctave;
   hand.currentNote = targetNote;
   return millis() - start;
@@ -91,7 +118,8 @@ void playNote(Hand& hand, int targetNote, int targetOctave, int wait, int note1,
   }
   int holdTime = wait - (rezerva * noteCount + hand.timeFromMoving);
   if (holdTime < 0) {
-    holdTime = 0;
+    Serial.printf("Pozor, negatívny holdTime(%d ms). Musíš spomaliť. Prepisujem na 50ms.\n", holdTime);
+    holdTime = 50;
   }
   while (millis() - hand.lastTime <= holdTime) {
     for (int i = 0; i < 3; i++){
@@ -128,19 +156,21 @@ int melodyLeft1[][6] = {
 
 };
 int melodyRight1[][6] = {
-    {D, 5, osm, NIC, NIC, SERVO2},
-    {C, 4, stv, SERVO2, NIC, SERVO5}
+    {E, 2, osm, NIC, NIC, SERVO1},
+    {G, 1, stv, SERVO3, NIC, SERVO6}
 
 };
 void loop() {
   xTaskCreatePinnedToCore(
-    [] (void *) {
-      playMelody(leftHand, melodyLeft1, sizeof(melodyLeft1) / sizeof(melodyLeft1[0]));
-      vTaskDelete(NULL);
-    }, "LeftHandTask", 4096, NULL, 1, NULL, 0);
+  [] (void *) {
+    playMelody(leftHand, melodyLeft1, sizeof(melodyLeft1) / sizeof(melodyLeft1[0]));
+    vTaskDelete(NULL);
+  }, "LeftHandTask", 4096, NULL, 1, NULL, 0);
   xTaskCreatePinnedToCore(
-    [] (void *) {
-      playMelody(rightHand, melodyRight1, sizeof(melodyRight1) / sizeof(melodyRight1[0]));
-      vTaskDelete(NULL);
-    }, "RightHandTask", 4096, NULL, 1, NULL, 1); //konec
+  [] (void *) {
+    playMelody(rightHand, melodyRight1, sizeof(melodyRight1) / sizeof(melodyRight1[0]));
+    vTaskDelete(NULL);
+  }, "RightHandTask", 4096, NULL, 1, NULL, 1); //konec
+  while (1);
+
 }
