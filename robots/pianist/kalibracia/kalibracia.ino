@@ -8,15 +8,14 @@
 const int leftHandStepPin = 14; 
 const int leftHandDirPin = 12; 
 const int leftHandEnPin = 13;
-const int rightHandStepPin = 14;
-const int rightHandDirPin = 12;
-const int rightHandEnPin = 19;
+const int rightHandStepPin = 25;
+const int rightHandDirPin = 26;
+const int rightHandEnPin = 27;
 
 //AccelStepper stepperLeft(AccelStepper::DRIVER, leftHandStepPin, leftHandDirPin);
 //AccelStepper stepperRight(AccelStepper::DRIVER, rightHandStepPin, rightHandDirPin);
 
-FastAccelStepperEngine engineLeft = FastAccelStepperEngine();
-FastAccelStepperEngine engineRight = FastAccelStepperEngine();
+FastAccelStepperEngine engine = FastAccelStepperEngine();
 FastAccelStepper *stepperLeft = NULL;
 FastAccelStepper *stepperRight = NULL;
 
@@ -59,23 +58,25 @@ void setup() {
     leftHand.servos[i].write(0);
     rightHand.servos[i].write(0);
   }
-  engineLeft.init();
-  engineRight.init();
-  stepperLeft = engineLeft.stepperConnectToPin(leftHandStepPin);
-  stepperRight = engineRight.stepperConnectToPin(rightHandStepPin);
+  engine.init();
+  stepperLeft = engine.stepperConnectToPin(leftHandStepPin);
 
   stepperLeft->setDirectionPin(leftHandDirPin);
   stepperLeft->setEnablePin(leftHandEnPin);
   stepperLeft->setAutoEnable(true);
+
+  stepperLeft->setSpeedInUs(700);
+  stepperLeft->setAcceleration(4000);
+  stepperLeft->setCurrentPosition(0);
+  
+  stepperRight = engine.stepperConnectToPin(rightHandStepPin);
+
   stepperRight->setDirectionPin(rightHandDirPin);
   stepperRight->setEnablePin(rightHandEnPin);
   stepperRight->setAutoEnable(true);
 
-  stepperLeft->setSpeedInUs(1000);
-  stepperLeft->setAcceleration(500);
-  stepperLeft->setCurrentPosition(0);
-  stepperRight->setSpeedInUs(1000);
-  stepperRight->setAcceleration(500);
+  stepperRight->setSpeedInUs(700);
+  stepperRight->setAcceleration(4000);
   stepperRight->setCurrentPosition(0);
 
   // Test krokových motorov
