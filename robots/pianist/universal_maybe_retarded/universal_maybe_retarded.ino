@@ -1,10 +1,12 @@
 #include <ESP32Servo.h>
 #include <FastAccelStepper.h>
+#include <Adafruit_PWM_Servo_Driver.h>
 
 #define numServos 8
 #define stepsPerNote 123
 #define stepsPerOctave 855
-
+#define SERVOMIN 125
+#define SERVOMAX 575
 // casy
 int time = 2000;
 int osm = time / 8;
@@ -20,6 +22,8 @@ const int rightHandStepPin = 15;
 const int rightHandDirPin = 13;
 const int rightHandEnPin = 19;
 
+// kniznice
+Adafruit_PWMServoDriver pca9685 = Adafruit_PWMServoDriver(0x40);
 FastAccelStepperEngine engine = FastAccelStepperEngine();
 FastAccelStepper *stepperLeft = NULL;
 FastAccelStepper *stepperRight = NULL;
@@ -31,13 +35,13 @@ struct Hand
 {
   Servo servos[numServos];
   int servoPins[numServos];
-  //int stepPin;
-  //int dirPin;
   int currentOctave;
   int currentNote;
   FastAccelStepper* stepper;
   unsigned long timeFromMoving;
   unsigned long lastTime;
+  Adafruit_PWMServoDriver* pca9685; 
+  int channelOffset = 0; 
 };
 
 Hand leftHand = {
@@ -45,24 +49,23 @@ Hand leftHand = {
   .currentOctave = 0,
   .currentNote = 0,
   .stepper = NULL,
+  .pca9685 = &pca9685,
+  .channelOffset = 0 
 };
 Hand rightHand = {
   .servoPins = { 26, 27, 32, 33, 21, 22, 23, 24 },
   .currentOctave = 0,
   .currentNote = 0,
   .stepper = NULL,
+  .pca9685 = &pca9685,
+  .channelOffset = 8 
 };
 void setup() {
   Serial.begin(115200);
-  for (int i = 0; i < numServos; i++) {
-    if (!leftHand.servos[i].attach(leftHand.servoPins[i])) {
-      Serial.printf("Servo %d na pine %d (lava ruka) nepripojeno\n", i, leftHand.servoPins[i]);
-    }
-    if (!rightHand.servos[i].attach(rightHand.servoPins[i])) {
-      Serial.printf("Servo %d na pine %d (prava ruka) nepripojeno\n", i, rightHand.servoPins[i]);
-    }
-    leftHand.servos[i].write(0);
-    rightHand.servos[i].write(0);
+  pca9685.begin();
+  pca9685.setPWMFreq(50); 
+  for (int i = 0; i < numServos; i++){
+    pca9685.setPWM(i, 0, SERVOMIN);
   }
 
   engine.init();
@@ -92,7 +95,24 @@ void setup() {
   stepperRight->setCurrentPosition(0);
 }
 
+void loop() {
+  xTaskCreatePinnedToCore(
+  [] (void *) {
+    playMelody(leftHand, melodyLeft1, sizeof(melodyLeft1) / sizeof(melodyLeft1[0]));
+    vTaskDelete(NULL);
+  }, "LeftHandTask", 4096, NULL, 1, NULL, 0);
+  xTaskCreatePinnedToCore(
+  [] (void *) {
+    playMelody(rightHand, melodyRight1, sizeof(melodyRight1) / sizeof(melodyRight1[0]));
+    vTaskDelete(NULL);
+  }, "RightHandTask", 4096, NULL, 1, NULL, 1); //konec
+  while (1);
+}
 
+
+int angleToPulse(int angle){
+  return map(angle, 0, 180, SERVOMIN, SERVOMAX);
+}
 unsigned long moveToNote(Hand& hand, int targetNote, int targetOctave) {
   unsigned long start = millis();
   int lastSteps = hand.currentOctave * stepsPerOctave + hand.currentNote * stepsPerNote;
@@ -100,7 +120,6 @@ unsigned long moveToNote(Hand& hand, int targetNote, int targetOctave) {
   if (steps - lastSteps == 0) return 0;
   hand.stepper->moveTo(steps);
   while (hand.stepper->isRunning());
-  
   hand.currentOctave = targetOctave;
   hand.currentNote = targetNote;
   return millis() - start;
@@ -158,19 +177,4 @@ int melodyLeft1[][6] = {
 int melodyRight1[][6] = {
     {E, 2, osm, NIC, NIC, SERVO1},
     {G, 1, stv, SERVO3, NIC, SERVO6}
-
 };
-void loop() {
-  xTaskCreatePinnedToCore(
-  [] (void *) {
-    playMelody(leftHand, melodyLeft1, sizeof(melodyLeft1) / sizeof(melodyLeft1[0]));
-    vTaskDelete(NULL);
-  }, "LeftHandTask", 4096, NULL, 1, NULL, 0);
-  xTaskCreatePinnedToCore(
-  [] (void *) {
-    playMelody(rightHand, melodyRight1, sizeof(melodyRight1) / sizeof(melodyRight1[0]));
-    vTaskDelete(NULL);
-  }, "RightHandTask", 4096, NULL, 1, NULL, 1); //konec
-  while (1);
-
-}
