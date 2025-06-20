@@ -7,11 +7,11 @@
 #define SERVOMIN 125
 #define SERVOMAX 575
 // casy
-int time = 2000;
-int osm = time / 8;
-int stv = time / 4;
-int pol = time / 2;
-int cel = time;
+int tempo = 2000;
+int osm = tempo / 8;
+int stv = tempo / 4;
+int pol = tempo / 2;
+int cel = tempo;
 
 int rezerva = 50; 
 const int leftHandStepPin = 14; 
@@ -90,6 +90,17 @@ void setup() {
   stepperRight->setCurrentPosition(0);
 }
 
+int melodyLeft1[][6] = {
+    {D, 5, osm, NIC, NIC, SERVO2},
+    {C, 4, stv, SERVO2, NIC, SERVO5}
+    
+
+};
+int melodyRight1[][6] = {
+    {E, 2, osm, NIC, NIC, SERVO1},
+    {G, 1, stv, SERVO3, NIC, SERVO6}
+};
+
 void loop() {
   xTaskCreatePinnedToCore(
   [] (void *) {
@@ -164,13 +175,3 @@ void playMelody(Hand& hand, int melody[][6], int length) {
     playNote(hand, targetNote, targetOctave, wait, note1, note2, note3);
   }
 }
-int melodyLeft1[][6] = {
-    {D, 5, osm, NIC, NIC, SERVO2},
-    {C, 4, stv, SERVO2, NIC, SERVO5}
-    
-
-};
-int melodyRight1[][6] = {
-    {E, 2, osm, NIC, NIC, SERVO1},
-    {G, 1, stv, SERVO3, NIC, SERVO6}
-};
