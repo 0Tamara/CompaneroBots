@@ -35,7 +35,6 @@ What needs to be done:
       music functions
       LED effects on 2nd core
     pianist:
-      change stepper motor library to fastAccelStepper.h
       change servo controlling through PCA9685
     curtains:
       opening and closing
