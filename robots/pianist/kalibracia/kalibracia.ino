@@ -2,8 +2,10 @@
 #include <FastAccelStepper.h>
 
 #define numServos 8
-#define stepsPerNote 123
-#define stepsPerOctave 855
+#define stepsPerNote 984
+#define stepsPerOctave 6840
+#define speedInHz 15000
+#define acceleration 40000
 
 const int leftHandStepPin = 14; 
 const int leftHandDirPin = 12; 
@@ -30,7 +32,7 @@ struct Hand {
 };
 
 Hand leftHand = {
-  .servoPins = {2, 4, 5, 16, 18, 17, 15, 25},
+  .servoPins = {0},
   .currentOctave = 0,
   .currentNote = 0,
   .timeFromMoving = 0,
@@ -38,7 +40,7 @@ Hand leftHand = {
   //.stepper = stepperLeft
 };
 Hand rightHand = {
-  .servoPins = {26, 27, 32, 33, 21, 22, 23, 4},
+  .servoPins = {0},
   .currentOctave = 0,
   .currentNote = 0,
   .timeFromMoving = 0,
@@ -65,8 +67,8 @@ void setup() {
   stepperLeft->setEnablePin(leftHandEnPin);
   stepperLeft->setAutoEnable(true);
 
-  stepperLeft->setSpeedInUs(700);
-  stepperLeft->setAcceleration(4000);
+  stepperLeft->setSpeedInHz(speedInHz);
+  stepperLeft->setAcceleration(acceleration);
   stepperLeft->setCurrentPosition(0);
   
   stepperRight = engine.stepperConnectToPin(rightHandStepPin);
@@ -75,8 +77,8 @@ void setup() {
   stepperRight->setEnablePin(rightHandEnPin);
   stepperRight->setAutoEnable(true);
 
-  stepperRight->setSpeedInUs(700);
-  stepperRight->setAcceleration(4000);
+  stepperRight->setSpeedInHz(speedInHz);
+  stepperRight->setAcceleration(acceleration);
   stepperRight->setCurrentPosition(0);
 
   // Test krokových motorov
@@ -167,7 +169,6 @@ void setup() {
 }
 
 void loop() {
-  // Prázdne
 }
 
 void lavy_doprava(int steps) {

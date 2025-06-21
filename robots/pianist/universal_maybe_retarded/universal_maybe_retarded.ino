@@ -1,6 +1,5 @@
-#include <ESP32Servo.h>
 #include <FastAccelStepper.h>
-#include <Adafruit_PWM_Servo_Driver.h>
+#include <Adafruit_PWMServoDriver.h>
 
 #define numServos 8
 #define stepsPerNote 123
@@ -8,11 +7,11 @@
 #define SERVOMIN 125
 #define SERVOMAX 575
 // casy
-int time = 2000;
-int osm = time / 8;
-int stv = time / 4;
-int pol = time / 2;
-int cel = time;
+int tempo = 2000;
+int osm = tempo / 8;
+int stv = tempo / 4;
+int pol = tempo / 2;
+int cel = tempo;
 
 int rezerva = 50; 
 const int leftHandStepPin = 14; 
@@ -33,8 +32,6 @@ enum actualServos { NIC = -1, SERVO1 = 0, SERVO2 = 1, SERVO3 = 2, SERVO4 = 3, SE
 
 struct Hand
 {
-  Servo servos[numServos];
-  int servoPins[numServos];
   int currentOctave;
   int currentNote;
   FastAccelStepper* stepper;
@@ -45,7 +42,6 @@ struct Hand
 };
 
 Hand leftHand = {
-  .servoPins = { 2, 4, 5, 12, 13, 16, 15, 25 },
   .currentOctave = 0,
   .currentNote = 0,
   .stepper = NULL,
@@ -53,7 +49,6 @@ Hand leftHand = {
   .channelOffset = 0 
 };
 Hand rightHand = {
-  .servoPins = { 26, 27, 32, 33, 21, 22, 23, 24 },
   .currentOctave = 0,
   .currentNote = 0,
   .stepper = NULL,
@@ -64,8 +59,8 @@ void setup() {
   Serial.begin(115200);
   pca9685.begin();
   pca9685.setPWMFreq(50); 
-  for (int i = 0; i < numServos; i++){
-    pca9685.setPWM(i, 0, SERVOMIN);
+  for (int i = 0; i < numServos * 2; i++){
+    pca9685.setPWM(i, 0, SERVOMIN); // 0 stupnov
   }
 
   engine.init();
@@ -95,6 +90,17 @@ void setup() {
   stepperRight->setCurrentPosition(0);
 }
 
+int melodyLeft1[][6] = {
+    {D, 5, osm, NIC, NIC, SERVO2},
+    {C, 4, stv, SERVO2, NIC, SERVO5}
+    
+
+};
+int melodyRight1[][6] = {
+    {E, 2, osm, NIC, NIC, SERVO1},
+    {G, 1, stv, SERVO3, NIC, SERVO6}
+};
+
 void loop() {
   xTaskCreatePinnedToCore(
   [] (void *) {
@@ -113,6 +119,7 @@ void loop() {
 int angleToPulse(int angle){
   return map(angle, 0, 180, SERVOMIN, SERVOMAX);
 }
+
 unsigned long moveToNote(Hand& hand, int targetNote, int targetOctave) {
   unsigned long start = millis();
   int lastSteps = hand.currentOctave * stepsPerOctave + hand.currentNote * stepsPerNote;
@@ -124,7 +131,7 @@ unsigned long moveToNote(Hand& hand, int targetNote, int targetOctave) {
   hand.currentNote = targetNote;
   return millis() - start;
 }
-// Funkcia na prehratie konkretnej noty
+
 void playNote(Hand& hand, int targetNote, int targetOctave, int wait, int note1, int note2, int note3) {
   hand.timeFromMoving = moveToNote(hand, targetNote, targetOctave);
   int notes[3] = {note1, note2, note3};
@@ -137,13 +144,13 @@ void playNote(Hand& hand, int targetNote, int targetOctave, int wait, int note1,
   }
   int holdTime = wait - (rezerva * noteCount + hand.timeFromMoving);
   if (holdTime < 0) {
-    Serial.printf("Pozor, negatívny holdTime(%d ms). Musíš spomaliť. Prepisujem na 50ms.\n", holdTime);
+    Serial.printf("Pozor, negativny holdTime(%d ms). Ides na 50 ms.\n", holdTime);
     holdTime = 50;
   }
   while (millis() - hand.lastTime <= holdTime) {
     for (int i = 0; i < 3; i++){
       if (notes[i] != -1 && notes[i] < numServos){
-        hand.servos[notes[i]].write(90);
+        hand.pca9685->setPWM(notes[i] + hand.channelOffset, 0, angleToPulse(90)); 
       }
     }
   }
@@ -151,12 +158,12 @@ void playNote(Hand& hand, int targetNote, int targetOctave, int wait, int note1,
   while (millis() - hand.lastTime <= rezerva * noteCount) {
     for (int i = 0; i < 3; i++){
       if (notes[i] != -1 && notes[i] < numServos){
-        hand.servos[notes[i]].write(0);
+        hand.pca9685->setPWM(notes[i] + hand.channelOffset, 0, angleToPulse(0)); 
       }
     }
   }
 }
-// Funkcia na prehratie melodie
+
 void playMelody(Hand& hand, int melody[][6], int length) {
   for (int i = 0; i < length; i++) {
     int targetNote = melody[i][0];
@@ -168,13 +175,3 @@ void playMelody(Hand& hand, int melody[][6], int length) {
     playNote(hand, targetNote, targetOctave, wait, note1, note2, note3);
   }
 }
-int melodyLeft1[][6] = {
-    {D, 5, osm, NIC, NIC, SERVO2},
-    {C, 4, stv, SERVO2, NIC, SERVO5}
-    
-
-};
-int melodyRight1[][6] = {
-    {E, 2, osm, NIC, NIC, SERVO1},
-    {G, 1, stv, SERVO3, NIC, SERVO6}
-};
