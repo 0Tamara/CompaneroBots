@@ -2,10 +2,10 @@
 #include <Adafruit_PWMServoDriver.h>
 
 #define numServos 8
-#define stepsPerNote 123
-#define stepsPerOctave 855
-#define SERVOMIN 125
-#define SERVOMAX 575
+#define stepsPerNote 984
+#define stepsPerOctave 6840
+#define speedInHz 15000
+#define acceleration 40000
 // casy
 int tempo = 2000;
 int osm = tempo / 8;
@@ -77,16 +77,16 @@ void setup() {
   stepperLeft->setEnablePin(leftHandEnPin);
   stepperLeft->setAutoEnable(true);
 
-  stepperLeft->setSpeedInUs(700);
-  stepperLeft->setAcceleration(4000);
+  stepperLeft->setSpeedInHz(speedInHz);
+  stepperLeft->setAcceleration(acceleration);
   stepperLeft->setCurrentPosition(0);
   
   stepperRight->setDirectionPin(rightHandDirPin);
   stepperRight->setEnablePin(rightHandEnPin);
   stepperRight->setAutoEnable(true);
 
-  stepperRight->setSpeedInUs(700);
-  stepperRight->setAcceleration(4000);
+  stepperRight->setSpeedInHz(speedInHz);
+  stepperRight->setAcceleration(acceleration);
   stepperRight->setCurrentPosition(0);
 }
 
