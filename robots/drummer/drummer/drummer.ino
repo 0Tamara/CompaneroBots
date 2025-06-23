@@ -45,11 +45,14 @@ int color_index_left = 0;
 int color_index_right = 0;
 
 TaskHandle_t Task1;
+int rising_color[3] = {0, 0, 0};
+bool blink_drums[3] = {0, 0, 0};
 
 // Zapína LED na všetkých pásikoch naraz
-void ledky_vedlajsie_left() {
+void ledky_vedlajsie() {
   for (int i = 0; i < LED_COUNT_R; i++) {
     left_ring[i] = 0xFF0000;
+    right_ring[i] = 0xFF0000;
 
     FastLED.show();
     delay(50);
@@ -57,20 +60,6 @@ void ledky_vedlajsie_left() {
 
   for (int i = LED_COUNT_R - 1; i >= 0; i--) {
     left_ring[i] = 0x000000;
-
-    FastLED.show();
-    delay(50);
-  }
-}
-void ledky_vedlajsie_right() {
-  for (int i = 0; i < LED_COUNT_R; i++) {
-    right_ring[i] = 0xFF0000; 
-
-    FastLED.show();
-    delay(50);
-  }
-
-  for (int i = LED_COUNT_R - 1; i >= 0; i--) {
     right_ring[i] = 0x000000;
 
     FastLED.show();
@@ -401,12 +390,77 @@ void openEyes(uint color)  //cca 300ms
   delay(50);
 }
 
-void loop_2(void * pvParameters)
+void loop_2(void* parameter)
 {
-  while(1)
+  int cycle[3] = {0, 0, 0};
+  bool rising[3] = {1, 1, 1};
+  while(true)
   {
-    ledky_vedlajsie_left();
-    kick_ring_bubon();
+    if(blink_drums[0])
+    {
+      if(rising[0])
+      {
+        left_ring[cycle[0]] = rising_color[0];
+        cycle[0] ++;
+        if(cycle[0] == LED_COUNT_L)
+          rising[0] = 0;
+      }
+      else
+      {
+        left_ring[cycle[0]] = 0;
+        cycle[0] --;
+        if(cycle[0] < 0)
+        {
+          rising[0] = 1;
+          blink_drums[0] = 0;
+        }
+      }
+    }
+
+    if(blink_drums[1])
+    {
+      if(rising[1])
+      {
+        kick_ring[cycle[1]] = rising_color[1];
+        cycle[1] ++;
+        if(cycle[1] == LED_COUNT_K)
+          rising[1] = 0;
+      }
+      else
+      {
+        kick_ring[cycle[1]] = 0;
+        cycle[1] --;
+        if(cycle[1] < 0)
+        {
+          rising[1] = 1;
+          blink_drums[1] = 0;
+        }
+      }
+    }
+
+    if(blink_drums[2])
+    {
+      if(rising[2])
+      {
+        right_ring[cycle[2]] = rising_color[2];
+        cycle[2] ++;
+        if(cycle[2] == LED_COUNT_R)
+          rising[2] = 0;
+      }
+      else
+      {
+        right_ring[cycle[2]] = 0;
+        cycle[2] --;
+        if(cycle[2] < 0)
+        {
+          rising[2] = 1;
+          blink_drums[2] = 0;
+        }
+      }
+    }
+    
+    FastLED.show();
+    delay(20);
   }
 }
 
@@ -414,7 +468,6 @@ void loop_2(void * pvParameters)
 void setup()
 {
   Serial.begin(115200);
-  Serial.println("I'm on");
 
   r_arm.attach(R_ARM_PIN);
   l_arm.attach(L_ARM_PIN);
@@ -437,7 +490,8 @@ void setup()
   FastLED.addLeds<WS2811, LED_PIN_K, GRB>(kick_ring, LED_COUNT_K);
   FastLED.addLeds<WS2811, LED_PIN_R, GRB>(right_ring, LED_COUNT_R);
   FastLED.addLeds<WS2811, LED_PIN_EYES, GRB>(eyes, LED_COUNT_EYES);
-  Serial.println("I'm set");
+
+  FastLED.setBrightness(32);
 
   for (int i = 0; i < 54; i++) {
     if (i < LED_COUNT_R) right_ring[i] = 0x808080;
@@ -446,14 +500,27 @@ void setup()
   }
 
   FastLED.show();
-  Serial.println("I'm white");
   delay(1000);
-  
+  for (int i = 0; i < 54; i++) {
+    if (i < LED_COUNT_R) right_ring[i] = 0x000000;
+    if (i < LED_COUNT_L) left_ring[i] = 0x000000;
+    if (i < LED_COUNT_K) kick_ring[i] = 0x000000;
+  }
+  FastLED.show();
 }
 
 void loop()
-{ 
-  ledky_vedlajsie_right();
-  closeEyes();
-  openEyes(color_eyes);
+{
+  for(int i=0; i<6; i++)
+  {
+    rising_color[0] = colors_drums[i];
+    blink_drums[0] = 1;
+    delay(1000);
+    rising_color[1] = colors_drums[i];
+    blink_drums[1] = 1;
+    delay(1000);
+    rising_color[2] = colors_drums[i];
+    blink_drums[2] = 1;
+    delay(1000);
+  }
 }
