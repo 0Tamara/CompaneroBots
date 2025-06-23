@@ -1,6 +1,9 @@
 #include <FastAccelStepper.h>
 #include <Adafruit_PWMServoDriver.h>
+#include <Wire.h>
 
+#define SERVOMIN  125
+#define SERVOMAX  575
 #define numServos 8
 #define stepsPerNote 984
 #define stepsPerOctave 6840
@@ -22,7 +25,9 @@ const int rightHandDirPin = 13;
 const int rightHandEnPin = 19;
 
 // kniznice
-Adafruit_PWMServoDriver pca9685 = Adafruit_PWMServoDriver(0x40);
+Adafruit_PWMServoDriver pca9685right(0x40, Wire);
+Adafruit_PWMServoDriver pca9685left(0x41, Wire1);
+
 FastAccelStepperEngine engine = FastAccelStepperEngine();
 FastAccelStepper *stepperLeft = NULL;
 FastAccelStepper *stepperRight = NULL;
@@ -38,29 +43,38 @@ struct Hand
   unsigned long timeFromMoving;
   unsigned long lastTime;
   Adafruit_PWMServoDriver* pca9685; 
-  int channelOffset = 0; 
 };
 
 Hand leftHand = {
   .currentOctave = 0,
   .currentNote = 0,
   .stepper = NULL,
-  .pca9685 = &pca9685,
-  .channelOffset = 0 
+  .timeFromMoving = 0,
+  .lastTime = 0,
+  .pca9685 = &pca9685left,
+  
+
 };
 Hand rightHand = {
   .currentOctave = 0,
   .currentNote = 0,
   .stepper = NULL,
-  .pca9685 = &pca9685,
-  .channelOffset = 8 
+  .timeFromMoving = 0,
+  .lastTime = 0,
+  .pca9685 = &pca9685right,
+  
 };
 void setup() {
   Serial.begin(115200);
-  pca9685.begin();
-  pca9685.setPWMFreq(50); 
-  for (int i = 0; i < numServos * 2; i++){
-    pca9685.setPWM(i, 0, SERVOMIN); // 0 stupnov
+  Wire.begin(21, 22);
+  Wire1.begin(32, 33);
+  pca9685right.begin();
+  pca9685left.begin();
+  pca9685right.setPWMFreq(50);
+  pca9685left.setPWMFreq(50); 
+  for (int i = 0; i < numServos; i++){
+    pca9685left.setPWM(i, 0, SERVOMIN);
+    pca9685right.setPWM(i, 0, SERVOMIN); // 0 stupnov
   }
 
   engine.init();
@@ -122,6 +136,10 @@ int angleToPulse(int angle){
 
 unsigned long moveToNote(Hand& hand, int targetNote, int targetOctave) {
   unsigned long start = millis();
+  if (targetNote < C || targetNote > H || targetOctave < 0 || targetOctave > 8) {
+    Serial.printf("Neplatny targetNote(%d) alebo targetOctave(%d).\n", targetNote, targetOctave);
+    return 0;
+  }
   int lastSteps = hand.currentOctave * stepsPerOctave + hand.currentNote * stepsPerNote;
   int steps = targetOctave * stepsPerOctave + targetNote * stepsPerNote;
   if (steps - lastSteps == 0) return 0;
@@ -150,7 +168,7 @@ void playNote(Hand& hand, int targetNote, int targetOctave, int wait, int note1,
   while (millis() - hand.lastTime <= holdTime) {
     for (int i = 0; i < 3; i++){
       if (notes[i] != -1 && notes[i] < numServos){
-        hand.pca9685->setPWM(notes[i] + hand.channelOffset, 0, angleToPulse(90)); 
+        hand.pca9685->setPWM(notes[i], 0, angleToPulse(90)); 
       }
     }
   }
@@ -158,7 +176,7 @@ void playNote(Hand& hand, int targetNote, int targetOctave, int wait, int note1,
   while (millis() - hand.lastTime <= rezerva * noteCount) {
     for (int i = 0; i < 3; i++){
       if (notes[i] != -1 && notes[i] < numServos){
-        hand.pca9685->setPWM(notes[i] + hand.channelOffset, 0, angleToPulse(0)); 
+        hand.pca9685->setPWM(notes[i], 0, angleToPulse(0)); 
       }
     }
   }
