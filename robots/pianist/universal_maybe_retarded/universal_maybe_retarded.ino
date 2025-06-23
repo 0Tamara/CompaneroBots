@@ -13,7 +13,7 @@ int stv = tempo / 4;
 int pol = tempo / 2;
 int cel = tempo;
 
-int rezerva = 50; 
+const int rezerva = 50; 
 const int leftHandStepPin = 14; 
 const int leftHandDirPin = 12; 
 const int leftHandEnPin = 18;
