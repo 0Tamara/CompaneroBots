@@ -30,6 +30,7 @@ CRGB eyes[LED_COUNT_EYES];
 unsigned long timer_kick;
 unsigned long timer_right;
 unsigned long timer_left;
+unsigned long timer_music;
 int kicks;
 int snares;
 
@@ -47,6 +48,9 @@ int color_index_right = 0;
 TaskHandle_t Task1;
 int rising_color[3] = {0, 0, 0};  //color used for rising effects (during music)
 bool blink_drums[3] = {0, 0, 0};  //rising effects active
+int LEDs_pos[3] = {0, 0, LED_COUNT_R-1};  //position on the LED ring
+bool rising[3] = {1, 1, 1};  //rising / lowering
+bool miss_out[3] = {0, 0, 0};  //missing out every other step to go slower
 
 // Zapína LED na všetkých pásikoch naraz
 void ledky_vedlajsie() {
@@ -79,25 +83,25 @@ void kick_ring_bubon() {
   }
 }
 
-void changeColorsKick()
-{
-  if(color_index_kick < 5)
-    color_index_kick++;
-  else
-    color_index_kick = 0;
-  for(int i=0; i<LED_COUNT_K; i++)
-    kick_ring[i] = colors_drums[color_index_kick];
-  FastLED.show();
-}
 void changeColorsLeft()
 {
   if(color_index_left < 5)
     color_index_left++;
   else
     color_index_left = 0;
-  for(int i=0; i<LED_COUNT_L; i++)
-    left_ring[i] = colors_drums[color_index_left];
-  FastLED.show();
+  rising_color[0] = colors_drums[color_index_left];
+  rising[0] = 1;
+  blink_drums[0] = 1;
+}
+void changeColorsKick()
+{
+  if(color_index_kick < 5)
+    color_index_kick++;
+  else
+    color_index_kick = 0;
+  rising_color[1] = colors_drums[color_index_kick];
+  rising[1] = 1;
+  blink_drums[1] = 1;
 }
 void changeColorsRight()
 {
@@ -105,9 +109,9 @@ void changeColorsRight()
     color_index_right++;
   else
     color_index_right = 0;
-  for(int i=0; i<LED_COUNT_R; i++)
-    right_ring[i] = colors_drums[color_index_right];
-  FastLED.show();
+  rising_color[2] = colors_drums[color_index_right];
+  rising[2] = 1;
+  blink_drums[2] = 1;
 }
 
 //---music functions---
@@ -393,10 +397,6 @@ void openEyes(uint color)  //cca 300ms
 //---loop for rising effects (during music)---
 void loop_2(void* parameter)
 {
-  //---setup2---
-  int LEDs_pos[3] = {0, 0, LED_COUNT_R-1};  //position on the LED ring
-  bool rising[3] = {1, 1, 1};  //rising / lowering
-  bool miss_out = 0;  //missing out every other step to go slower
   //---loop2---
   while(true)
   {
@@ -423,6 +423,7 @@ void loop_2(void* parameter)
           rising[0] = 1;
           blink_drums[0] = 0;
           LEDs_pos[0] = 0;
+          miss_out[0] = 0;
         }
       }
     }
@@ -432,10 +433,12 @@ void loop_2(void* parameter)
       if(rising[1])  //lighting up
       {
         kick_ring[LEDs_pos[1]] = rising_color[1];
+        kick_ring[LEDs_pos[1]+1] = rising_color[1];
         kick_ring[(LED_COUNT_K-1)-LEDs_pos[1]] = rising_color[1];  //going from both sides to middle
-        LEDs_pos[1] ++;
+        kick_ring[(LED_COUNT_K-1)-LEDs_pos[1]-1] = rising_color[1];
+        LEDs_pos[1] +=2;
 
-        if(LEDs_pos[1] == LED_COUNT_K/2)  //prepare values for turn off stage
+        if(LEDs_pos[1] > LED_COUNT_K/2-1)  //prepare values for turn off stage
         {
           rising[1] = 0;
           LEDs_pos[1] = LED_COUNT_K/2-1;
@@ -445,15 +448,14 @@ void loop_2(void* parameter)
       {
         kick_ring[LEDs_pos[1]] = 0;
         kick_ring[(LED_COUNT_K-1)-LEDs_pos[1]] = 0;
-        if(!miss_out)  //turning off half the speed
-          LEDs_pos[1] --;
-        miss_out = !miss_out;
+        LEDs_pos[1] --;
 
         if(LEDs_pos[1] < 0)  //revert values
         {
           rising[1] = 1;
           blink_drums[1] = 0;
           LEDs_pos[1] = 0;
+          miss_out[1] = 0;
         }
       }
     }
@@ -481,12 +483,13 @@ void loop_2(void* parameter)
           rising[2] = 1;
           blink_drums[2] = 0;
           LEDs_pos[2] = LED_COUNT_R-1;
+          miss_out[2] = 0;
         }
       }
     }
     
     FastLED.show();
-    delay(20);
+    delay(10);
   }
 }
 
@@ -517,7 +520,7 @@ void setup()
   FastLED.addLeds<WS2811, LED_PIN_R, GRB>(right_ring, LED_COUNT_R);
   FastLED.addLeds<WS2811, LED_PIN_EYES, GRB>(eyes, LED_COUNT_EYES);
 
-  FastLED.setBrightness(32);
+  FastLED.setBrightness(32);  //---temp!!!
 
   for (int i = 0; i < 54; i++) {
     if (i < LED_COUNT_R) right_ring[i] = 0x808080;
@@ -537,5 +540,9 @@ void setup()
 
 void loop()
 {
-
+  if((millis()-timer_music) >= 2280)
+  {
+    timer_music = millis();
+    freedom();
+  }
 }
