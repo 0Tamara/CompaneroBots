@@ -148,8 +148,9 @@ void openEyes(uint color)  //cca 300ms
 
 void loop_2(void* parameter)
 {
-  int cycle[3] = {0, 0, 0};
+  int cycle[3] = {0, 0, LED_COUNT_R-1};
   bool rising[3] = {1, 1, 1};
+  bool miss_out = 0;
   while(true)
   {
     if(blink_drums[0])
@@ -157,7 +158,6 @@ void loop_2(void* parameter)
       if(rising[0])
       {
         left_ring[cycle[0]] = rising_color[0];
-        Serial.printf("Setting L%d on color 0x%06X\n", cycle[0], rising_color[0]);
         cycle[0] ++;
         if(cycle[0] == LED_COUNT_L)
         {
@@ -168,7 +168,6 @@ void loop_2(void* parameter)
       else
       {
         left_ring[cycle[0]] = 0;
-        Serial.printf("Setting L%d on color 0x000000\n", cycle[0]);
         cycle[0] --;
         if(cycle[0] < 0)
         {
@@ -184,19 +183,22 @@ void loop_2(void* parameter)
       if(rising[1])
       {
         kick_ring[cycle[1]] = rising_color[1];
-        Serial.printf("Setting K%d on color 0x%06X\n", cycle[1], rising_color[1]);
+        kick_ring[(LED_COUNT_K-1)-cycle[1]] = rising_color[1];
         cycle[1] ++;
-        if(cycle[1] == LED_COUNT_K)
+        if(cycle[1] == LED_COUNT_K/2)
         {
           rising[1] = 0;
-          cycle[1] = LED_COUNT_K-1;
+          cycle[1] = LED_COUNT_K/2-1;
         }
       }
       else
       {
         kick_ring[cycle[1]] = 0;
-        Serial.printf("Setting K%d on color 0x000000\n", cycle[1]);
-        cycle[1] --;
+        kick_ring[(LED_COUNT_K-1)-cycle[1]] = 0;
+        if(!miss_out)
+          cycle[1] --;
+        miss_out = !miss_out;
+
         if(cycle[1] < 0)
         {
           rising[1] = 1;
@@ -211,30 +213,27 @@ void loop_2(void* parameter)
       if(rising[2])
       {
         right_ring[cycle[2]] = rising_color[2];
-        Serial.printf("Setting R%d on color 0x%06X\n", cycle[2], rising_color[2]);
-        cycle[2] ++;
-        if(cycle[2] == LED_COUNT_R)
+        cycle[2] --;
+        if(cycle[2] < 0)
         {
           rising[2] = 0;
-          cycle[2] = LED_COUNT_R-1;
+          cycle[2] = 0;
         }
       }
       else
       {
         right_ring[cycle[2]] = 0;
-        Serial.printf("Setting R%d on color 0x000000\n", cycle[2]);
-        cycle[2] --;
-        if(cycle[2] < 0)
+        cycle[2] ++;
+        if(cycle[2] == LED_COUNT_R)
         {
           rising[2] = 1;
           blink_drums[2] = 0;
-          cycle[2] = 0;
+          cycle[2] = LED_COUNT_R-1;
         }
       }
     }
     
     FastLED.show();
-    Serial.printf("Showing LEDs\n\n");
     delay(20);
   }
 }
@@ -290,12 +289,10 @@ void loop()
   {
     rising_color[0] = colors_drums[i];
     blink_drums[0] = 1;
-    delay(1000);
     rising_color[1] = colors_drums[i];
     blink_drums[1] = 1;
-    delay(1000);
     rising_color[2] = colors_drums[i];
     blink_drums[2] = 1;
-    delay(1000);
+    delay(3000);
   }
 }
