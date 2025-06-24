@@ -1,6 +1,11 @@
-#include <ESP32Servo.h>
-#include <FastAccelStepper.h>
 
+#include <FastAccelStepper.h>
+#include <Adafruit_PWMServoDriver.h>
+#include <Wire.h>
+
+
+#define SERVOMIN  125
+#define SERVOMAX  575
 #define numServos 8
 #define stepsPerNote 984
 #define stepsPerOctave 6840
@@ -21,28 +26,30 @@ FastAccelStepperEngine engine = FastAccelStepperEngine();
 FastAccelStepper *stepperLeft = NULL;
 FastAccelStepper *stepperRight = NULL;
 
+Adafruit_PWMServoDriver pca9685right(0x40, Wire);
+Adafruit_PWMServoDriver pca9685left(0x41, Wire1);
+
+
 struct Hand {
-  Servo servos[numServos];
-  int servoPins[numServos];
   int currentOctave;
   int currentNote;
-  //FastAccelStepper *stepper;
+  Adafruit_PWMServoDriver* pca9685; 
   unsigned long timeFromMoving;
   unsigned long lastTime;
 };
 
 Hand leftHand = {
-  .servoPins = {0},
   .currentOctave = 0,
   .currentNote = 0,
+  .pca9685 = &pca9685left,
   .timeFromMoving = 0,
   .lastTime = 0,
   //.stepper = stepperLeft
 };
 Hand rightHand = {
-  .servoPins = {0},
   .currentOctave = 0,
   .currentNote = 0,
+  .pca9685 = &pca9685right,
   .timeFromMoving = 0,
   .lastTime = 0,
   //.stepper = stepperRight
@@ -50,15 +57,18 @@ Hand rightHand = {
 
 void setup() {
   Serial.begin(115200);
+  Wire.begin(21, 22);
+  Wire1.begin(32, 33);
+  
+  pca9685right.begin();
+  pca9685left.begin();
+
+  pca9685right.setPWMFreq(50);
+  pca9685left.setPWMFreq(50);
+
   for (int i = 0; i < numServos; i++) {
-    if (!leftHand.servos[i].attach(leftHand.servoPins[i])) {
-      Serial.printf("Servo %d na pine %d (lava ruka) nepripojeno\n", i, leftHand.servoPins[i]);
-    }
-    if (!rightHand.servos[i].attach(rightHand.servoPins[i])) {
-      Serial.printf("Servo %d na pine %d (prava ruka) nepripojeno\n", i, rightHand.servoPins[i]);
-    }
-    leftHand.servos[i].write(0);
-    rightHand.servos[i].write(0);
+    rightHand.pca9685->setPWM(i, 0, SERVOMIN);
+    leftHand.pca9685->setPWM(i, 0, SERVOMIN);
   }
   engine.init();
   stepperLeft = engine.stepperConnectToPin(leftHandStepPin);
@@ -120,24 +130,24 @@ void setup() {
   for (int i = 0; i < numServos; i++) {
     Serial.printf("servo %d na lavej ruke\n", i);
     unsigned long servoStart = millis();
-    leftHand.servos[i].write(90);
+    leftHand.pca9685->setPWM(i, 0, SERVOMAX); 
     delay(500); // Čas na stlačenie
     unsigned long pressTime = millis() - servoStart;
     Serial.printf("Čas stlačenia: %lu ms\n", pressTime);
     servoStart = millis();
-    leftHand.servos[i].write(0);
+    leftHand.pca9685->setPWM(i, 0, SERVOMIN);
     delay(500); // Čas na pustenie
     Serial.printf("Čas pustenia: %lu ms\n", millis() - servoStart);
   }
   for (int i = 0; i < numServos; i++) {
     Serial.printf("Testujem servo %d na pravej ruke\n", i);
     unsigned long servoStart = millis();
-    rightHand.servos[i].write(90);
+    rightHand.pca9685->setPWM(i, 0, SERVOMAX);
     delay(500); // Čas na stlačenie
     unsigned long pressTime = millis() - servoStart;
     Serial.printf("Čas stlačenia: %lu ms\n", pressTime);
     servoStart = millis();
-    rightHand.servos[i].write(0);
+    rightHand.pca9685->setPWM(i, 0, SERVOMIN);
     delay(500); // Čas na pustenie
     Serial.printf("Čas pustenia: %lu ms\n", millis() - servoStart);
   }
