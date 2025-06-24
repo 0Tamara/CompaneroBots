@@ -42,8 +42,8 @@ uint colors_drums[6] = {0xFF0000,  //colors that will be cycling over
                         0x800080};
 
 TaskHandle_t Task1;
-int rising_color[3] = {0, 0, 0};
-bool blink_drums[3] = {0, 0, 0};
+int rising_color[3] = {0, 0, 0};  //color used for rising effects (during music)
+bool blink_drums[3] = {0, 0, 0};  //rising effects active
 /*
 // Zapína LED na všetkých pásikoch naraz
 void ledky_vedlajsie() {
@@ -146,89 +146,96 @@ void openEyes(uint color)  //cca 300ms
   delay(50);
 }*/
 
-void loop_2(void* parameter)
+void loop_2(void* parameter)  //loop for rising effects (during music)
 {
-  int cycle[3] = {0, 0, LED_COUNT_R-1};
-  bool rising[3] = {1, 1, 1};
-  bool miss_out = 0;
+  //---setup2---
+  int LEDs_pos[3] = {0, 0, LED_COUNT_R-1};  //position on the LED ring
+  bool rising[3] = {1, 1, 1};  //rising / lowering
+  bool miss_out = 0;  //missing out every other step to go slower
+  //---loop2---
   while(true)
   {
-    if(blink_drums[0])
+    if(blink_drums[0])  //left effect active
     {
-      if(rising[0])
+      if(rising[0])  //lighting up
       {
-        left_ring[cycle[0]] = rising_color[0];
-        cycle[0] ++;
-        if(cycle[0] == LED_COUNT_L)
+        left_ring[LEDs_pos[0]] = rising_color[0];
+        LEDs_pos[0] ++;
+
+        if(LEDs_pos[0] == LED_COUNT_L)  //prepare values for turn off stage
         {
           rising[0] = 0;
-          cycle[0] = LED_COUNT_L-1;
+          LEDs_pos[0] = LED_COUNT_L-1;
         }
       }
-      else
+      else  //turning off
       {
-        left_ring[cycle[0]] = 0;
-        cycle[0] --;
-        if(cycle[0] < 0)
+        left_ring[LEDs_pos[0]] = 0;
+        LEDs_pos[0] --;
+
+        if(LEDs_pos[0] < 0)  //revert values
         {
           rising[0] = 1;
           blink_drums[0] = 0;
-          cycle[0] = 0;
+          LEDs_pos[0] = 0;
         }
       }
     }
 
-    if(blink_drums[1])
+    if(blink_drums[1])  //kick effect active
     {
-      if(rising[1])
+      if(rising[1])  //lighting up
       {
-        kick_ring[cycle[1]] = rising_color[1];
-        kick_ring[(LED_COUNT_K-1)-cycle[1]] = rising_color[1];
-        cycle[1] ++;
-        if(cycle[1] == LED_COUNT_K/2)
+        kick_ring[LEDs_pos[1]] = rising_color[1];
+        kick_ring[(LED_COUNT_K-1)-LEDs_pos[1]] = rising_color[1];  //going from both sides to middle
+        LEDs_pos[1] ++;
+
+        if(LEDs_pos[1] == LED_COUNT_K/2)  //prepare values for turn off stage
         {
           rising[1] = 0;
-          cycle[1] = LED_COUNT_K/2-1;
+          LEDs_pos[1] = LED_COUNT_K/2-1;
         }
       }
-      else
+      else  //turning off
       {
-        kick_ring[cycle[1]] = 0;
-        kick_ring[(LED_COUNT_K-1)-cycle[1]] = 0;
-        if(!miss_out)
-          cycle[1] --;
+        kick_ring[LEDs_pos[1]] = 0;
+        kick_ring[(LED_COUNT_K-1)-LEDs_pos[1]] = 0;
+        if(!miss_out)  //turning off half the speed
+          LEDs_pos[1] --;
         miss_out = !miss_out;
 
-        if(cycle[1] < 0)
+        if(LEDs_pos[1] < 0)  //revert values
         {
           rising[1] = 1;
           blink_drums[1] = 0;
-          cycle[1] = 0;
+          LEDs_pos[1] = 0;
         }
       }
     }
 
-    if(blink_drums[2])
+    if(blink_drums[2])  //right effect active
     {
       if(rising[2])
       {
-        right_ring[cycle[2]] = rising_color[2];
-        cycle[2] --;
-        if(cycle[2] < 0)
+        right_ring[LEDs_pos[2]] = rising_color[2];
+        LEDs_pos[2] --;
+
+        if(LEDs_pos[2] < 0)  //prepare values for turn off stage
         {
           rising[2] = 0;
-          cycle[2] = 0;
+          LEDs_pos[2] = 0;
         }
       }
       else
       {
-        right_ring[cycle[2]] = 0;
-        cycle[2] ++;
-        if(cycle[2] == LED_COUNT_R)
+        right_ring[LEDs_pos[2]] = 0;
+        LEDs_pos[2] ++;
+
+        if(LEDs_pos[2] == LED_COUNT_R)  //revert values
         {
           rising[2] = 1;
           blink_drums[2] = 0;
-          cycle[2] = LED_COUNT_R-1;
+          LEDs_pos[2] = LED_COUNT_R-1;
         }
       }
     }
