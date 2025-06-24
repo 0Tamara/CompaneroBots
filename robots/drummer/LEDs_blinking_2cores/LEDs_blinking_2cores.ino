@@ -44,7 +44,7 @@ uint colors_drums[6] = {0xFF0000,  //colors that will be cycling over
 TaskHandle_t Task1;
 int rising_color[3] = {0, 0, 0};
 bool blink_drums[3] = {0, 0, 0};
-
+/*
 // Zapína LED na všetkých pásikoch naraz
 void ledky_vedlajsie() {
   for (int i = 0; i < LED_COUNT_R; i++) {
@@ -144,7 +144,7 @@ void openEyes(uint color)  //cca 300ms
   FastLED.show();
 
   delay(50);
-}
+}*/
 
 void loop_2(void* parameter)
 {
@@ -157,18 +157,24 @@ void loop_2(void* parameter)
       if(rising[0])
       {
         left_ring[cycle[0]] = rising_color[0];
+        Serial.printf("Setting L%d on color 0x%06X\n", cycle[0], rising_color[0]);
         cycle[0] ++;
         if(cycle[0] == LED_COUNT_L)
+        {
           rising[0] = 0;
+          cycle[0] = LED_COUNT_L-1;
+        }
       }
       else
       {
         left_ring[cycle[0]] = 0;
+        Serial.printf("Setting L%d on color 0x000000\n", cycle[0]);
         cycle[0] --;
         if(cycle[0] < 0)
         {
           rising[0] = 1;
           blink_drums[0] = 0;
+          cycle[0] = 0;
         }
       }
     }
@@ -178,18 +184,24 @@ void loop_2(void* parameter)
       if(rising[1])
       {
         kick_ring[cycle[1]] = rising_color[1];
+        Serial.printf("Setting K%d on color 0x%06X\n", cycle[1], rising_color[1]);
         cycle[1] ++;
         if(cycle[1] == LED_COUNT_K)
+        {
           rising[1] = 0;
+          cycle[1] = LED_COUNT_K-1;
+        }
       }
       else
       {
         kick_ring[cycle[1]] = 0;
+        Serial.printf("Setting K%d on color 0x000000\n", cycle[1]);
         cycle[1] --;
         if(cycle[1] < 0)
         {
           rising[1] = 1;
           blink_drums[1] = 0;
+          cycle[1] = 0;
         }
       }
     }
@@ -199,23 +211,30 @@ void loop_2(void* parameter)
       if(rising[2])
       {
         right_ring[cycle[2]] = rising_color[2];
+        Serial.printf("Setting R%d on color 0x%06X\n", cycle[2], rising_color[2]);
         cycle[2] ++;
         if(cycle[2] == LED_COUNT_R)
+        {
           rising[2] = 0;
+          cycle[2] = LED_COUNT_R-1;
+        }
       }
       else
       {
         right_ring[cycle[2]] = 0;
+        Serial.printf("Setting R%d on color 0x000000\n", cycle[2]);
         cycle[2] --;
         if(cycle[2] < 0)
         {
           rising[2] = 1;
           blink_drums[2] = 0;
+          cycle[2] = 0;
         }
       }
     }
     
     FastLED.show();
+    Serial.printf("Showing LEDs\n\n");
     delay(20);
   }
 }
