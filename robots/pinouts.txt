@@ -4,7 +4,7 @@ dancer
     
 
 drummer
-  ESP32 MAC addr: a8:42:e3:a8:e4:10
+  ESP32 MAC addr: {0xA0, 0xA3, 0xB3, 0xFE, 0xD7, 0xC4}
   pins:
     13 servo right arm (green)
     12 servo left arm (yellow)
