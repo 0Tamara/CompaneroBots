@@ -1,7 +1,28 @@
 dancer
-  ESP32 MAC addr:
+  ESP32 MAC addr: {0xA0, 0xDD, 0x6C, 0x0F, 0x79, 0x38}
   pins:
-    
+    13 right arm
+    12 left arm
+    14 right elbow
+    27 left elbow
+    32 eyes
+    motors:
+      front right:
+        2  en
+        4  dir
+        16 dir
+      front left:
+        17 dir
+        5  dir
+        18 en
+      rear right:
+        19 en
+        21 dir
+        33 dir
+      rear left:
+        25 dir
+        22 dir
+        23 en
 
 drummer
   ESP32 MAC addr: {0xA0, 0xA3, 0xB3, 0xFE, 0xD7, 0xC4}
