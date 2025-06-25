@@ -11,6 +11,7 @@
 #define acceleration 40000
 // casy
 int tempo = 2000;
+int sest = tempo / 16; 
 int osm = tempo / 8;
 int stv = tempo / 4;
 int pol = tempo / 2;
@@ -101,29 +102,227 @@ void setup() {
 
   stepperRight->setSpeedInHz(speedInHz);
   stepperRight->setAcceleration(acceleration);
-  stepperRight->setCurrentPosition(0);
+  stepperRight->setCurrentPosition(stepsPerOctave * 3); 
 }
 
-int melodyLeft1[][6] = {
-    {D, 5, osm, NIC, NIC, SERVO2},
-    {C, 4, stv, SERVO2, NIC, SERVO5}
-    
-
+int havasiFreedomRight[][6] = {
+    //prvy takt
+    {A, 2, cel, NIC, NIC, NIC},
+    // druhy takt
+    {A, 2, cel, NIC, NIC, NIC},
+    //treti takt
+    {A, 2, cel, NIC, NIC, NIC},
+    //stvrty takt
+    {A, 2, cel, NIC, NIC, NIC},
+    //piaty takt
+    {A, 2, osm, SERVO1, SERVO3, SERVO5},
+    {A, 2, sest, NIC, NIC, NIC},
+    {A, 2, osm, SERVO1, SERVO3, SERVO5},
+    {A, 2, sest, NIC, NIC, NIC},
+    {A, 2, stv, SERVO1, SERVO3, NIC},
+    {A, 2, sest, SERVO2, NIC, NIC},
+    {A, 2, sest, SERVO3, NIC, NIC},
+    {A, 2, osm, SERVO4, NIC, NIC},
+    {A, 2, sest, NIC, NIC, NIC},
+    {A, 2, sest, SERVO5, NIC, NIC},
+    //prvy takt
+    {A, 2, stv, SERVO1, SERVO3, NIC},
+    {A, 2, osm, NIC, NIC, NIC},
+    {A, 2, stv, NIC, NIC, NIC},
+    {A, 2, sest, SERVO2, NIC, NIC},
+    {A, 2, sest, SERVO3, NIC, NIC},
+    {A, 2, osm, SERVO2, SERVO4, NIC},
+    {A, 2, osm, SERVO3, SERVO5, NIC},
+    //druhy takt
+    {A, 2, osm, SERVO1, SERVO3, SERVO5},
+    {A, 2, sest, NIC, NIC, NIC},
+    {A, 2, osm, SERVO1, SERVO3},
+    {A, 2, sest, NIC, NIC, NIC},
+    {A, 2, stv, NIC, NIC, NIC},
+    {A, 2, sest, SERVO2, NIC, NIC},
+    {A, 2, sest, SERVO3, NIC, NIC},
+    {A, 2, osm, SERVO4, NIC, NIC},
+    {A, 2, sest, NIC, NIC, NIC},
+    {A, 2, sest, SERVO5, NIC, NIC},
+    //treti takt
+    {A, 2, stv, SERVO1, SERVO3, NIC},
+    {A, 2, osm, NIC, NIC, NIC},
+    {A, 2, stv, NIC, NIC, NIC},
+    {A, 2, sest, SERVO1, NIC, NIC},
+    {A, 2, sest, SERVO2, NIC, NIC},
+    {A, 2, osm, SERVO1, SERVO3, NIC},
+    {A, 2, osm, SERVO1, SERVO4, NIC},
+    //stvrty takt
+    {A, 2, osm, SERVO1, SERVO3, SERVO5},
+    {A, 2, sest, NIC, NIC, NIC},
+    {A, 2, osm, SERVO1, SERVO3, SERVO5},
+    {A, 2, sest, NIC, NIC, NIC},
+    {A, 2, stv, NIC, NIC, NIC},
+    {A, 2, sest, SERVO2, NIC, NIC},
+    {A, 2, sest, SERVO3, NIC, NIC},
+    {A, 2, osm, SERVO2, SERVO4, NIC},
+    {A, 2, sest, NIC, NIC, NIC},
+    {A, 2, sest, SERVO3, SERVO5, NIC},
+    //prvy takt
+    {A, 2, stv, SERVO1, SERVO3, NIC},
+    {A, 2, stv, NIC, NIC, NIC},
+    {A, 2, sest, SERVO2, NIC, NIC},
+    {A, 2, sest, SERVO3, NIC, NIC},
+    {A, 2, osm, SERVO2, SERVO4, NIC},
+    {A, 2, osm, SERVO3, SERVO5, NIC},
+    //druhy takt
+    {A, 2, osm, SERVO1, SERVO3, SERVO5},
+    {A, 2, sest, NIC, NIC, NIC},
+    {A, 2, osm, SERVO1, SERVO3, NIC},
+    {A, 2, stv, NIC, NIC, NIC},
+    {A, 2, sest, SERVO1, NIC, NIC},
+    {A, 2, sest, SERVO2, NIC, NIC},
+    {A, 2, osm, SERVO1, SERVO3, NIC},
+    {A, 2, osm, SERVO2, SERVO4},
+    // treti takt, tu je toten krizik sprosty
+    {G, 2, osm, SERVO1, SERVO6, NIC },
+    {G, 2, sest, NIC, NIC, NIC},
+    {G, 2, osm, SERVO1, SERVO7, NIC },
+    {G, 2, osm, SERVO1, SERVO7, NIC },
+    {G, 2, sest, NIC, NIC, NIC},
+    {G, 2, stv, SERVO1, SERVO6, NIC },
+    {G, 2, stv, SERVO1, SERVO6, NIC },
+    //aaa tu sa to uz opakovat bude, nemam nervy pisat toto, a asi to nebude 
 };
-int melodyRight1[][6] = {
-    {E, 2, osm, NIC, NIC, SERVO1},
-    {G, 1, stv, SERVO3, NIC, SERVO6}
-};
-
+int havasiFreedomLeft[][6] = {
+    //prvy takt
+    {A, 1, osm, SERVO1, NIC, NIC},
+    {A, 1, sest, NIC, NIC, NIC},
+    {A, 1, osm, NIC, SERVO8, NIC},
+    {A, 1, sest, NIC, NIC, NIC},
+    {A, 1, osm, NIC, SERVO8, NIC},
+    {A, 1, stv, NIC, SERVO8, NIC},
+    {A, 1, stv, NIC, SERVO8, NIC},
+    //druhy takt
+    {A, 1, osm, SERVO1, NIC, NIC},
+    {A, 1, sest, NIC, NIC, NIC},
+    {A, 1, osm, NIC, SERVO8, NIC},
+    {A, 1, sest, NIC, NIC, NIC},
+    {A, 1, osm, NIC, SERVO8, NIC},
+    {A, 1, stv, NIC, SERVO8, NIC},
+    {A, 1, stv, NIC, SERVO8, NIC},
+    //treti takt
+    {A, 1, osm, SERVO1, NIC, NIC},
+    {A, 1, sest, NIC, NIC, NIC},
+    {A, 1, osm, NIC, SERVO8, NIC},
+    {A, 1, sest, NIC, NIC, NIC},
+    {A, 1, osm, NIC, SERVO8, NIC},
+    {A, 1, stv, NIC, SERVO8, NIC},
+    {A, 1, stv, NIC, SERVO8, NIC},
+    //stvrty takt
+    {A, 1, osm, SERVO1, NIC, NIC},
+    {A, 1, sest, NIC, NIC, NIC},
+    {A, 1, osm, NIC, SERVO8, NIC},
+    {A, 1, sest, NIC, NIC, NIC},
+    {A, 1, osm, NIC, SERVO8, NIC},
+    {A, 1, stv, NIC, SERVO8, NIC},
+    {A, 1, stv, NIC, SERVO8, NIC},
+    //piaty takt
+    {A, 1, osm, SERVO1, SERVO8, NIC},
+    {A, 1, sest, NIC, NIC, NIC},
+    {A, 1, osm, SERVO1, SERVO8, NIC},
+    {A, 1, sest, NIC, NIC, NIC},
+    {A, 1, osm, SERVO1, SERVO8, NIC},
+    {A, 1, sest, NIC, NIC, NIC},
+    {A, 1, osm, SERVO1, SERVO8, NIC},
+    {A, 1, sest, NIC, NIC, NIC},
+    {A, 1, stv, SERVO1, SERVO8, NIC},
+    //prvy takt, nechapem jak mozu byt tak hnusne tony dane, sak tu sa iba opakuje jedna oktava skoro dookola
+    {A, 1, osm, SERVO1, SERVO8, NIC},
+    {A, 1, sest, NIC, NIC, NIC},
+    {A, 1, osm, SERVO1, SERVO8, NIC},
+    {A, 1, sest, NIC, NIC, NIC},
+    {A, 1, osm, SERVO1, SERVO8, NIC},
+    {A, 1, sest, NIC, NIC, NIC},
+    {A, 1, osm, SERVO1, SERVO8, NIC},
+    {A, 1, sest, NIC, NIC, NIC},
+    {A, 1, stv, SERVO1, SERVO8, NIC},
+    //druhy takt
+    {A, 1, osm, SERVO1, SERVO8, NIC},
+    {A, 1, sest, NIC, NIC, NIC},
+    {A, 1, osm, SERVO1, SERVO8, NIC},
+    {A, 1, sest, NIC, NIC, NIC},
+    {A, 1, osm, SERVO1, SERVO8, NIC},
+    {A, 1, sest, NIC, NIC, NIC},
+    {A, 1, osm, SERVO1, SERVO8, NIC},
+    {A, 1, sest, NIC, NIC, NIC},
+    {A, 1, stv, SERVO1, SERVO8, NIC},
+    //druhy takt
+    {A, 1, osm, SERVO1, SERVO8, NIC},
+    {A, 1, sest, NIC, NIC, NIC},
+    {A, 1, osm, SERVO1, SERVO8, NIC},
+    {A, 1, sest, NIC, NIC, NIC},
+    {A, 1, osm, SERVO1, SERVO8, NIC},
+    {A, 1, sest, NIC, NIC, NIC},
+    {A, 1, osm, SERVO1, SERVO8, NIC},
+    {A, 1, sest, NIC, NIC, NIC},
+    {A, 1, stv, SERVO1, SERVO8, NIC},
+    //treti takt
+    {A, 1, osm, SERVO1, SERVO8, NIC},
+    {A, 1, sest, NIC, NIC, NIC},
+    {A, 1, osm, SERVO1, SERVO8, NIC},
+    {A, 1, sest, NIC, NIC, NIC},
+    {A, 1, osm, SERVO1, SERVO8, NIC},
+    {A, 1, sest, NIC, NIC, NIC},
+    {A, 1, osm, SERVO1, SERVO8, NIC},
+    {A, 1, sest, NIC, NIC, NIC},
+    {A, 1, stv, SERVO1, SERVO8, NIC},
+    //stvrty takt
+    {F, 1, osm, SERVO1, SERVO8, NIC},
+    {F, 1, sest, NIC, NIC, NIC},
+    {F, 1, osm, SERVO1, SERVO8, NIC},
+    {F, 1, sest, NIC, NIC, NIC},
+    {F, 1, osm, SERVO1, SERVO8, NIC},
+    {F, 1, sest, NIC, NIC, NIC},
+    {F, 1, osm, SERVO1, SERVO8, NIC},
+    {F, 1, sest, NIC, NIC, NIC},
+    {F, 1, stv, SERVO1, SERVO8, NIC},
+    //prvy takt
+    {F, 1, osm, SERVO1, SERVO8, NIC},
+    {F, 1, sest, NIC, NIC, NIC},
+    {F, 1, osm, SERVO1, SERVO8, NIC},
+    {F, 1, sest, NIC, NIC, NIC},
+    {F, 1, osm, SERVO1, SERVO8, NIC},
+    {F, 1, sest, NIC, NIC, NIC},
+    {F, 1, osm, SERVO1, SERVO8, NIC},
+    {F, 1, sest, NIC, NIC, NIC},
+    {F, 1, stv, SERVO1, SERVO8, NIC},
+    //druhy takt
+    {F, 1, osm, SERVO1, SERVO8, NIC},
+    {F, 1, sest, NIC, NIC, NIC},
+    {F, 1, osm, SERVO1, SERVO8, NIC},
+    {F, 1, sest, NIC, NIC, NIC},
+    {F, 1, osm, SERVO1, SERVO8, NIC},
+    {F, 1, sest, NIC, NIC, NIC},
+    {F, 1, osm, SERVO1, SERVO8, NIC},
+    {F, 1, sest, NIC, NIC, NIC},
+    {F, 1, stv, SERVO1, SERVO8, NIC},
+    //treti takt
+    {E, 1, osm, SERVO1, SERVO8, NIC},
+    {E, 1, sest, NIC, NIC, NIC},
+    {E, 1, osm, SERVO1, SERVO8, NIC},
+    {E, 1, sest, NIC, NIC, NIC},
+    {E, 1, osm, SERVO1, SERVO8, NIC},
+    {E, 1, sest, NIC, NIC, NIC},
+    {E, 1, osm, SERVO1, SERVO8, NIC},
+    {E, 1, sest, NIC, NIC, NIC},
+    {E, 1, stv, SERVO1, SERVO8, NIC},
+    //tu zasa by sa to opakovalo od zacatku, rozmyslam ze do toho dam for cyklus nech ten kod nema 500 riadkov
+};  
 void loop() {
   xTaskCreatePinnedToCore(
   [] (void *) {
-    playMelody(leftHand, melodyLeft1, sizeof(melodyLeft1) / sizeof(melodyLeft1[0]));
+    playMelody(leftHand, havasiFreedomLeft, sizeof(havasiFreedomLeft) / sizeof(havasiFreedomLeft[0]));
     vTaskDelete(NULL);
   }, "LeftHandTask", 4096, NULL, 1, NULL, 0);
   xTaskCreatePinnedToCore(
   [] (void *) {
-    playMelody(rightHand, melodyRight1, sizeof(melodyRight1) / sizeof(melodyRight1[0]));
+    playMelody(rightHand, havasiFreedomRight, sizeof(havasiFreedomRight) / sizeof(havasiFreedomRight[0]));
     vTaskDelete(NULL);
   }, "RightHandTask", 4096, NULL, 1, NULL, 1); //konec
   while (1);
