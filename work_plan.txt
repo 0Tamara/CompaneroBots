@@ -13,13 +13,14 @@ What needs to be done:
     pianist:
       mount the hardware on hands
       make a system for cables (metering tape)
-      think up how to pack it to plane (cut it in half)
     curtains: pulleys and mount it there
     camera: mount all
       on a tripod
       with raspberry, esp32, sensors, power supply
 
   hardware
+    dancer: done
+    drummer: done
     pianist: connect all
       make PCBs, power, hands, cables to hands
     curtains: done
@@ -32,10 +33,8 @@ What needs to be done:
       dancing by camera (communication on 2nd core??)
     drummer:
       communication: listening from camera and sending sync to pianist
-      music functions
-      LED effects on 2nd core
     pianist:
-      change servo controlling through PCA9685
+      testing
     curtains:
       opening and closing
     camera:

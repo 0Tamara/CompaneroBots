@@ -1,5 +1,7 @@
 #include <ESP32Servo.h>
 #include <FastLED.h>
+#include <esp_now.h>
+#include <WiFi.h>
 
 #define R_ARM_PIN 13
 #define L_ARM_PIN 12
@@ -51,6 +53,10 @@ bool blink_drums[3] = {0, 0, 0};  //rising effects active
 int LEDs_pos[3] = {0, 0, LED_COUNT_R-1};  //position on the LED ring
 bool rising[3] = {1, 1, 1};  //rising / lowering
 bool miss_out[3] = {0, 0, 0};  //missing out every other step to go slower
+
+uint8_t pianist_addr[] = {0xA0, 0xDD, 0x6C, 0x0E, 0xFA, 0xA8};  //pianist MAC addr
+esp_now_peer_info_t peer_info;
+byte send_data = 0;
 
 // Zapína LED na všetkých pásikoch naraz
 void ledky_vedlajsie() {
@@ -498,6 +504,28 @@ void setup()
 {
   Serial.begin(115200);
 
+  WiFi.mode(WIFI_STA);  //set wifi to station
+  //-init esp-now-
+  if (esp_now_init() != ESP_OK)
+  {
+    Serial.println("Error initializing ESP-NOW");
+    return;
+  }
+  //-register peer-
+  memcpy(peer_info.peer_addr, pianist_addr, 6);
+  peer_info.channel = 0;  
+  peer_info.encrypt = false;
+  
+  //esp_now_register_send_cb(OnDataSent);
+
+  //-add peer-
+  if (esp_now_add_peer(&peer_info) != ESP_OK)
+  {
+    Serial.println("Failed to add peer");
+    return;
+  }
+
+  //-init servos-
   r_arm.attach(R_ARM_PIN);
   l_arm.attach(L_ARM_PIN);
   kick.attach(KICK_PIN);
@@ -506,6 +534,7 @@ void setup()
   r_arm.write(R_UP);
   l_arm.write(L_UP);
 
+  //-create loop 2-
   xTaskCreatePinnedToCore(
       loop_2, /* Function to implement the task */
       "Task1", /* Name of the task */
@@ -515,12 +544,13 @@ void setup()
       &Task1,  /* Task handle. */
       0); /* Core where the task should run */
 
+  //-init LEDs and blink white-
   FastLED.addLeds<WS2811, LED_PIN_L, GRB>(left_ring, LED_COUNT_L);
   FastLED.addLeds<WS2811, LED_PIN_K, GRB>(kick_ring, LED_COUNT_K);
   FastLED.addLeds<WS2811, LED_PIN_R, GRB>(right_ring, LED_COUNT_R);
   FastLED.addLeds<WS2811, LED_PIN_EYES, GRB>(eyes, LED_COUNT_EYES);
 
-  FastLED.setBrightness(32);  //---temp!!!
+  FastLED.setBrightness(32);  //---temporary!!!
 
   for (int i = 0; i < 54; i++) {
     if (i < LED_COUNT_R) right_ring[i] = 0x808080;
@@ -529,7 +559,7 @@ void setup()
   }
 
   FastLED.show();
-  delay(1000);
+  delay(500);
   for (int i = 0; i < 54; i++) {
     if (i < LED_COUNT_R) right_ring[i] = 0x000000;
     if (i < LED_COUNT_L) left_ring[i] = 0x000000;
@@ -543,6 +573,8 @@ void loop()
   if((millis()-timer_music) >= 2280)
   {
     timer_music = millis();
+    esp_now_send(pianist_addr, (uint8_t *) &send_data, sizeof(send_data));
     freedom();
+    send_data ++;
   }
 }
