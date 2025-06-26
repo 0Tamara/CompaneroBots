@@ -7,23 +7,39 @@
 
 Servo r_arm, l_arm, r_elbow, l_elbow;
 
-void servoRamp(Servo moving, byte start, byte end)
+void servoRamp(byte end, int min_delay, int max_delay)
 {
+  int t;
+  byte start = r_elbow.read()+1;
   if(start < end)
   {
     for(int i=start; i<=end; i++)
     {
-      moving.write(i);
-      delay(20);
+      //t = map(i, start, (start+end)/2, 0, max_delay);
+      if(i<((start+end)/2))
+        t = map(i, start, (start+end)/2, max_delay, min_delay);
+      else
+        t = map(i, (start+end)/2, end, min_delay, max_delay);
+
+      r_elbow.write(i);
+      delay(t);
+      Serial.printf("position: %d\tdelay: %d\n", i, t);
     }
   } else
   {
     for(int i=start; i>=end; i--)
     {
-      moving.write(i);
-      delay(20);
+      if(i>((start+end)/2))
+        t = map(i, start, (start+end)/2, max_delay, min_delay);
+      else
+        t = map(i, (start+end)/2, end, min_delay, max_delay);
+
+      r_elbow.write(i);
+      delay(t);
+      Serial.printf("position: %d\tdelay: %d\n", i, t);
     }
   }
+  Serial.println();
 }
 
 void setup()
@@ -44,5 +60,6 @@ void setup()
 
 void loop()
 {
-  servoRamp(r_elbow, 0, 90);
+  servoRamp(10, 5, 20);
+  servoRamp(80, 5, 20);
 }
