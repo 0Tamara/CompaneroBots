@@ -12,6 +12,7 @@
 #define speedInHz 15000
 #define acceleration 40000
 // casy
+byte myData;
 int tempo = 2208;
 int sest = tempo / 16; 
 int osm = tempo / 8;
