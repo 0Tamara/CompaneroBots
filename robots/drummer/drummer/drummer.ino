@@ -11,6 +11,8 @@
 #define R_DOWN 70
 #define L_UP 0
 #define L_DOWN 10
+#define K_UP 85
+#define K_DOWN 90
 
 Servo r_arm;  //0-80 = down-front
 Servo l_arm;  //80-0 = down-front
@@ -37,7 +39,7 @@ int kicks;
 int snares;
 
 uint color_eyes = 0x200102; //pink
-uint colors_drums[6] = {0xFF0000,  //colors that will be cycling over
+uint color_palette[6] = {0xFF0000,  //colors cycling over
                         0x808000,
                         0x00FF00,
                         0x008080,
@@ -57,6 +59,16 @@ bool miss_out[3] = {0, 0, 0};  //missing out every other step to go slower
 uint8_t pianist_addr[] = {0xA0, 0xDD, 0x6C, 0x0E, 0xFA, 0xA8};  //pianist MAC addr
 esp_now_peer_info_t peer_info;
 byte send_data = 0;
+byte recv_data;
+
+void OnDataRecv(const uint8_t * mac, const uint8_t *incoming_data, int len) {
+  memcpy(&recv_data, incoming_data, sizeof(recv_data));
+  Serial.print("Bytes received: ");
+  Serial.println(len);
+  Serial.print("Value: ");
+  Serial.println(recv_data);
+  Serial.println();
+}
 
 // Zapína LED na všetkých pásikoch naraz
 void ledky_vedlajsie() {
@@ -95,7 +107,7 @@ void changeColorsLeft()
     color_index_left++;
   else
     color_index_left = 0;
-  rising_color[0] = colors_drums[color_index_left];
+  rising_color[0] = color_palette[color_index_left];
   rising[0] = 1;
   blink_drums[0] = 1;
 }
@@ -105,7 +117,7 @@ void changeColorsKick()
     color_index_kick++;
   else
     color_index_kick = 0;
-  rising_color[1] = colors_drums[color_index_kick];
+  rising_color[1] = color_palette[color_index_kick];
   rising[1] = 1;
   blink_drums[1] = 1;
 }
@@ -115,7 +127,7 @@ void changeColorsRight()
     color_index_right++;
   else
     color_index_right = 0;
-  rising_color[2] = colors_drums[color_index_right];
+  rising_color[2] = color_palette[color_index_right];
   rising[2] = 1;
   blink_drums[2] = 1;
 }
@@ -132,10 +144,10 @@ void freedom()
     if((millis()-timer_kick) >= 570)
     {
       timer_kick = millis();
-      kick.write(90);
+      kick.write(K_DOWN);
       changeColorsKick();
       delay(100);
-      kick.write(85);
+      kick.write(K_UP);
       kicks ++;
     }
     if(snares < 3)
@@ -219,14 +231,14 @@ void fireball_drop()
       timer_kick = millis();
       if(!(kicks%2))
       {
-        kick.write(90);
+        kick.write(K_DOWN);
         r_arm.write(R_DOWN);
         l_arm.write(L_DOWN);
         changeColorsKick();
         changeColorsRight();
         changeColorsLeft();
         delay(100);
-        kick.write(85);
+        kick.write(K_UP);
         r_arm.write(R_UP);
         l_arm.write(L_UP);
       }
@@ -234,12 +246,12 @@ void fireball_drop()
       {
         if(kicks == 1)
         {
-          kick.write(90);
+          kick.write(K_DOWN);
           r_arm.write(R_DOWN);
           changeColorsKick();
           changeColorsRight();
           delay(100);
-          kick.write(85);
+          kick.write(K_UP);
           r_arm.write(R_UP);
           while((millis()-timer_kick) < 240) delay(10);
           l_arm.write(L_DOWN);
@@ -249,12 +261,12 @@ void fireball_drop()
         }
         else
         {
-          kick.write(90);
+          kick.write(K_DOWN);
           l_arm.write(L_DOWN);
           changeColorsKick();
           changeColorsLeft();
           delay(100);
-          kick.write(85);
+          kick.write(K_UP);
           l_arm.write(L_UP);
           while((millis()-timer_kick) < 240) delay(10);
           r_arm.write(R_DOWN);
@@ -277,10 +289,10 @@ void fireball_bass()
     if((millis()-timer_kick) >= 480)
     {
       timer_kick = millis();
-      kick.write(90);
+      kick.write(K_DOWN);
       changeColorsKick();
       delay(100);
-      kick.write(85);
+      kick.write(K_UP);
       kicks ++;
     }
   }
@@ -290,14 +302,14 @@ void fireball_bass()
 void fireball_chill()
 {
   timer_kick = millis();
-  kick.write(90);
+  kick.write(K_DOWN);
   r_arm.write(R_DOWN);
   l_arm.write(L_DOWN);
   changeColorsKick();
   changeColorsRight();
   changeColorsLeft();
   delay(100);
-  kick.write(85);
+  kick.write(K_UP);
   r_arm.write(R_UP);
   l_arm.write(L_UP);
   snares = 0;
@@ -525,12 +537,15 @@ void setup()
     return;
   }
 
+  //-register recieve callback-
+  esp_now_register_recv_cb(esp_now_recv_cb_t(OnDataRecv));
+
   //-init servos-
   r_arm.attach(R_ARM_PIN);
   l_arm.attach(L_ARM_PIN);
   kick.attach(KICK_PIN);
   
-  kick.write(85);
+  kick.write(K_UP);
   r_arm.write(R_UP);
   l_arm.write(L_UP);
 
@@ -570,11 +585,18 @@ void setup()
 
 void loop()
 {
-  if((millis()-timer_music) >= 2280)
+  if(recv_data == 2)
+    ledky_vedlajsie();
+  if(recv_data == 3)
+    kick_ring_bubon();
+  if(recv_data >= 5)
   {
-    timer_music = millis();
-    esp_now_send(pianist_addr, (uint8_t *) &send_data, sizeof(send_data));
-    freedom();
-    send_data ++;
+    if((millis()-timer_music) >= 2280)
+    {
+      timer_music = millis();
+      esp_now_send(pianist_addr, (uint8_t *) &send_data, sizeof(send_data));
+      freedom();
+      send_data ++;
+    }
   }
 }

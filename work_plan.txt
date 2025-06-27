@@ -32,7 +32,7 @@ What needs to be done:
       slower acceleration with servos on arms -> not braking servos
       dancing by camera (communication on 2nd core??)
     drummer:
-      communication: listening from camera and sending sync to pianist
+      finalize cooperating with others
     pianist:
       testing
     curtains:
