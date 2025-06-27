@@ -20,6 +20,7 @@ int stv = tempo / 4;
 int pol = tempo / 2;
 int cel = tempo;
 
+const int offset = 50; //konstanta, o tolko sa bude musiet pohnut kym sa dostane na klaviaturu
 const int rezerva = 50; 
 const int leftHandStepPin = 14; 
 const int leftHandDirPin = 12; 
@@ -56,8 +57,6 @@ Hand leftHand = {
   .timeFromMoving = 0,
   .lastTime = 0,
   .pca9685 = &pca9685left,
-  
-
 };
 Hand rightHand = {
   .currentOctave = 0,
@@ -97,7 +96,7 @@ void setup() {
 
   stepperLeft->setSpeedInHz(speedInHz);
   stepperLeft->setAcceleration(acceleration);
-  stepperLeft->setCurrentPosition(0);
+  stepperLeft->setCurrentPosition(offset);
   
   stepperRight->setDirectionPin(rightHandDirPin);
   stepperRight->setEnablePin(rightHandEnPin);
@@ -105,7 +104,13 @@ void setup() {
 
   stepperRight->setSpeedInHz(speedInHz);
   stepperRight->setAcceleration(acceleration);
-  stepperRight->setCurrentPosition(stepsPerOctave * 3); 
+  stepperRight->setCurrentPosition((stepsPerOctave * 3) + offset); 
+  stepperRight->moveTo(0);
+  while (stepperRight->isRunning()) {
+  } 
+  stepperLeft->moveTo(0);
+  while (stepperLeft->isRunning()) {
+  }
 }
 
 int havasiFreedomRight1[][6] = {
