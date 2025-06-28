@@ -12,15 +12,12 @@
 #define speedInHz 15000
 #define acceleration 40000
 
-const int leftHandStepPin = 14; 
-const int leftHandDirPin = 12; 
-const int leftHandEnPin = 13;
-const int rightHandStepPin = 25;
-const int rightHandDirPin = 26;
-const int rightHandEnPin = 27;
-
-//AccelStepper stepperLeft(AccelStepper::DRIVER, leftHandStepPin, leftHandDirPin);
-//AccelStepper stepperRight(AccelStepper::DRIVER, rightHandStepPin, rightHandDirPin);
+const int leftHandStepPin = 5;
+const int leftHandDirPin = 16;
+const int leftHandEnPin = 18;
+const int rightHandStepPin = 4;
+const int rightHandDirPin = 15;
+const int rightHandEnPin = 17;
 
 FastAccelStepperEngine engine = FastAccelStepperEngine();
 FastAccelStepper *stepperLeft = NULL;
@@ -66,7 +63,7 @@ void setup() {
   pca9685right.setPWMFreq(50);
   pca9685left.setPWMFreq(50);
 
-  for (int i = 0; i < numServos; i++) {
+  for (int i = 8; i < numServos+8; i++) {
     rightHand.pca9685->setPWM(i, 0, SERVOMIN);
     leftHand.pca9685->setPWM(i, 0, SERVOMIN);
   }
@@ -127,7 +124,7 @@ void setup() {
 
   // Test serv
   Serial.println("a teraz serva");
-  for (int i = 0; i < numServos; i++) {
+  for (int i = 8; i < numServos+8; i++) {
     Serial.printf("servo %d na lavej ruke\n", i);
     unsigned long servoStart = millis();
     leftHand.pca9685->setPWM(i, 0, SERVOMAX); 
@@ -139,7 +136,7 @@ void setup() {
     delay(500); // Čas na pustenie
     Serial.printf("Čas pustenia: %lu ms\n", millis() - servoStart);
   }
-  for (int i = 0; i < numServos; i++) {
+  for (int i = 8; i < numServos+8; i++) {
     Serial.printf("Testujem servo %d na pravej ruke\n", i);
     unsigned long servoStart = millis();
     rightHand.pca9685->setPWM(i, 0, SERVOMAX);
