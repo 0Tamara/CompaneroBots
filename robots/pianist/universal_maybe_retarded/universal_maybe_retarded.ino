@@ -1,6 +1,8 @@
 #include <FastAccelStepper.h>
 #include <Adafruit_PWMServoDriver.h>
 #include <Wire.h>
+#include <esp_now.h>
+#include <WiFi.h>
 
 #define SERVOMIN  125
 #define SERVOMAX  575
@@ -10,13 +12,15 @@
 #define speedInHz 15000
 #define acceleration 40000
 // casy
-int tempo = 2000;
+byte myData;
+int tempo = 2208;
 int sest = tempo / 16; 
 int osm = tempo / 8;
 int stv = tempo / 4;
 int pol = tempo / 2;
 int cel = tempo;
 
+const int offset = 50; //konstanta, o tolko sa bude musiet pohnut kym sa dostane na klaviaturu
 const int rezerva = 50; 
 const int leftHandStepPin = 14; 
 const int leftHandDirPin = 12; 
@@ -53,8 +57,6 @@ Hand leftHand = {
   .timeFromMoving = 0,
   .lastTime = 0,
   .pca9685 = &pca9685left,
-  
-
 };
 Hand rightHand = {
   .currentOctave = 0,
@@ -94,7 +96,7 @@ void setup() {
 
   stepperLeft->setSpeedInHz(speedInHz);
   stepperLeft->setAcceleration(acceleration);
-  stepperLeft->setCurrentPosition(0);
+  stepperLeft->setCurrentPosition(offset);
   
   stepperRight->setDirectionPin(rightHandDirPin);
   stepperRight->setEnablePin(rightHandEnPin);
@@ -102,18 +104,32 @@ void setup() {
 
   stepperRight->setSpeedInHz(speedInHz);
   stepperRight->setAcceleration(acceleration);
-  stepperRight->setCurrentPosition(stepsPerOctave * 3); 
+  stepperRight->setCurrentPosition((stepsPerOctave * 3) + offset); 
+  stepperRight->moveTo(0);
+  while (stepperRight->isRunning()) {
+  } 
+  stepperLeft->moveTo(0);
+  while (stepperLeft->isRunning()) {
+  }
 }
 
-int havasiFreedomRight[][6] = {
+int havasiFreedomRight1[][6] = {
     //prvy takt
     {A, 2, cel, NIC, NIC, NIC},
+};
+int havasiFreedomRight2[][6] = {
     // druhy takt
     {A, 2, cel, NIC, NIC, NIC},
+};
+int havasiFreedomRight3[][6] = {
     //treti takt
     {A, 2, cel, NIC, NIC, NIC},
+};
+int havasiFreedomRight4[][6] = {
     //stvrty takt
     {A, 2, cel, NIC, NIC, NIC},
+};
+int havasiFreedomRight5[][6] = {
     //piaty takt
     {A, 2, osm, SERVO1, SERVO3, SERVO5},
     {A, 2, sest, NIC, NIC, NIC},
@@ -125,6 +141,8 @@ int havasiFreedomRight[][6] = {
     {A, 2, osm, SERVO4, NIC, NIC},
     {A, 2, sest, NIC, NIC, NIC},
     {A, 2, sest, SERVO5, NIC, NIC},
+};
+int havasiFreedomRight6[][6] = {
     //prvy takt
     {A, 2, stv, SERVO1, SERVO3, NIC},
     {A, 2, osm, NIC, NIC, NIC},
@@ -133,7 +151,20 @@ int havasiFreedomRight[][6] = {
     {A, 2, sest, SERVO3, NIC, NIC},
     {A, 2, osm, SERVO2, SERVO4, NIC},
     {A, 2, osm, SERVO3, SERVO5, NIC},
+};
+int havasiFreedomRight7[][6] = {
     //druhy takt
+    {A, 2, osm, SERVO1, SERVO3, SERVO5},
+    {A, 2, sest, NIC, NIC, NIC},
+    {A, 2, osm, SERVO1, SERVO3, NIC},
+    {A, 2, stv, NIC, NIC, NIC},
+    {A, 2, sest, SERVO1, NIC, NIC},
+    {A, 2, sest, SERVO2, NIC, NIC},
+    {A, 2, osm, SERVO1, SERVO3, NIC},
+    {A, 2, osm, SERVO2, SERVO4},
+};
+//druhy takt
+int havasiFreedomRight8[][6] = {
     {A, 2, osm, SERVO1, SERVO3, SERVO5},
     {A, 2, sest, NIC, NIC, NIC},
     {A, 2, osm, SERVO1, SERVO3},
@@ -144,6 +175,8 @@ int havasiFreedomRight[][6] = {
     {A, 2, osm, SERVO4, NIC, NIC},
     {A, 2, sest, NIC, NIC, NIC},
     {A, 2, sest, SERVO5, NIC, NIC},
+};
+int havasiFreedomRight9[][6] = {
     //treti takt
     {A, 2, stv, SERVO1, SERVO3, NIC},
     {A, 2, osm, NIC, NIC, NIC},
@@ -152,6 +185,8 @@ int havasiFreedomRight[][6] = {
     {A, 2, sest, SERVO2, NIC, NIC},
     {A, 2, osm, SERVO1, SERVO3, NIC},
     {A, 2, osm, SERVO1, SERVO4, NIC},
+};
+int havasiFreedomRight10[][6] = {
     //stvrty takt
     {A, 2, osm, SERVO1, SERVO3, SERVO5},
     {A, 2, sest, NIC, NIC, NIC},
@@ -163,6 +198,8 @@ int havasiFreedomRight[][6] = {
     {A, 2, osm, SERVO2, SERVO4, NIC},
     {A, 2, sest, NIC, NIC, NIC},
     {A, 2, sest, SERVO3, SERVO5, NIC},
+};
+int havasiFreedomRight11[][6] = {
     //prvy takt
     {A, 2, stv, SERVO1, SERVO3, NIC},
     {A, 2, stv, NIC, NIC, NIC},
@@ -170,6 +207,8 @@ int havasiFreedomRight[][6] = {
     {A, 2, sest, SERVO3, NIC, NIC},
     {A, 2, osm, SERVO2, SERVO4, NIC},
     {A, 2, osm, SERVO3, SERVO5, NIC},
+};
+int havasiFreedomRight12[][6] = {
     //druhy takt
     {A, 2, osm, SERVO1, SERVO3, SERVO5},
     {A, 2, sest, NIC, NIC, NIC},
@@ -179,6 +218,8 @@ int havasiFreedomRight[][6] = {
     {A, 2, sest, SERVO2, NIC, NIC},
     {A, 2, osm, SERVO1, SERVO3, NIC},
     {A, 2, osm, SERVO2, SERVO4},
+};
+int havasiFreedomRight13[][6] = {
     // treti takt, tu je toten krizik sprosty
     {G, 2, osm, SERVO1, SERVO6, NIC },
     {G, 2, sest, NIC, NIC, NIC},
@@ -189,7 +230,13 @@ int havasiFreedomRight[][6] = {
     {G, 2, stv, SERVO1, SERVO6, NIC },
     //aaa tu sa to uz opakovat bude, nemam nervy pisat toto, a asi to nebude 
 };
-int havasiFreedomLeft[][6] = {
+
+
+
+
+
+
+int havasiFreedomLeft1[][6] = {
     //prvy takt
     {A, 1, osm, SERVO1, NIC, NIC},
     {A, 1, sest, NIC, NIC, NIC},
@@ -198,30 +245,9 @@ int havasiFreedomLeft[][6] = {
     {A, 1, osm, NIC, SERVO8, NIC},
     {A, 1, stv, NIC, SERVO8, NIC},
     {A, 1, stv, NIC, SERVO8, NIC},
-    //druhy takt
-    {A, 1, osm, SERVO1, NIC, NIC},
-    {A, 1, sest, NIC, NIC, NIC},
-    {A, 1, osm, NIC, SERVO8, NIC},
-    {A, 1, sest, NIC, NIC, NIC},
-    {A, 1, osm, NIC, SERVO8, NIC},
-    {A, 1, stv, NIC, SERVO8, NIC},
-    {A, 1, stv, NIC, SERVO8, NIC},
-    //treti takt
-    {A, 1, osm, SERVO1, NIC, NIC},
-    {A, 1, sest, NIC, NIC, NIC},
-    {A, 1, osm, NIC, SERVO8, NIC},
-    {A, 1, sest, NIC, NIC, NIC},
-    {A, 1, osm, NIC, SERVO8, NIC},
-    {A, 1, stv, NIC, SERVO8, NIC},
-    {A, 1, stv, NIC, SERVO8, NIC},
-    //stvrty takt
-    {A, 1, osm, SERVO1, NIC, NIC},
-    {A, 1, sest, NIC, NIC, NIC},
-    {A, 1, osm, NIC, SERVO8, NIC},
-    {A, 1, sest, NIC, NIC, NIC},
-    {A, 1, osm, NIC, SERVO8, NIC},
-    {A, 1, stv, NIC, SERVO8, NIC},
-    {A, 1, stv, NIC, SERVO8, NIC},
+};
+
+int havasiFreedomLeft5[][6] = {
     //piaty takt
     {A, 1, osm, SERVO1, SERVO8, NIC},
     {A, 1, sest, NIC, NIC, NIC},
@@ -232,47 +258,8 @@ int havasiFreedomLeft[][6] = {
     {A, 1, osm, SERVO1, SERVO8, NIC},
     {A, 1, sest, NIC, NIC, NIC},
     {A, 1, stv, SERVO1, SERVO8, NIC},
-    //prvy takt, nechapem jak mozu byt tak hnusne tony dane, sak tu sa iba opakuje jedna oktava skoro dookola
-    {A, 1, osm, SERVO1, SERVO8, NIC},
-    {A, 1, sest, NIC, NIC, NIC},
-    {A, 1, osm, SERVO1, SERVO8, NIC},
-    {A, 1, sest, NIC, NIC, NIC},
-    {A, 1, osm, SERVO1, SERVO8, NIC},
-    {A, 1, sest, NIC, NIC, NIC},
-    {A, 1, osm, SERVO1, SERVO8, NIC},
-    {A, 1, sest, NIC, NIC, NIC},
-    {A, 1, stv, SERVO1, SERVO8, NIC},
-    //druhy takt
-    {A, 1, osm, SERVO1, SERVO8, NIC},
-    {A, 1, sest, NIC, NIC, NIC},
-    {A, 1, osm, SERVO1, SERVO8, NIC},
-    {A, 1, sest, NIC, NIC, NIC},
-    {A, 1, osm, SERVO1, SERVO8, NIC},
-    {A, 1, sest, NIC, NIC, NIC},
-    {A, 1, osm, SERVO1, SERVO8, NIC},
-    {A, 1, sest, NIC, NIC, NIC},
-    {A, 1, stv, SERVO1, SERVO8, NIC},
-    //druhy takt
-    {A, 1, osm, SERVO1, SERVO8, NIC},
-    {A, 1, sest, NIC, NIC, NIC},
-    {A, 1, osm, SERVO1, SERVO8, NIC},
-    {A, 1, sest, NIC, NIC, NIC},
-    {A, 1, osm, SERVO1, SERVO8, NIC},
-    {A, 1, sest, NIC, NIC, NIC},
-    {A, 1, osm, SERVO1, SERVO8, NIC},
-    {A, 1, sest, NIC, NIC, NIC},
-    {A, 1, stv, SERVO1, SERVO8, NIC},
-    //treti takt
-    {A, 1, osm, SERVO1, SERVO8, NIC},
-    {A, 1, sest, NIC, NIC, NIC},
-    {A, 1, osm, SERVO1, SERVO8, NIC},
-    {A, 1, sest, NIC, NIC, NIC},
-    {A, 1, osm, SERVO1, SERVO8, NIC},
-    {A, 1, sest, NIC, NIC, NIC},
-    {A, 1, osm, SERVO1, SERVO8, NIC},
-    {A, 1, sest, NIC, NIC, NIC},
-    {A, 1, stv, SERVO1, SERVO8, NIC},
-    //stvrty takt
+};
+int havasiFreedomLeft9[][6] = {
     {F, 1, osm, SERVO1, SERVO8, NIC},
     {F, 1, sest, NIC, NIC, NIC},
     {F, 1, osm, SERVO1, SERVO8, NIC},
@@ -282,27 +269,8 @@ int havasiFreedomLeft[][6] = {
     {F, 1, osm, SERVO1, SERVO8, NIC},
     {F, 1, sest, NIC, NIC, NIC},
     {F, 1, stv, SERVO1, SERVO8, NIC},
-    //prvy takt
-    {F, 1, osm, SERVO1, SERVO8, NIC},
-    {F, 1, sest, NIC, NIC, NIC},
-    {F, 1, osm, SERVO1, SERVO8, NIC},
-    {F, 1, sest, NIC, NIC, NIC},
-    {F, 1, osm, SERVO1, SERVO8, NIC},
-    {F, 1, sest, NIC, NIC, NIC},
-    {F, 1, osm, SERVO1, SERVO8, NIC},
-    {F, 1, sest, NIC, NIC, NIC},
-    {F, 1, stv, SERVO1, SERVO8, NIC},
-    //druhy takt
-    {F, 1, osm, SERVO1, SERVO8, NIC},
-    {F, 1, sest, NIC, NIC, NIC},
-    {F, 1, osm, SERVO1, SERVO8, NIC},
-    {F, 1, sest, NIC, NIC, NIC},
-    {F, 1, osm, SERVO1, SERVO8, NIC},
-    {F, 1, sest, NIC, NIC, NIC},
-    {F, 1, osm, SERVO1, SERVO8, NIC},
-    {F, 1, sest, NIC, NIC, NIC},
-    {F, 1, stv, SERVO1, SERVO8, NIC},
-    //treti takt
+};
+int havasiFreedomLeft12[][6] = {
     {E, 1, osm, SERVO1, SERVO8, NIC},
     {E, 1, sest, NIC, NIC, NIC},
     {E, 1, osm, SERVO1, SERVO8, NIC},
@@ -312,23 +280,133 @@ int havasiFreedomLeft[][6] = {
     {E, 1, osm, SERVO1, SERVO8, NIC},
     {E, 1, sest, NIC, NIC, NIC},
     {E, 1, stv, SERVO1, SERVO8, NIC},
-    //tu zasa by sa to opakovalo od zacatku, rozmyslam ze do toho dam for cyklus nech ten kod nema 500 riadkov
 };  
 void loop() {
-  xTaskCreatePinnedToCore(
-  [] (void *) {
-    playMelody(leftHand, havasiFreedomLeft, sizeof(havasiFreedomLeft) / sizeof(havasiFreedomLeft[0]));
-    vTaskDelete(NULL);
-  }, "LeftHandTask", 4096, NULL, 1, NULL, 0);
-  xTaskCreatePinnedToCore(
-  [] (void *) {
-    playMelody(rightHand, havasiFreedomRight, sizeof(havasiFreedomRight) / sizeof(havasiFreedomRight[0]));
-    vTaskDelete(NULL);
-  }, "RightHandTask", 4096, NULL, 1, NULL, 1); //konec
-  while (1);
 }
 
-
+void OnDataRecv(const uint8_t * mac, const uint8_t *incomingData, int len) {
+  memcpy(&myData, incomingData, sizeof(myData));
+  if(myData == 1){
+    xTaskCreatePinnedToCore([] (void *) {
+      playMelody(leftHand, havasiFreedomLeft1, sizeof(havasiFreedomLeft1) / sizeof(havasiFreedomLeft1[0]));
+      vTaskDelete(NULL);
+    }, "LeftHandTask", 4096, NULL, 1, NULL, 0);
+    xTaskCreatePinnedToCore([] (void *) {
+       playMelody(rightHand, havasiFreedomRight1, sizeof(havasiFreedomRight1) / sizeof(havasiFreedomRight1[0]));
+      vTaskDelete(NULL);
+    }, "RightHandTask", 4096, NULL, 1, NULL, 1); 
+  }
+  if(myData == 2) {
+    xTaskCreatePinnedToCore([] (void *) {
+        playMelody(leftHand, havasiFreedomLeft1, sizeof(havasiFreedomLeft1) / sizeof(havasiFreedomLeft1[0]));
+        vTaskDelete(NULL);
+    }, "LeftHandTask", 4096, NULL, 1, NULL, 0);
+    xTaskCreatePinnedToCore([] (void *) {
+        playMelody(rightHand, havasiFreedomRight2, sizeof(havasiFreedomRight2) / sizeof(havasiFreedomRight2[0]));
+        vTaskDelete(NULL);
+    }, "RightHandTask", 4096, NULL, 1, NULL, 1); 
+  }
+  if(myData == 3) {
+    xTaskCreatePinnedToCore([] (void *) {
+        playMelody(leftHand, havasiFreedomLeft1, sizeof(havasiFreedomLeft1) / sizeof(havasiFreedomLeft1[0]));
+        vTaskDelete(NULL);
+    }, "LeftHandTask", 4096, NULL, 1, NULL, 0);
+    xTaskCreatePinnedToCore([] (void *) {
+        playMelody(rightHand, havasiFreedomRight3, sizeof(havasiFreedomRight3) / sizeof(havasiFreedomRight3[0]));
+        vTaskDelete(NULL);
+    }, "RightHandTask", 4096, NULL, 1, NULL, 1); 
+  }
+  if(myData == 4) {
+    xTaskCreatePinnedToCore([] (void *) {
+        playMelody(leftHand, havasiFreedomLeft1, sizeof(havasiFreedomLeft1) / sizeof(havasiFreedomLeft1[0]));
+        vTaskDelete(NULL);
+    }, "LeftHandTask", 4096, NULL, 1, NULL, 0);
+    xTaskCreatePinnedToCore([] (void *) {
+        playMelody(rightHand, havasiFreedomRight4, sizeof(havasiFreedomRight4) / sizeof(havasiFreedomRight4[0]));
+        vTaskDelete(NULL);
+    }, "RightHandTask", 4096, NULL, 1, NULL, 1); 
+  }
+  if(myData == 5) {
+    xTaskCreatePinnedToCore([] (void *) {
+        playMelody(leftHand, havasiFreedomLeft5, sizeof(havasiFreedomLeft5) / sizeof(havasiFreedomLeft5[0]));
+        vTaskDelete(NULL);
+    }, "LeftHandTask", 4096, NULL, 1, NULL, 0);
+    xTaskCreatePinnedToCore([] (void *) {
+        playMelody(rightHand, havasiFreedomRight5, sizeof(havasiFreedomRight5) / sizeof(havasiFreedomRight5[0]));
+        vTaskDelete(NULL);
+    }, "RightHandTask", 4096, NULL, 1, NULL, 1); 
+  }
+  if(myData == 6) {
+    xTaskCreatePinnedToCore([] (void *) {
+        playMelody(leftHand, havasiFreedomLeft5, sizeof(havasiFreedomLeft5) / sizeof(havasiFreedomLeft5[0]));
+        vTaskDelete(NULL);
+    }, "LeftHandTask", 4096, NULL, 1, NULL, 0);
+    xTaskCreatePinnedToCore([] (void *) {
+        playMelody(rightHand, havasiFreedomRight6, sizeof(havasiFreedomRight6) / sizeof(havasiFreedomRight6[0]));
+        vTaskDelete(NULL);
+    }, "RightHandTask", 4096, NULL, 1, NULL, 1); 
+  }
+  if(myData == 7) {
+    xTaskCreatePinnedToCore([] (void *) {
+        playMelody(leftHand, havasiFreedomLeft5, sizeof(havasiFreedomLeft5) / sizeof(havasiFreedomLeft5[0]));
+        vTaskDelete(NULL);
+    }, "LeftHandTask", 4096, NULL, 1, NULL, 0);
+    xTaskCreatePinnedToCore([] (void *) {
+        playMelody(rightHand, havasiFreedomRight7, sizeof(havasiFreedomRight7) / sizeof(havasiFreedomRight7[0]));
+        vTaskDelete(NULL);
+    }, "RightHandTask", 4096, NULL, 1, NULL, 1); 
+  }
+  if(myData == 8) {
+    xTaskCreatePinnedToCore([] (void *) {
+        playMelody(leftHand, havasiFreedomLeft5, sizeof(havasiFreedomLeft5) / sizeof(havasiFreedomLeft5[0]));
+        vTaskDelete(NULL);
+    }, "LeftHandTask", 4096, NULL, 1, NULL, 0);
+    xTaskCreatePinnedToCore([] (void *) {
+        playMelody(rightHand, havasiFreedomRight8, sizeof(havasiFreedomRight8) / sizeof(havasiFreedomRight8[0]));
+        vTaskDelete(NULL);
+    }, "RightHandTask", 4096, NULL, 1, NULL, 1); 
+  }
+  if(myData == 9) {
+    xTaskCreatePinnedToCore([] (void *) {
+        playMelody(leftHand, havasiFreedomLeft9, sizeof(havasiFreedomLeft9) / sizeof(havasiFreedomLeft9[0]));
+        vTaskDelete(NULL);
+    }, "LeftHandTask", 4096, NULL, 1, NULL, 0);
+    xTaskCreatePinnedToCore([] (void *) {
+        playMelody(rightHand, havasiFreedomRight9, sizeof(havasiFreedomRight9) / sizeof(havasiFreedomRight9[0]));
+        vTaskDelete(NULL);
+    }, "RightHandTask", 4096, NULL, 1, NULL, 1); 
+  }
+  if(myData == 10) {
+    xTaskCreatePinnedToCore([] (void *) {
+        playMelody(leftHand, havasiFreedomLeft9, sizeof(havasiFreedomLeft9) / sizeof(havasiFreedomLeft9[0]));
+        vTaskDelete(NULL);
+    }, "LeftHandTask", 4096, NULL, 1, NULL, 0);
+    xTaskCreatePinnedToCore([] (void *) {
+        playMelody(rightHand, havasiFreedomRight10, sizeof(havasiFreedomRight10) / sizeof(havasiFreedomRight10[0]));
+        vTaskDelete(NULL);
+    }, "RightHandTask", 4096, NULL, 1, NULL, 1); 
+  }
+  if(myData == 11) {
+    xTaskCreatePinnedToCore([] (void *) {
+        playMelody(leftHand, havasiFreedomLeft9, sizeof(havasiFreedomLeft9) / sizeof(havasiFreedomLeft9[0]));
+        vTaskDelete(NULL);
+    }, "LeftHandTask", 4096, NULL, 1, NULL, 0);
+    xTaskCreatePinnedToCore([] (void *) {
+        playMelody(rightHand, havasiFreedomRight11, sizeof(havasiFreedomRight11) / sizeof(havasiFreedomRight11[0]));
+        vTaskDelete(NULL);
+    }, "RightHandTask", 4096, NULL, 1, NULL, 1); 
+  }
+  if(myData == 12) {
+    xTaskCreatePinnedToCore([] (void *) {
+        playMelody(leftHand, havasiFreedomLeft12, sizeof(havasiFreedomLeft12) / sizeof(havasiFreedomLeft12[0]));
+        vTaskDelete(NULL);
+    }, "LeftHandTask", 4096, NULL, 1, NULL, 0);
+    xTaskCreatePinnedToCore([] (void *) {
+        playMelody(rightHand, havasiFreedomRight12, sizeof(havasiFreedomRight12) / sizeof(havasiFreedomRight12[0]));
+        vTaskDelete(NULL);
+    }, "RightHandTask", 4096, NULL, 1, NULL, 1); 
+  }
+}
 int angleToPulse(int angle){
   return map(angle, 0, 180, SERVOMIN, SERVOMAX);
 }
