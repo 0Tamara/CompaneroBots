@@ -1,0 +1,12 @@
+Communication (Tomas):
+  All of our robots communicate between each other via esp-now protocol.
+  We chose it, because it's simple, fast, and doesn't rely on central server 
+    - if one of the robots fails, all the others work independently.
+  In the fist part of our performance, the camra sends instructions to other robots.
+  When the music starts, the drummer keeps track of the beat, while camera coltrols the dancer.
+Drummer (Tomas):
+  Our drummer has 2 side drums and 1 large kick drum.
+  Each drum is equipped with an adressable RGB LED strip for better visual experience.
+  He plays to the rythm of the songs and everytime he hits the drum, it lights up.
+  The drummer also plays a key role in synchronization.
+  When the music plays, he counts the beat and sends it wirelessly to other robots.
