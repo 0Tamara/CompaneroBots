@@ -11,12 +11,13 @@ void servoRamp(byte end, int min_delay, int max_delay)
 {
   int t;
   byte start = r_elbow.read()+1;
+  unsigned long timer;
   if(start < end)
   {
     for(int i=start; i<=end; i++)
     {
-      //t = map(i, start, (start+end)/2, 0, max_delay);
-      if(i<((start+end)/2))
+      timer = micros();
+      if(i<((end-start)/2)+start)
         t = map(i, start, (start+end)/2, max_delay, min_delay);
       else
         t = map(i, (start+end)/2, end, min_delay, max_delay);
