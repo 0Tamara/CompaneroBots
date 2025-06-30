@@ -6,7 +6,7 @@
 
 #define SERVOMIN  125
 #define SERVOMAX  575
-#define numServos 8
+#define numServos 16
 #define stepsPerNote 984
 #define stepsPerOctave 6840
 #define speedInHz 15000
@@ -21,7 +21,7 @@ int pol = tempo / 2;
 int cel = tempo;
 
 const int offset = 50; //konstanta, o tolko sa bude musiet pohnut kym sa dostane na klaviaturu
-const int rezerva = 50; 
+const int rezerva = 20; 
 const int leftHandStepPin = 14; 
 const int leftHandDirPin = 12; 
 const int leftHandEnPin = 18;
@@ -38,7 +38,7 @@ FastAccelStepper *stepperLeft = NULL;
 FastAccelStepper *stepperRight = NULL;
 
 enum moveNotes { C=0, D=1, E=2, F=3, G=4, A=5, H=6 };
-enum actualServos { NIC = -1, SERVO1 = 0, SERVO2 = 1, SERVO3 = 2, SERVO4 = 3, SERVO5 = 4, SERVO6 = 5, SERVO7 = 6, SERVO8 = 7 };
+enum actualServos { NIC = -1, SERVO1 = 8, SERVO2 = 9, SERVO3 = 10, SERVO4 = 11, SERVO5 = 12, SERVO6 = 13, SERVO7 = 14, SERVO8 = 15 };
 
 struct Hand
 {
@@ -75,9 +75,9 @@ void setup() {
   pca9685left.begin();
   pca9685right.setPWMFreq(50);
   pca9685left.setPWMFreq(50); 
-  for (int i = 0; i < numServos; i++){
-    pca9685left.setPWM(i, 0, SERVOMIN);
-    pca9685right.setPWM(i, 0, SERVOMIN); // 0 stupnov
+  for (int i = 7; i <= numServos; i++){
+    pca9685left->setPWM(i, 0, SERVOMIN);
+    pca9685right->setPWM(i, 0, SERVOMIN); // 0 stupnov
   }
 
   engine.init();
@@ -230,12 +230,7 @@ int havasiFreedomRight13[][6] = {
     {G, 2, stv, SERVO1, SERVO6, NIC },
     //aaa tu sa to uz opakovat bude, nemam nervy pisat toto, a asi to nebude 
 };
-
-
-
-
-
-
+// freedon left hand
 int havasiFreedomLeft1[][6] = {
     //prvy takt
     {A, 1, osm, SERVO1, NIC, NIC},
@@ -281,9 +276,72 @@ int havasiFreedomLeft12[][6] = {
     {E, 1, sest, NIC, NIC, NIC},
     {E, 1, stv, SERVO1, SERVO8, NIC},
 };  
+// fireball zatial nie je zahrnuta
+int fireballRight1[][6] = {
+  // prvy a treti takt
+  {G, 1, stv, SERVO1, NIC, NIC},
+  {G, 1, osm, SERVO8, NIC, NIC},
+  {G, 1, osm, SERVO8, NIC, NIC},
+  {G, 1, sest, SERVO7, NIC, NIC},
+  {G, 1, osm, SERVO7, NIC, NIC},
+  {G, 1, sest, SERVO7, NIC, NIC},
+  {G, 1, stv, NIC, NIC, NIC},
+};
+int fireballRight3[][6] = {
+  // druhy a stvrty takt
+  {G, 1, osm, NIC, NIC, NIC},
+  {G, 1, osm, SERVO1, NIC, NIC},
+  {G, 1, osm, SERVO8, NIC, NIC},
+  {G, 1, osm, SERVO8, NIC, NIC},
+  {G, 1, sest, SERVO7, NIC, NIC},
+  {G, 1, osm, SERVO7, NIC, NIC},
+  {G, 1, sest, SERVO7, NIC, NIC},
+  {C, 2, stv, NIC, NIC, NIC},
+};
+  //piaty a siedny takt
+int fireballRight5[][6] = {
+  {C, 2, stv, SERVO4, NIC, NIC},
+  {C, 2, osm, SERVO5, NIC, NIC},
+  {C, 2, osm, SERVO3, NIC, NIC},
+  {C, 2, sest, SERVO4, NIC, NIC},
+  {C, 2, osm, SERVO4, NIC, NIC},
+  {C, 2, sest, SERVO1, NIC, NIC},
+  {C, 2, stv, NIC, NIC, NIC},
+};
+int fireballRight6[][6] = {
+  //sesty takt
+  {C, 2, osm, NIC, NIC, NIC},
+  {C, 2, osm, SERVO4, NIC, NIC},
+  {C, 2, osm, SERVO5, NIC, NIC},
+  {C, 2, osm, SERVO3, NIC, NIC},
+  {C, 2, sest, SERVO4, NIC, NIC},
+  {C, 2, osm, SERVO4, NIC, NIC},
+  {C, 2, sest, SERVO1, NIC, NIC},
+  {C, 2, stv, NIC, NIC, NIC},
+};
+int fireballRight8[][6] = {
+  //osmy takt
+  {C, 2, osm, NIC, NIC, NIC},
+  {C, 2, osm, SERVO4, NIC, NIC},
+  {C, 2, osm, SERVO5, NIC, NIC},
+  {C, 2, osm, SERVO3, NIC, NIC},
+  {C, 2, sest, SERVO4, NIC, NIC},
+  {C, 2, osm, SERVO4, NIC, NIC},
+  {C, 2, sest, NIC, NIC, NIC},
+  {C, 2, stv, SERVO8, NIC, NIC},
+};
+int fireballLeft[][6] = {
+  // kazdy jeden
+  {F, 1, stv, SERVO1, NIC, NIC},
+  {F, 1, osm, SERVO5, NIC, NIC},
+  {F, 1, osm, SERVO7, NIC, NIC},
+  {F, 1, stv, SERVO8, NIC, NIC},
+  {F, 1, osm, SERVO7, NIC, NIC},
+  {F, 1, osm, SERVO5, NIC, NIC},
+};
+
 void loop() {
 }
-
 void OnDataRecv(const uint8_t * mac, const uint8_t *incomingData, int len) {
   memcpy(&myData, incomingData, sizeof(myData));
   if(myData == 1){
@@ -406,6 +464,57 @@ void OnDataRecv(const uint8_t * mac, const uint8_t *incomingData, int len) {
         vTaskDelete(NULL);
     }, "RightHandTask", 4096, NULL, 1, NULL, 1); 
   }
+  if(myData == 20 || myData == 22){
+    xTaskCreatePinnedToCore([] (void *) {
+        playMelody(leftHand, fireballLeft, sizeof(fireballLeft) / sizeof(fireballLeft[0]));
+        vTaskDelete(NULL);
+    }, "LeftHandTask", 4096, NULL, 1, NULL, 0);
+    xTaskCreatePinnedToCore([] (void *) {
+        playMelody(rightHand, fireballRight1, sizeof(fireballRight1) / sizeof(fireballRight1[0]));
+        vTaskDelete(NULL);
+    }, "RightHandTask", 4096, NULL, 1, NULL, 1); 
+  }
+  if(myData == 21 || myData == 23){
+    xTaskCreatePinnedToCore([] (void *) {
+        playMelody(leftHand, fireballLeft, sizeof(fireballLeft) / sizeof(fireballLeft[0]));
+        vTaskDelete(NULL);
+    }, "LeftHandTask", 4096, NULL, 1, NULL, 0);
+    xTaskCreatePinnedToCore([] (void *) {
+        playMelody(rightHand, fireballRight3, sizeof(fireballRight3) / sizeof(fireballRight3[0]));
+        vTaskDelete(NULL);
+    }, "RightHandTask", 4096, NULL, 1, NULL, 1); 
+  }
+  if( myData == 24 || myData == 26){
+    xTaskCreatePinnedToCore([] (void *) {
+        playMelody(leftHand, fireballLeft, sizeof(fireballLeft) / sizeof(fireballLeft[0]));
+        vTaskDelete(NULL);
+    }, "LeftHandTask", 4096, NULL, 1, NULL, 0);
+    xTaskCreatePinnedToCore([] (void *) {
+        playMelody(rightHand, fireballRight5, sizeof(fireballRight5) / sizeof(fireballRight5[0]));
+        vTaskDelete(NULL);
+    }, "RightHandTask", 4096, NULL, 1, NULL, 1);
+  }
+  if(myData == 25) {
+    xTaskCreatePinnedToCore([] (void *) {
+        playMelody(leftHand, fireballLeft, sizeof(fireballLeft) / sizeof(fireballLeft[0]));
+        vTaskDelete(NULL);
+    }, "LeftHandTask", 4096, NULL, 1, NULL, 0);
+    xTaskCreatePinnedToCore([] (void *) {
+        playMelody(rightHand, fireballRight6, sizeof(fireballRight6) / sizeof(fireballRight6[0]));
+        vTaskDelete(NULL);
+    }, "RightHandTask", 4096, NULL, 1, NULL, 1);
+  }
+  if (myData == 28){
+    xTaskCreatePinnedToCore([] (void *) {
+        playMelody(leftHand, fireballLeft, sizeof(fireballLeft) / sizeof(fireballLeft[0]));
+        vTaskDelete(NULL);
+    }, "LeftHandTask", 4096, NULL, 1, NULL, 0);
+    xTaskCreatePinnedToCore([] (void *) {
+        playMelody(rightHand, fireballRight8, sizeof(fireballRight8) / sizeof(fireballRight8[0]));
+        vTaskDelete(NULL);
+    }, "RightHandTask", 4096, NULL, 1, NULL, 1);
+  }
+  
 }
 int angleToPulse(int angle){
   return map(angle, 0, 180, SERVOMIN, SERVOMAX);
@@ -433,7 +542,7 @@ void playNote(Hand& hand, int targetNote, int targetOctave, int wait, int note1,
   hand.lastTime = millis();
   int noteCount = 0;
   for(int i = 0; i < 3; i++){
-    if(notes[i] != -1 && notes[i] < numServos) {
+    if(notes[i] != -1 && notes[i] <= numServos) {
         noteCount +=1;
     }
   }
@@ -444,7 +553,7 @@ void playNote(Hand& hand, int targetNote, int targetOctave, int wait, int note1,
   }
   while (millis() - hand.lastTime <= holdTime) {
     for (int i = 0; i < 3; i++){
-      if (notes[i] != -1 && notes[i] < numServos){
+      if (notes[i] != -1 && notes[i] <= numServos){
         hand.pca9685->setPWM(notes[i], 0, angleToPulse(90)); 
       }
     }
@@ -452,7 +561,7 @@ void playNote(Hand& hand, int targetNote, int targetOctave, int wait, int note1,
   hand.lastTime = millis();
   while (millis() - hand.lastTime <= rezerva * noteCount) {
     for (int i = 0; i < 3; i++){
-      if (notes[i] != -1 && notes[i] < numServos){
+      if (notes[i] != -1 && notes[i] <= numServos){
         hand.pca9685->setPWM(notes[i], 0, angleToPulse(0)); 
       }
     }
