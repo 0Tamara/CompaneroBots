@@ -75,7 +75,7 @@ void setup() {
   pca9685right.setPWMFreq(50);
   pca9685left.setPWMFreq(50); 
   for (int i = 7; i <= numServos; i++){
-    pca9685left->setPWM(i, 0, SERVO);
+    pca9685left->setPWM(i, 0, SERVOMIN);
     pca9685right->setPWM(i, 0, SERVOMIN); // 0 stupnov
   }
 
