@@ -45,10 +45,12 @@ struct Hand
   int currentNote;
   FastAccelStepper* stepper;
   unsigned long timeFromMoving;
+  unsigned long remainingTime;
   Adafruit_PWMServoDriver* pca9685;
   int pressValue;
-  unsigned long releaseValue;
+  int releaseValue;
   unsigned long remainingTime;
+  int notes[3];
 };
 
 Hand leftHand = {
@@ -56,20 +58,24 @@ Hand leftHand = {
   .currentNote = 0,
   .stepper = NULL,
   .timeFromMoving = 0,
+  .remainingTime = 0,
   .pca9685 = &pca9685left,
   .pressValue = SERVOMIN + 100,
   .releaseValue = SERVOMIN,
   .remainingTime = 0,
+  .notes[3] = {-1, -1, -1},
 };
 Hand rightHand = {
   .currentOctave = 0,
   .currentNote = 0,
   .stepper = NULL,
   .timeFromMoving = 0,
+  .remainingTime = 0,
   .pca9685 = &pca9685right,
   .pressValue = SERVOMAX - 100,
   .releaseValue = SERVOMAX,
   .remainingTime = 0,
+  .notes[3] = {-1, -1, -1},
 };
 void setup() {
   Serial.begin(115200);
@@ -78,9 +84,10 @@ void setup() {
   pca9685left.begin();
   pca9685right.setPWMFreq(50);
   pca9685left.setPWMFreq(50); 
-  for (int i = SERVO1; i < SERVO8; i++){
-    rightHand->setPWM(i, 0, SERVOMIN);
-    leftHand->setPWM(i, 0, SERVOMIN); // 0 stupnov
+  
+  for (int i = SERVO1; i <= SERVO8; i++){
+    rightHand.pca9685->setPWM(i, 0, rightHand.releaseValue);
+    leftHand.pca9685->setPWM(i, 0, leftHand.releaseValue); 
   }
 
   engine.init();
@@ -116,121 +123,186 @@ void setup() {
   }
 }
 
+unsigned long moveToNote(Hand& hand, int targetNote, int targetOctave) {
+  unsigned long start = millis();
+  if (targetNote < C || targetNote > H || targetOctave < 0 || targetOctave > 8) {
+    Serial.printf("Neplatny targetNote(%d) alebo targetOctave(%d).\n", targetNote, targetOctave);
+    return 0;
+  }
+  int steps = (targetOctave - 1) * stepsPerOctave + targetNote * stepsPerNote; //preto -1, lebo chcem aby som neprepisoval vsetko na 0. oktavu
+  hand.stepper->moveTo(steps);
+  while (hand.stepper->isRunning());
+  hand.currentOctave = targetOctave;
+  hand.currentNote = targetNote;
+  return millis() - start;
+}
+
+void playNote(Hand& hand, int targetNote, int targetOctave, int wait, int note1, int note2, int note3) {
+  unsigned long start = millis();
+  int notes[3] = {note1, note2, note3};
+  if(!hand.currentNote == targetNote || hand.currentOctave == targetOctave)
+  {
+    for (int i = 0; i < 3; i++)
+    {
+      if (hand.notes[i] != NIC && hand.notes[i] < numServos + 8) 
+      {
+        hand.pca9685->setPWM(notes[i], 0, hand.releaseValue);
+      }
+    }
+    hand.timeFromMoving = moveToNote(hand, targetNote, targetOctave);
+    hand.currentNote = targetNote;
+    hand.currentOctave = targetOctave;
+  }
+  for (int  i = 0; i < 3; i++)
+  {
+    if(hand.notes[i] == notes[i] && notes[i] != NIC) 
+    {
+      if (notes[i] <= numServos + 8) 
+      {
+        hand.pca9685->setPWM(notes[i], 0, hand.releaseValue);
+        delay(hand.remainingTime);
+        hand.pca9685->setPWM(notes[i], 0, hand.pressValue);
+      }
+    }
+    else
+    { 
+      if (notes[i] != NIC && notes[i] <= numServos + 8) 
+      {
+        delay(hand.remainingTime);
+        hand.pca9685->setPWM(notes[i], 0, hand.pressValue);
+      }
+    }
+    hand.notes[i] = notes[i];
+  }
+  hand.remainingTime = wait - ((millis() - start) + hand.timeFromMoving);
+}
+
+void playMelody(Hand& hand, int melody[][6], int length) {
+  for (int i = 0; i < length; i++) {
+    int targetNote = melody[i][0];
+    int targetOctave = melody[i][1];
+    int wait = melody[i][2];
+    int note1 = melody[i][3];
+    int note2 = melody[i][4];
+    int note3 = melody[i][5];
+    playNote(hand, targetNote, targetOctave, wait, note1, note2, note3);
+  }
+}
 int havasiFreedomRight1[][6] = {
     //prvy takt
-    {A, 2, cel, NIC, NIC, NIC},
+    {A, 1, cel, NIC, NIC, NIC},
 };
 int havasiFreedomRight2[][6] = {
     // druhy takt
-    {A, 2, cel, NIC, NIC, NIC},
+    {A, 1, cel, NIC, NIC, NIC},
 };
 int havasiFreedomRight3[][6] = {
     //treti takt
-    {A, 2, cel, NIC, NIC, NIC},
+    {A, 1, cel, NIC, NIC, NIC},
 };
 int havasiFreedomRight4[][6] = {
     //stvrty takt
-    {A, 2, cel, NIC, NIC, NIC},
+    {A, 1, cel, NIC, NIC, NIC},
 };
 int havasiFreedomRight5[][6] = {
     //piaty takt
-    {A, 2, osm, SERVO1, SERVO3, SERVO5},
-    {A, 2, sest, NIC, NIC, NIC},
-    {A, 2, osm, SERVO1, SERVO3, SERVO5},
-    {A, 2, sest, NIC, NIC, NIC},
-    {A, 2, stv, SERVO1, SERVO3, NIC},
-    {A, 2, sest, SERVO2, NIC, NIC},
-    {A, 2, sest, SERVO3, NIC, NIC},
-    {A, 2, osm, SERVO4, NIC, NIC},
-    {A, 2, sest, NIC, NIC, NIC},
-    {A, 2, sest, SERVO5, NIC, NIC},
+    {A, 1, osm, SERVO1, SERVO3, SERVO5},
+    {A, 1, sest, NIC, NIC, NIC},
+    {A, 1, osm, SERVO1, SERVO3, SERVO5},
+    {A, 1, sest, NIC, NIC, NIC},
+    {A, 1, stv, SERVO1, SERVO3, NIC},
+    {A, 1, sest, SERVO2, NIC, NIC},
+    {A, 1, sest, SERVO3, NIC, NIC},
+    {A, 1, osm, SERVO4, NIC, NIC},
+    {A, 1, sest, NIC, NIC, NIC},
+    {A, 1, sest, SERVO5, NIC, NIC},
 };
 int havasiFreedomRight6[][6] = {
     //prvy takt
-    {A, 2, stv, SERVO1, SERVO3, NIC},
-    {A, 2, osm, NIC, NIC, NIC},
-    {A, 2, stv, NIC, NIC, NIC},
-    {A, 2, sest, SERVO2, NIC, NIC},
-    {A, 2, sest, SERVO3, NIC, NIC},
-    {A, 2, osm, SERVO2, SERVO4, NIC},
-    {A, 2, osm, SERVO3, SERVO5, NIC},
+    {A, 1, stv, SERVO1, SERVO3, NIC},
+    {A, 1, osm, NIC, NIC, NIC},
+    {A, 1, stv, NIC, NIC, NIC},
+    {A, 1, sest, SERVO2, NIC, NIC},
+    {A, 1, sest, SERVO3, NIC, NIC},
+    {A, 1, osm, SERVO2, SERVO4, NIC},
+    {A, 1, osm, SERVO3, SERVO5, NIC},
 };
 int havasiFreedomRight7[][6] = {
     //druhy takt
-    {A, 2, osm, SERVO1, SERVO3, SERVO5},
-    {A, 2, sest, NIC, NIC, NIC},
-    {A, 2, osm, SERVO1, SERVO3, NIC},
-    {A, 2, stv, NIC, NIC, NIC},
-    {A, 2, sest, SERVO1, NIC, NIC},
-    {A, 2, sest, SERVO2, NIC, NIC},
-    {A, 2, osm, SERVO1, SERVO3, NIC},
-    {A, 2, osm, SERVO2, SERVO4},
+    {A, 1, osm, SERVO1, SERVO3, SERVO5},
+    {A, 1, sest, NIC, NIC, NIC},
+    {A, 1, osm, SERVO1, SERVO3, NIC},
+    {A, 1, stv, NIC, NIC, NIC},
+    {A, 1, sest, SERVO1, NIC, NIC},
+    {A, 1, sest, SERVO2, NIC, NIC},
+    {A, 1, osm, SERVO1, SERVO3, NIC},
+    {A, 1, osm, SERVO2, SERVO4},
 };
 //druhy takt
 int havasiFreedomRight8[][6] = {
-    {A, 2, osm, SERVO1, SERVO3, SERVO5},
-    {A, 2, sest, NIC, NIC, NIC},
-    {A, 2, osm, SERVO1, SERVO3},
-    {A, 2, sest, NIC, NIC, NIC},
-    {A, 2, stv, NIC, NIC, NIC},
-    {A, 2, sest, SERVO2, NIC, NIC},
-    {A, 2, sest, SERVO3, NIC, NIC},
-    {A, 2, osm, SERVO4, NIC, NIC},
-    {A, 2, sest, NIC, NIC, NIC},
-    {A, 2, sest, SERVO5, NIC, NIC},
+    {A, 1, osm, SERVO1, SERVO3, SERVO5},
+    {A, 1, sest, NIC, NIC, NIC},
+    {A, 1, osm, SERVO1, SERVO3},
+    {A, 1, sest, NIC, NIC, NIC},
+    {A, 1, stv, NIC, NIC, NIC},
+    {A, 1, sest, SERVO2, NIC, NIC},
+    {A, 1, sest, SERVO3, NIC, NIC},
+    {A, 1, osm, SERVO4, NIC, NIC},
+    {A, 1, sest, NIC, NIC, NIC},
+    {A, 1, sest, SERVO5, NIC, NIC},
 };
 int havasiFreedomRight9[][6] = {
     //treti takt
-    {A, 2, stv, SERVO1, SERVO3, NIC},
-    {A, 2, osm, NIC, NIC, NIC},
-    {A, 2, stv, NIC, NIC, NIC},
-    {A, 2, sest, SERVO1, NIC, NIC},
-    {A, 2, sest, SERVO2, NIC, NIC},
-    {A, 2, osm, SERVO1, SERVO3, NIC},
-    {A, 2, osm, SERVO1, SERVO4, NIC},
+    {A, 1, stv, SERVO1, SERVO3, NIC},
+    {A, 1, osm, NIC, NIC, NIC},
+    {A, 1, stv, NIC, NIC, NIC},
+    {A, 1, sest, SERVO1, NIC, NIC},
+    {A, 1, sest, SERVO2, NIC, NIC},
+    {A, 1, osm, SERVO1, SERVO3, NIC},
+    {A, 1, osm, SERVO1, SERVO4, NIC},
 };
 int havasiFreedomRight10[][6] = {
     //stvrty takt
-    {A, 2, osm, SERVO1, SERVO3, SERVO5},
-    {A, 2, sest, NIC, NIC, NIC},
-    {A, 2, osm, SERVO1, SERVO3, SERVO5},
-    {A, 2, sest, NIC, NIC, NIC},
-    {A, 2, stv, NIC, NIC, NIC},
-    {A, 2, sest, SERVO2, NIC, NIC},
-    {A, 2, sest, SERVO3, NIC, NIC},
-    {A, 2, osm, SERVO2, SERVO4, NIC},
-    {A, 2, sest, NIC, NIC, NIC},
-    {A, 2, sest, SERVO3, SERVO5, NIC},
+    {A, 1, osm, SERVO1, SERVO3, SERVO5},
+    {A, 1, sest, NIC, NIC, NIC},
+    {A, 1, osm, SERVO1, SERVO3, SERVO5},
+    {A, 1, sest, NIC, NIC, NIC},
+    {A, 1, stv, NIC, NIC, NIC},
+    {A, 1, sest, SERVO2, NIC, NIC},
+    {A, 1, sest, SERVO3, NIC, NIC},
+    {A, 1, osm, SERVO2, SERVO4, NIC},
+    {A, 1, sest, NIC, NIC, NIC},
+    {A, 1, sest, SERVO3, SERVO5, NIC},
 };
 int havasiFreedomRight11[][6] = {
     //prvy takt
-    {A, 2, stv, SERVO1, SERVO3, NIC},
-    {A, 2, stv, NIC, NIC, NIC},
-    {A, 2, sest, SERVO2, NIC, NIC},
-    {A, 2, sest, SERVO3, NIC, NIC},
-    {A, 2, osm, SERVO2, SERVO4, NIC},
-    {A, 2, osm, SERVO3, SERVO5, NIC},
+    {A, 1, stv, SERVO1, SERVO3, NIC},
+    {A, 1, stv, NIC, NIC, NIC},
+    {A, 1, sest, SERVO2, NIC, NIC},
+    {A, 1, sest, SERVO3, NIC, NIC},
+    {A, 1, osm, SERVO2, SERVO4, NIC},
+    {A, 1, osm, SERVO3, SERVO5, NIC},
 };
 int havasiFreedomRight12[][6] = {
     //druhy takt
-    {A, 2, osm, SERVO1, SERVO3, SERVO5},
-    {A, 2, sest, NIC, NIC, NIC},
-    {A, 2, osm, SERVO1, SERVO3, NIC},
-    {A, 2, stv, NIC, NIC, NIC},
-    {A, 2, sest, SERVO1, NIC, NIC},
-    {A, 2, sest, SERVO2, NIC, NIC},
-    {A, 2, osm, SERVO1, SERVO3, NIC},
-    {A, 2, osm, SERVO2, SERVO4},
+    {A, 1, osm, SERVO1, SERVO3, SERVO5},
+    {A, 1, sest, NIC, NIC, NIC},
+    {A, 1, osm, SERVO1, SERVO3, NIC},
+    {A, 1, stv, NIC, NIC, NIC},
+    {A, 1, sest, SERVO1, NIC, NIC},
+    {A, 1, sest, SERVO2, NIC, NIC},
+    {A, 1, osm, SERVO1, SERVO3, NIC},
+    {A, 1, osm, SERVO2, SERVO4},
 };
 int havasiFreedomRight13[][6] = {
     // treti takt, tu je toten krizik sprosty
-    {G, 2, osm, SERVO1, SERVO6, NIC },
-    {G, 2, sest, NIC, NIC, NIC},
-    {G, 2, osm, SERVO1, SERVO7, NIC },
-    {G, 2, osm, SERVO1, SERVO7, NIC },
-    {G, 2, sest, NIC, NIC, NIC},
-    {G, 2, stv, SERVO1, SERVO6, NIC },
-    {G, 2, stv, SERVO1, SERVO6, NIC },
+    {G, 1, osm, SERVO1, SERVO6, NIC },
+    {G, 1, sest, NIC, NIC, NIC},
+    {G, 1, osm, SERVO1, SERVO7, NIC },
+    {G, 1, osm, SERVO1, SERVO7, NIC },
+    {G, 1, sest, NIC, NIC, NIC},
+    {G, 1, stv, SERVO1, SERVO6, NIC },
+    {G, 1, stv, SERVO1, SERVO6, NIC },
     //aaa tu sa to uz opakovat bude, nemam nervy pisat toto, a asi to nebude 
 };
 // freedon left hand
@@ -517,52 +589,5 @@ void OnDataRecv(const uint8_t * mac, const uint8_t *incomingData, int len) {
         vTaskDelete(NULL);
     }, "RightHandTask", 4096, NULL, 1, NULL, 1);
   }
-  
 }
 
-unsigned long moveToNote(Hand& hand, int targetNote, int targetOctave) {
-  unsigned long start = millis();
-  if (targetNote < C || targetNote > H || targetOctave < 0 || targetOctave > 8) {
-    Serial.printf("Neplatny targetNote(%d) alebo targetOctave(%d).\n", targetNote, targetOctave);
-    return 0;
-  }
-  int lastSteps = (hand.currentOctave - 1) * stepsPerOctave + hand.currentNote * stepsPerNote;
-  int steps = (targetOctave - 1) * stepsPerOctave + targetNote * stepsPerNote; //preto -1, lebo chcem aby som neprepisoval vsetko na 0. oktavu
-  if (steps - lastSteps == 0) return 0;
-  hand.stepper->moveTo(steps);
-  while (hand.stepper->isRunning());
-  hand.currentOctave = targetOctave;
-  hand.currentNote = targetNote;
-  return millis() - start;
-}
-
-void playNote(Hand& hand, int targetNote, int targetOctave, int wait, int note1, int note2, int note3) {
-  hand.timeFromMoving = moveToNote(hand, targetNote, targetOctave);
-  unsigned long holdTime = wait - hand.remainingTime;
-  unsigned long start = millis();
-  int notes[3] = {note1, note2, note3};
-  delay(hand.holdTime);
-  for (int i = 0; i < 3; i++) {
-    if (notes[i] != NIC && notes[i] <= numServos + 8) {
-      hand.pca9685->setPWM(notes[i], 0, hand.pressValue);
-      delay(rezerva);
-      hand.pca9685->setPWM(notes[i], 0, hand.releaseValue);
-    }
-    else{
-      hand.remainingTime = 0;
-    }
-  }
-  hand.remainingTime = wait - (millis() - start);
-}
-
-void playMelody(Hand& hand, int melody[][6], int length) {
-  for (int i = 0; i < length; i++) {
-    int targetNote = melody[i][0];
-    int targetOctave = melody[i][1];
-    int wait = melody[i][2];
-    int note1 = melody[i][3];
-    int note2 = melody[i][4];
-    int note3 = melody[i][5];
-    playNote(hand, targetNote, targetOctave, wait, note1, note2, note3);
-  }
-}
