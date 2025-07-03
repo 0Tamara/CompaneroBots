@@ -3,6 +3,8 @@
 #include <Wire.h>
 #include <esp_now.h>
 #include <WiFi.h>
+#include <vector>
+#include <algorithm>
 
 #define SERVOMIN  125
 #define SERVOMAX  575
@@ -49,8 +51,7 @@ struct Hand
   Adafruit_PWMServoDriver* pca9685;
   int pressValue;
   int releaseValue;
-  unsigned long remainingTime;
-  int notes[3];
+  std::vector<int> notes;
 };
 
 Hand leftHand = {
@@ -62,8 +63,7 @@ Hand leftHand = {
   .pca9685 = &pca9685left,
   .pressValue = SERVOMIN + 100,
   .releaseValue = SERVOMIN,
-  .remainingTime = 0,
-  .notes[3] = {-1, -1, -1},
+  .notes = {},
 };
 Hand rightHand = {
   .currentOctave = 0,
@@ -74,8 +74,7 @@ Hand rightHand = {
   .pca9685 = &pca9685right,
   .pressValue = SERVOMAX - 100,
   .releaseValue = SERVOMAX,
-  .remainingTime = 0,
-  .notes[3] = {-1, -1, -1},
+  .notes = {},
 };
 void setup() {
   Serial.begin(115200);
@@ -121,6 +120,10 @@ void setup() {
   stepperLeft->moveTo(0);
   while (stepperLeft->isRunning()) {
   }
+  for (int i = 0; i < 1; i++) {
+    leftHand.notes[i] = NIC;
+    rightHand.notes[i] = NIC;
+  }
 }
 
 unsigned long moveToNote(Hand& hand, int targetNote, int targetOctave) {
@@ -137,46 +140,77 @@ unsigned long moveToNote(Hand& hand, int targetNote, int targetOctave) {
   return millis() - start;
 }
 
+
+
 void playNote(Hand& hand, int targetNote, int targetOctave, int wait, int note1, int note2, int note3) {
-  unsigned long start = millis();
-  int notes[3] = {note1, note2, note3};
-  if(!hand.currentNote == targetNote || hand.currentOctave == targetOctave)
-  {
-    for (int i = 0; i < 3; i++)
-    {
-      if (hand.notes[i] != NIC && hand.notes[i] < numServos + 8) 
-      {
-        hand.pca9685->setPWM(notes[i], 0, hand.releaseValue);
+  unsigned long function_start_time = millis(); 
+  std::vector<int> notesToPlay;
+  if (note1 != NIC && note1 >= SERVO1 && note1 <= SERVO8) notesToPlay.push_back(note1);
+  if (note2 != NIC && note2 >= SERVO1 && note2 <= SERVO8) notesToPlay.push_back(note2);
+  if (note3 != NIC && note3 >= SERVO1 && note3 <= SERVO8) notesToPlay.push_back(note3);
+
+  std::sort(notesToPlay.begin(), notesToPlay.end());
+
+  if (hand.currentNote != targetNote || hand.currentOctave != targetOctave) {
+    for (int pressedNote : hand.notes) {
+      if (pressedNote != NIC && pressedNote >= SERVO1 && pressedNote <= SERVO8) {
+        hand.pca9685->setPWM(pressedNote, 0, hand.releaseValue);
       }
     }
+    hand.notes.clear();
+    
     hand.timeFromMoving = moveToNote(hand, targetNote, targetOctave);
     hand.currentNote = targetNote;
     hand.currentOctave = targetOctave;
+  } else {
+    hand.timeFromMoving = 0; 
   }
-  for (int  i = 0; i < 3; i++)
-  {
-    if(hand.notes[i] == notes[i] && notes[i] != NIC) 
-    {
-      if (notes[i] <= numServos + 8) 
-      {
-        hand.pca9685->setPWM(notes[i], 0, hand.releaseValue);
-        delay(hand.remainingTime);
-        hand.pca9685->setPWM(notes[i], 0, hand.pressValue);
-      }
-    }
-    else
-    { 
-      if (notes[i] != NIC && notes[i] <= numServos + 8) 
-      {
-        delay(hand.remainingTime);
-        hand.pca9685->setPWM(notes[i], 0, hand.pressValue);
-      }
-    }
-    hand.notes[i] = notes[i];
-  }
-  hand.remainingTime = wait - ((millis() - start) + hand.timeFromMoving);
-}
 
+  if (hand.remainingTime > 0) {
+    delay(hand.remainingTime);
+  } else {
+    hand.remainingTime = 0; 
+  }
+  //docasny zoznam, aby som nepracoval v cykle so zoznamom ktory sa meni... nebudem si zbytocne problemy robit
+  std::vector<int> notesAlreadyPressed; 
+
+  for (int old_pressed_note_value : hand.notes) {
+    bool is_still_needed = std::binary_search(notesToPlay.begin(), notesToPlay.end(), old_pressed_note_value);
+    if (!is_still_needed) {
+      if (old_pressed_note_value != NIC && old_pressed_note_value >= SERVO1 && old_pressed_note_value <= SERVO8) {
+        hand.pca9685->setPWM(old_pressed_note_value, 0, hand.releaseValue);
+      }
+    }
+    else{
+      hand.pca9685->setPWM(newNote, 0, hand.pressValue);   // iba stlac
+      notesAlreadyPressed.push_back(newNote); 
+    }
+  }
+
+  for (int newNote : notesToPlay) {
+    bool is_already_pressed = std::binary_search(hand.notes.begin(),  hand.notes.end(),  newNote);
+
+    if (is_already_pressed) {
+      hand.pca9685->setPWM(newNote, 0, hand.releaseValue); // uvolni
+      hand.pca9685->setPWM(newNote, 0, hand.pressValue);   // stlac
+      notesAlreadyPressed.push_back(newNote); // pridaj do zoznamu not, ktore su uz stlacene, a neskorej sa pridaju do hand.notes
+    } else {
+      hand.pca9685->setPWM(newNote, 0, hand.pressValue);   // iba stlac
+      notesAlreadyPressed.push_back(newNote); 
+    }
+  }
+
+  std::sort(notesAlreadyPressed.begin(), notesAlreadyPressed.end()); 
+  hand.notes = notesAlreadyPressed; // tu sa nahradza zoznam inym zoznamom, aby som si pamatal stlacene noty
+
+  unsigned long operations_elapsed_time = millis() - function_start_time;
+  hand.remainingTime = wait - (operations_elapsed_time + hand.timeFromMoving);
+
+  if (hand.remainingTime <= 0) {
+    Serial.println("Upozornenie: Akcie trvali dlhšie ako 'wait'. Remaining time je nulový.");
+    hand.remainingTime = 0;
+  }
+}
 void playMelody(Hand& hand, int melody[][6], int length) {
   for (int i = 0; i < length; i++) {
     int targetNote = melody[i][0];
