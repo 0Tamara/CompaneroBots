@@ -174,16 +174,12 @@ void playNote(Hand& hand, int targetNote, int targetOctave, int wait, int note1,
   //docasny zoznam, aby som nepracoval v cykle so zoznamom ktory sa meni... nebudem si zbytocne problemy robit
   std::vector<int> notesAlreadyPressed; 
 
-  for (int old_pressed_note_value : hand.notes) {
-    bool is_still_needed = std::binary_search(notesToPlay.begin(), notesToPlay.end(), old_pressed_note_value);
+  for (int oldNote : hand.notes) {
+    bool is_still_needed = std::binary_search(notesToPlay.begin(), notesToPlay.end(), oldNote);
     if (!is_still_needed) {
-      if (old_pressed_note_value != NIC && old_pressed_note_value >= SERVO1 && old_pressed_note_value <= SERVO8) {
-        hand.pca9685->setPWM(old_pressed_note_value, 0, hand.releaseValue);
+      if (oldNote != NIC && oldNote >= SERVO1 && oldNote <= SERVO8) {
+        hand.pca9685->setPWM(oldNote, 0, hand.releaseValue);
       }
-    }
-    else{
-      hand.pca9685->setPWM(newNote, 0, hand.pressValue);   // iba stlac
-      notesAlreadyPressed.push_back(newNote); 
     }
   }
 
