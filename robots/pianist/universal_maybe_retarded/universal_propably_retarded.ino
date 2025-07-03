@@ -19,15 +19,14 @@ int osm = tempo / 8;
 int stv = tempo / 4;
 int pol = tempo / 2;
 int cel = tempo;
-
-const int offset = 50; //konstanta, o tolko sa bude musiet pohnut kym sa dostane na klaviaturu
-const int rezerva = 50; 
+int rezerva = 50; 
 const int leftHandStepPin = 5; 
 const int leftHandDirPin = 16; 
 const int leftHandEnPin = 18;
 const int rightHandStepPin = 4;
 const int rightHandDirPin = 17;
 const int rightHandEnPin = 15;
+const int pressTime = 20;
 
 // kniznice
 Adafruit_PWMServoDriver pca9685right(0x40, Wire);
@@ -46,11 +45,10 @@ struct Hand
   int currentNote;
   FastAccelStepper* stepper;
   unsigned long timeFromMoving;
-  unsigned long lastTime;
-  Adafruit_PWMServoDriver* pca9685; 
-  unsigned long pressValue;
+  Adafruit_PWMServoDriver* pca9685;
+  int pressValue;
   unsigned long releaseValue;
-  bool servoState[16];
+  unsigned long remainingTime;
 };
 
 Hand leftHand = {
@@ -58,22 +56,20 @@ Hand leftHand = {
   .currentNote = 0,
   .stepper = NULL,
   .timeFromMoving = 0,
-  .lastTime = 0,
   .pca9685 = &pca9685left,
   .pressValue = SERVOMIN + 100,
   .releaseValue = SERVOMIN,
-  .servoState = {false},
+  .remainingTime = 0,
 };
 Hand rightHand = {
   .currentOctave = 0,
   .currentNote = 0,
   .stepper = NULL,
   .timeFromMoving = 0,
-  .lastTime = 0,
   .pca9685 = &pca9685right,
   .pressValue = SERVOMAX - 100,
   .releaseValue = SERVOMAX,
-  .servoState = {false},
+  .remainingTime = 0,
 };
 void setup() {
   Serial.begin(115200);
@@ -82,9 +78,9 @@ void setup() {
   pca9685left.begin();
   pca9685right.setPWMFreq(50);
   pca9685left.setPWMFreq(50); 
-  for (int i = 7; i <= numServos * 2; i++){
-    pca9685left->setPWM(i, 0, SERVOMIN);
-    pca9685right->setPWM(i, 0, SERVOMIN); // 0 stupnov
+  for (int i = SERVO1; i < SERVO8; i++){
+    rightHand->setPWM(i, 0, SERVOMIN);
+    leftHand->setPWM(i, 0, SERVOMIN); // 0 stupnov
   }
 
   engine.init();
@@ -103,7 +99,7 @@ void setup() {
 
   stepperLeft->setSpeedInHz(speedInHz);
   stepperLeft->setAcceleration(acceleration);
-  stepperLeft->setCurrentPosition(offset);
+  stepperLeft->setCurrentPosition(0);
   
   stepperRight->setDirectionPin(rightHandDirPin);
   stepperRight->setEnablePin(rightHandEnPin);
@@ -111,7 +107,7 @@ void setup() {
 
   stepperRight->setSpeedInHz(speedInHz);
   stepperRight->setAcceleration(acceleration);
-  stepperRight->setCurrentPosition((stepsPerOctave * 3) + offset); 
+  stepperRight->setCurrentPosition((stepsPerOctave * 2)); 
   stepperRight->moveTo(0);
   while (stepperRight->isRunning()) {
   } 
@@ -530,8 +526,8 @@ unsigned long moveToNote(Hand& hand, int targetNote, int targetOctave) {
     Serial.printf("Neplatny targetNote(%d) alebo targetOctave(%d).\n", targetNote, targetOctave);
     return 0;
   }
-  int lastSteps = hand.currentOctave * stepsPerOctave + hand.currentNote * stepsPerNote;
-  int steps = targetOctave * stepsPerOctave + targetNote * stepsPerNote;
+  int lastSteps = (hand.currentOctave - 1) * stepsPerOctave + hand.currentNote * stepsPerNote;
+  int steps = (targetOctave - 1) * stepsPerOctave + targetNote * stepsPerNote; //preto -1, lebo chcem aby som neprepisoval vsetko na 0. oktavu
   if (steps - lastSteps == 0) return 0;
   hand.stepper->moveTo(steps);
   while (hand.stepper->isRunning());
@@ -541,35 +537,22 @@ unsigned long moveToNote(Hand& hand, int targetNote, int targetOctave) {
 }
 
 void playNote(Hand& hand, int targetNote, int targetOctave, int wait, int note1, int note2, int note3) {
-  int notes[3] = {note1, note2, note3};
-  bool anyPressed = false;
-  for (int i = 8; i < numServos + 8; i++) {
-    if (hand.servoState[i]) {
-      anyPressed = true;
-      hand.pca9685->setPWM(i, 0, hand.releaseValue);
-      hand.servoState[i] = false;
-    }
-  }
-  if (anyPressed) {
-    unsigned long releaseStart = millis();
-    while (millis() - releaseStart < rezerva); 
-  }
-
   hand.timeFromMoving = moveToNote(hand, targetNote, targetOctave);
-
-  int holdTime = wait - (rezerva + hand.timeFromMoving);
-  if (holdTime < 0) {
-    Serial.printf("Pozor, negativny holdTime(%d ms). Ides na 50 ms.\n", holdTime);
-    holdTime = 50;
-  }
-  unsigned long startTime = millis();
+  unsigned long holdTime = wait - hand.remainingTime;
+  unsigned long start = millis();
+  int notes[3] = {note1, note2, note3};
+  delay(hand.holdTime);
   for (int i = 0; i < 3; i++) {
     if (notes[i] != NIC && notes[i] <= numServos + 8) {
       hand.pca9685->setPWM(notes[i], 0, hand.pressValue);
-      hand.servoState[notes[i]] = true;
+      delay(rezerva);
+      hand.pca9685->setPWM(notes[i], 0, hand.releaseValue);
+    }
+    else{
+      hand.remainingTime = 0;
     }
   }
-  while (millis() - startTime < holdTime);
+  hand.remainingTime = wait - (millis() - start);
 }
 
 void playMelody(Hand& hand, int melody[][6], int length) {
