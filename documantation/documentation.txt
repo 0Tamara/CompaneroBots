@@ -3,15 +3,45 @@ Poster:
 
 Video:
   Na zacatku sa kazdy pred tou istou stenou predstavi, potom povieme nieco spolu, ako napr. "And we are companerobots" a potom zacne kazdy ohladom svojho robota vypravat
-  Communication (Tomas):
-    All of our robots communicate between each other via esp-now protocol.
-    We chose it, because it's simple, fast, and doesn't rely on central server 
-      - if one of the robots fails, all the others work independently.
-    In the fist part of our performance, the camra sends instructions to other robots.
-    When the music starts, the drummer keeps track of the beat, while camera coltrols the dancer.
-  Drummer (Tomas):
-    Our drummer has 2 side drums and 1 large kick drum.
-    Each drum is equipped with an adressable RGB LED strip for better visual experience.
-    He plays to the rythm of the songs and everytime he hits the drum, it lights up.
-    The drummer also plays a key role in synchronization.
-    When the music plays, he counts the beat and sends it wirelessly to other robots.
+  
+  Communication
+    All of our robots have ESP32 microcontrollers and communicate between each other via the esp-now protocol.
+    We chose it because it's simple, fast, and doesn't rely on central server
+      - if one of the robots fails, the others continue working independently.
+    In the first part of our performance, the camra sends instructions to the other robots.
+    When the music starts, the drummer keeps track of the beat, while camera controls the dancer.
+
+  Drummer
+    Our drummer robot is equipped with two side drums and one large kick drum.
+    Beyond performance, the drummer plays a key role in synchronizing the entire system.
+      —he counts the beats and wirelessly sends timing signals to the other robots, ensuring they stay in perfect sync with the music.
+    Each drum features an addressable RGB LED strip for better visual effects.
+      As he plays to the rhythm of the music, the drums light up with every hit.
+    He is powered by 2 Li-Ion 18650 batteries.
+      It has a DC-DC converter to 5V, 2 MG90S servo motors for the movement of its elbows, and a MG996R servo motor for the kick drum.
+    The reason we chose servo motors is because they are affortable, easy to program and fast and strong enough for our usage.
+    We used the dual-core feature of the ESP32 microcontroller. Thanks to that, the drummer can light up the LEDs while playing and synchronizing with the beat.
+
+  Dancer
+    The dancer moves thanks to 4 DC motors with mecanum wheels and dances with 4 MG996R servo motors that are in its elbows and shoulders.
+      We chose mecanum wheels because we wanted the robot to be able to move in every direction.
+    On the base is a 7.4V LiPo battery, 2 12V converters, and motor drivers for the DC motors. The 5V converter powers all the other parts of the robot.
+    The dancer works alone or together with a camera on a tripod. The camera is tracking movement, and the dancer mirrors the movements of the tracked person.
+
+  Scenery
+    The power system of the scenery consists of 2 Li-Ion 18650 batteries, a power switch, and a 5V converter.
+    The microcontroller is ESP32, which controls a DC motor. The motor turns 2 pulleys. While one pulley is winding up the string, the other is unwinding.
+    2 ends of the string are running between the sides of the curtains, and each curtain is tied with one of them.
+    Originally we had 2 motors that opened the scenery. However we upgraded the system so that we only need one motor and the scenery opens and closes. 
+
+  Camera
+    The power system of the camera consists of 2 Li-Ion 18650 batteries, a power switch, and a 5V converter.
+    The microprocessor Raspberry Pi 4 handles the camera recognition and is connected to an ESP32 via UART.
+    Data from the camera recognition is transmitted through the ESP32, which communicates with other robots wirelessly using ESP-NOW protocol.
+    The entire setup is attached to the camera tripod.
+
+  Problems
+    We came across a couple of problems during creation of our performance.
+    One of them is that we couldn't find steel axles for our wheels.
+      We decided to make 3D-printed ones but they were too fragile and had to be replaced frequently.
+      We came up with the idea to keep the 3D-printed parts but improve them with inserted aluminum threads which solved the problem.
