@@ -38,7 +38,7 @@ FastAccelStepper *stepperLeft = NULL;
 FastAccelStepper *stepperRight = NULL;
 
 enum moveNotes { C=0, D=1, E=2, F=3, G=4, A=5, H=6 };
-enum actualServos { NIC = -1, SERVO1 = 8, SERVO2 = 9, SERVO3 = 10, SERVO4 = 11, SERVO5 = 12, SERVO6 = 13, SERVO7 = 14, SERVO8 = 15 };
+enum actualServos { NIC = -1, SERVO1 = 15, SERVO2 = 14, SERVO3 = 13, SERVO4 = 12, SERVO5 = 11, SERVO6 = 10, SERVO7 = 9, SERVO8 = 8 };
 
 struct Hand
 {
@@ -101,7 +101,7 @@ void setup() {
 
   stepperLeft->setSpeedInHz(speedInHz);
   stepperLeft->setAcceleration(acceleration);
-  stepperLeft->setCurrentPosition(offset);
+  stepperLeft->setCurrentPosition(0);
   
   stepperRight->setDirectionPin(rightHandDirPin);
   stepperRight->setEnablePin(rightHandEnPin);
@@ -109,7 +109,7 @@ void setup() {
 
   stepperRight->setSpeedInHz(speedInHz);
   stepperRight->setAcceleration(acceleration);
-  stepperRight->setCurrentPosition((stepsPerOctave * 3) + offset); 
+  stepperRight->setCurrentPosition((stepsPerOctave * 2)); 
   stepperRight->moveTo(0);
   while (stepperRight->isRunning()) {
   } 
@@ -124,8 +124,8 @@ unsigned long moveToNote(Hand& hand, int targetNote, int targetOctave) {
     Serial.printf("Neplatny targetNote(%d) alebo targetOctave(%d).\n", targetNote, targetOctave);
     return 0;
   }
-  int lastSteps = hand.currentOctave * stepsPerOctave + hand.currentNote * stepsPerNote;
-  int steps = targetOctave * stepsPerOctave + targetNote * stepsPerNote;
+  int lastSteps = (hand.currentOctave - 1) * stepsPerOctave + hand.currentNote * stepsPerNote;
+  int steps = (targetOctave - 1) * stepsPerOctave + targetNote * stepsPerNote;
   if (steps - lastSteps == 0) return 0;
   hand.stepper->moveTo(steps);
   while (hand.stepper->isRunning());
@@ -174,119 +174,119 @@ void playMelody(Hand& hand, int melody[][6], int length) {
 
 int havasiFreedomRight1[][6] = {
     //prvy takt
-    {A, 2, cel, NIC, NIC, NIC},
+    {A, 1, cel, NIC, NIC, NIC},
 };
 int havasiFreedomRight2[][6] = {
     // druhy takt
-    {A, 2, cel, NIC, NIC, NIC},
+    {A, 1, cel, NIC, NIC, NIC},
 };
 int havasiFreedomRight3[][6] = {
     //treti takt
-    {A, 2, cel, NIC, NIC, NIC},
+    {A, 1, cel, NIC, NIC, NIC},
 };
 int havasiFreedomRight4[][6] = {
     //stvrty takt
-    {A, 2, cel, NIC, NIC, NIC},
+    {A, 1, cel, NIC, NIC, NIC},
 };
 int havasiFreedomRight5[][6] = {
     //piaty takt
-    {A, 2, osm, SERVO1, SERVO3, SERVO5},
-    {A, 2, sest, NIC, NIC, NIC},
-    {A, 2, osm, SERVO1, SERVO3, SERVO5},
-    {A, 2, sest, NIC, NIC, NIC},
-    {A, 2, stv, SERVO1, SERVO3, NIC},
-    {A, 2, sest, SERVO2, NIC, NIC},
-    {A, 2, sest, SERVO3, NIC, NIC},
-    {A, 2, osm, SERVO4, NIC, NIC},
-    {A, 2, sest, NIC, NIC, NIC},
-    {A, 2, sest, SERVO5, NIC, NIC},
+    {A, 1, osm, SERVO1, SERVO3, SERVO5},
+    {A, 1, sest, NIC, NIC, NIC},
+    {A, 1, osm, SERVO1, SERVO3, SERVO5},
+    {A, 1, sest, NIC, NIC, NIC},
+    {A, 1, stv, SERVO1, SERVO3, NIC},
+    {A, 1, sest, SERVO2, NIC, NIC},
+    {A, 1, sest, SERVO3, NIC, NIC},
+    {A, 1, osm, SERVO4, NIC, NIC},
+    {A, 1, sest, NIC, NIC, NIC},
+    {A, 1, sest, SERVO5, NIC, NIC},
 };
 int havasiFreedomRight6[][6] = {
     //prvy takt
-    {A, 2, stv, SERVO1, SERVO3, NIC},
-    {A, 2, osm, NIC, NIC, NIC},
-    {A, 2, stv, NIC, NIC, NIC},
-    {A, 2, sest, SERVO2, NIC, NIC},
-    {A, 2, sest, SERVO3, NIC, NIC},
-    {A, 2, osm, SERVO2, SERVO4, NIC},
-    {A, 2, osm, SERVO3, SERVO5, NIC},
+    {A, 1, stv, SERVO1, SERVO3, NIC},
+    {A, 1, osm, NIC, NIC, NIC},
+    {A, 1, stv, NIC, NIC, NIC},
+    {A, 1, sest, SERVO2, NIC, NIC},
+    {A, 1, sest, SERVO3, NIC, NIC},
+    {A, 1, osm, SERVO2, SERVO4, NIC},
+    {A, 1, osm, SERVO3, SERVO5, NIC},
 };
 int havasiFreedomRight7[][6] = {
     //druhy takt
-    {A, 2, osm, SERVO1, SERVO3, SERVO5},
-    {A, 2, sest, NIC, NIC, NIC},
-    {A, 2, osm, SERVO1, SERVO3, NIC},
-    {A, 2, stv, NIC, NIC, NIC},
-    {A, 2, sest, SERVO1, NIC, NIC},
-    {A, 2, sest, SERVO2, NIC, NIC},
-    {A, 2, osm, SERVO1, SERVO3, NIC},
-    {A, 2, osm, SERVO2, SERVO4},
+    {A, 1, osm, SERVO1, SERVO3, SERVO5},
+    {A, 1, sest, NIC, NIC, NIC},
+    {A, 1, osm, SERVO1, SERVO3, NIC},
+    {A, 1, stv, NIC, NIC, NIC},
+    {A, 1, sest, SERVO1, NIC, NIC},
+    {A, 1, sest, SERVO2, NIC, NIC},
+    {A, 1, osm, SERVO1, SERVO3, NIC},
+    {A, 1, osm, SERVO2, SERVO4},
 };
 //druhy takt
 int havasiFreedomRight8[][6] = {
-    {A, 2, osm, SERVO1, SERVO3, SERVO5},
-    {A, 2, sest, NIC, NIC, NIC},
-    {A, 2, osm, SERVO1, SERVO3},
-    {A, 2, sest, NIC, NIC, NIC},
-    {A, 2, stv, NIC, NIC, NIC},
-    {A, 2, sest, SERVO2, NIC, NIC},
-    {A, 2, sest, SERVO3, NIC, NIC},
-    {A, 2, osm, SERVO4, NIC, NIC},
-    {A, 2, sest, NIC, NIC, NIC},
-    {A, 2, sest, SERVO5, NIC, NIC},
+    {A, 1, osm, SERVO1, SERVO3, SERVO5},
+    {A, 1, sest, NIC, NIC, NIC},
+    {A, 1, osm, SERVO1, SERVO3},
+    {A, 1, sest, NIC, NIC, NIC},
+    {A, 1, stv, NIC, NIC, NIC},
+    {A, 1, sest, SERVO2, NIC, NIC},
+    {A, 1, sest, SERVO3, NIC, NIC},
+    {A, 1, osm, SERVO4, NIC, NIC},
+    {A, 1, sest, NIC, NIC, NIC},
+    {A, 1, sest, SERVO5, NIC, NIC},
 };
 int havasiFreedomRight9[][6] = {
     //treti takt
-    {A, 2, stv, SERVO1, SERVO3, NIC},
-    {A, 2, osm, NIC, NIC, NIC},
-    {A, 2, stv, NIC, NIC, NIC},
-    {A, 2, sest, SERVO1, NIC, NIC},
-    {A, 2, sest, SERVO2, NIC, NIC},
-    {A, 2, osm, SERVO1, SERVO3, NIC},
-    {A, 2, osm, SERVO1, SERVO4, NIC},
+    {A, 1, stv, SERVO1, SERVO3, NIC},
+    {A, 1, osm, NIC, NIC, NIC},
+    {A, 1, stv, NIC, NIC, NIC},
+    {A, 1, sest, SERVO1, NIC, NIC},
+    {A, 1, sest, SERVO2, NIC, NIC},
+    {A, 1, osm, SERVO1, SERVO3, NIC},
+    {A, 1, osm, SERVO1, SERVO4, NIC},
 };
 int havasiFreedomRight10[][6] = {
     //stvrty takt
-    {A, 2, osm, SERVO1, SERVO3, SERVO5},
-    {A, 2, sest, NIC, NIC, NIC},
-    {A, 2, osm, SERVO1, SERVO3, SERVO5},
-    {A, 2, sest, NIC, NIC, NIC},
-    {A, 2, stv, NIC, NIC, NIC},
-    {A, 2, sest, SERVO2, NIC, NIC},
-    {A, 2, sest, SERVO3, NIC, NIC},
-    {A, 2, osm, SERVO2, SERVO4, NIC},
-    {A, 2, sest, NIC, NIC, NIC},
-    {A, 2, sest, SERVO3, SERVO5, NIC},
+    {A, 1, osm, SERVO1, SERVO3, SERVO5},
+    {A, 1, sest, NIC, NIC, NIC},
+    {A, 1, osm, SERVO1, SERVO3, SERVO5},
+    {A, 1, sest, NIC, NIC, NIC},
+    {A, 1, stv, NIC, NIC, NIC},
+    {A, 1, sest, SERVO2, NIC, NIC},
+    {A, 1, sest, SERVO3, NIC, NIC},
+    {A, 1, osm, SERVO2, SERVO4, NIC},
+    {A, 1, sest, NIC, NIC, NIC},
+    {A, 1, sest, SERVO3, SERVO5, NIC},
 };
 int havasiFreedomRight11[][6] = {
     //prvy takt
-    {A, 2, stv, SERVO1, SERVO3, NIC},
-    {A, 2, stv, NIC, NIC, NIC},
-    {A, 2, sest, SERVO2, NIC, NIC},
-    {A, 2, sest, SERVO3, NIC, NIC},
-    {A, 2, osm, SERVO2, SERVO4, NIC},
-    {A, 2, osm, SERVO3, SERVO5, NIC},
+    {A, 1, stv, SERVO1, SERVO3, NIC},
+    {A, 1, stv, NIC, NIC, NIC},
+    {A, 1, sest, SERVO2, NIC, NIC},
+    {A, 1, sest, SERVO3, NIC, NIC},
+    {A, 1, osm, SERVO2, SERVO4, NIC},
+    {A, 1, osm, SERVO3, SERVO5, NIC},
 };
 int havasiFreedomRight12[][6] = {
     //druhy takt
-    {A, 2, osm, SERVO1, SERVO3, SERVO5},
-    {A, 2, sest, NIC, NIC, NIC},
-    {A, 2, osm, SERVO1, SERVO3, NIC},
-    {A, 2, stv, NIC, NIC, NIC},
-    {A, 2, sest, SERVO1, NIC, NIC},
-    {A, 2, sest, SERVO2, NIC, NIC},
-    {A, 2, osm, SERVO1, SERVO3, NIC},
-    {A, 2, osm, SERVO2, SERVO4},
+    {A, 1, osm, SERVO1, SERVO3, SERVO5},
+    {A, 1, sest, NIC, NIC, NIC},
+    {A, 1, osm, SERVO1, SERVO3, NIC},
+    {A, 1, stv, NIC, NIC, NIC},
+    {A, 1, sest, SERVO1, NIC, NIC},
+    {A, 1, sest, SERVO2, NIC, NIC},
+    {A, 1, osm, SERVO1, SERVO3, NIC},
+    {A, 1, osm, SERVO2, SERVO4},
 };
 int havasiFreedomRight13[][6] = {
     // treti takt, tu je toten krizik sprosty
-    {G, 2, osm, SERVO1, SERVO6, NIC },
-    {G, 2, sest, NIC, NIC, NIC},
-    {G, 2, osm, SERVO1, SERVO7, NIC },
-    {G, 2, osm, SERVO1, SERVO7, NIC },
-    {G, 2, sest, NIC, NIC, NIC},
-    {G, 2, stv, SERVO1, SERVO6, NIC },
-    {G, 2, stv, SERVO1, SERVO6, NIC },
+    {G, 1, osm, SERVO1, SERVO6, NIC },
+    {G, 1, sest, NIC, NIC, NIC},
+    {G, 1, osm, SERVO1, SERVO7, NIC },
+    {G, 1, osm, SERVO1, SERVO7, NIC },
+    {G, 1, sest, NIC, NIC, NIC},
+    {G, 1, stv, SERVO1, SERVO6, NIC },
+    {G, 1, stv, SERVO1, SERVO6, NIC },
     //aaa tu sa to uz opakovat bude, nemam nervy pisat toto, a asi to nebude 
 };
 // freedon left hand
@@ -400,6 +400,14 @@ int fireballLeft[][6] = {
 };
 
 void loop() {
+  xTaskCreatePinnedToCore([] (void *) {
+    playMelody(leftHand, havasiFreedomLeft1, sizeof(havasiFreedomLeft1) / sizeof(havasiFreedomLeft1[0]));
+    vTaskDelete(NULL);
+  }, "LeftHandTask", 4096, NULL, 1, NULL, 0);
+  xTaskCreatePinnedToCore([] (void *) {
+      playMelody(rightHand, havasiFreedomRight1, sizeof(havasiFreedomRight1) / sizeof(havasiFreedomRight1[0]));
+    vTaskDelete(NULL);
+  }, "RightHandTask", 4096, NULL, 1, NULL, 1); 
 }
 void OnDataRecv(const uint8_t * mac, const uint8_t *incomingData, int len) {
   memcpy(&myData, incomingData, sizeof(myData));

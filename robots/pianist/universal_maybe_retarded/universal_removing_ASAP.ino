@@ -28,7 +28,6 @@ const int leftHandEnPin = 18;
 const int rightHandStepPin = 4;
 const int rightHandDirPin = 17;
 const int rightHandEnPin = 15;
-const int pressTime = 20;
 
 // kniznice
 Adafruit_PWMServoDriver pca9685right(0x40, Wire);
@@ -119,10 +118,6 @@ void setup() {
   } 
   stepperLeft->moveTo(0);
   while (stepperLeft->isRunning()) {
-  }
-  for (int i = 0; i < 1; i++) {
-    leftHand.notes[i] = NIC;
-    rightHand.notes[i] = NIC;
   }
 }
 
@@ -446,6 +441,14 @@ int fireballLeft[][6] = {
 };
 
 void loop() {
+  xTaskCreatePinnedToCore([] (void *) {
+    playMelody(leftHand, havasiFreedomLeft1, sizeof(havasiFreedomLeft1) / sizeof(havasiFreedomLeft1[0]));
+    vTaskDelete(NULL);
+  }, "LeftHandTask", 4096, NULL, 1, NULL, 0);
+  xTaskCreatePinnedToCore([] (void *) {
+      playMelody(rightHand, havasiFreedomRight1, sizeof(havasiFreedomRight1) / sizeof(havasiFreedomRight1[0]));
+    vTaskDelete(NULL);
+  }, "RightHandTask", 4096, NULL, 1, NULL, 1); 
 }
 void OnDataRecv(const uint8_t * mac, const uint8_t *incomingData, int len) {
   memcpy(&myData, incomingData, sizeof(myData));

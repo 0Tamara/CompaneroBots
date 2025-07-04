@@ -28,7 +28,6 @@ const int leftHandEnPin = 18;
 const int rightHandStepPin = 4;
 const int rightHandDirPin = 17;
 const int rightHandEnPin = 15;
-const int pressTime = 20;
 
 // kniznice
 Adafruit_PWMServoDriver pca9685right(0x40, Wire);
@@ -120,10 +119,6 @@ void setup() {
   stepperLeft->moveTo(0);
   while (stepperLeft->isRunning()) {
   }
-  for (int i = 0; i < 1; i++) {
-    leftHand.notes[i] = NIC;
-    rightHand.notes[i] = NIC;
-  }
 }
 
 unsigned long moveToNote(Hand& hand, int targetNote, int targetOctave) {
@@ -132,7 +127,13 @@ unsigned long moveToNote(Hand& hand, int targetNote, int targetOctave) {
     Serial.printf("Neplatny targetNote(%d) alebo targetOctave(%d).\n", targetNote, targetOctave);
     return 0;
   }
+  int lastSteps = (hand.currentOctave - 1) * stepsPerOctave + hand.currentNote * stepsPerNote;
   int steps = (targetOctave - 1) * stepsPerOctave + targetNote * stepsPerNote; //preto -1, lebo chcem aby som neprepisoval vsetko na 0. oktavu
+  if (steps - lastSteps == 0)
+  {
+    return 0;
+  }
+  
   hand.stepper->moveTo(steps);
   while (hand.stepper->isRunning());
   hand.currentOctave = targetOctave;
@@ -153,7 +154,7 @@ void playNote(Hand& hand, int targetNote, int targetOctave, int wait, int note1,
 
   std::sort(notesToPlay.begin(), notesToPlay.end());
 
-  if (hand.currentNote != targetNote || hand.currentOctave != targetOctave) {
+  if (hand.currentNote != targetNote || hand.currentOctave != targetOctave || wait > osm) {
     for (int pressedNote : hand.notes) {
       if (pressedNote != NIC && pressedNote >= SERVO1 && pressedNote <= SERVO8) {
         hand.pca9685->setPWM(pressedNote, 0, hand.releaseValue);
@@ -458,6 +459,14 @@ int fireballLeft[][6] = {
 };
 
 void loop() {
+  xTaskCreatePinnedToCore([] (void *) {
+    playMelody(leftHand, havasiFreedomLeft1, sizeof(havasiFreedomLeft1) / sizeof(havasiFreedomLeft1[0]));
+    vTaskDelete(NULL);
+  }, "LeftHandTask", 4096, NULL, 1, NULL, 0);
+  xTaskCreatePinnedToCore([] (void *) {
+      playMelody(rightHand, havasiFreedomRight1, sizeof(havasiFreedomRight1) / sizeof(havasiFreedomRight1[0]));
+    vTaskDelete(NULL);
+  }, "RightHandTask", 4096, NULL, 1, NULL, 1); 
 }
 void OnDataRecv(const uint8_t * mac, const uint8_t *incomingData, int len) {
   memcpy(&myData, incomingData, sizeof(myData));
