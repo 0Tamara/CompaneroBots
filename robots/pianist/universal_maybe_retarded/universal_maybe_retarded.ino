@@ -135,6 +135,27 @@ unsigned long moveToNote(Hand& hand, int targetNote, int targetOctave) {
 }
 
 void playNote(Hand& hand, int targetNote, int targetOctave, int wait, int note1, int note2, int note3) {
+  const char* handName = (hand.pca9685 == &pca9685right) ? "RIGHT" : "LEFT";
+  Serial.printf("[%s] playNote: Zacina, nota %d, oktava %d, wait %d ms, serva: %d, %d, %d\n", 
+                handName, targetNote, targetOctave, wait, note1, note2, note3);
+  unsigned long start = millis();
+  
+  hand.timeFromMoving = moveToNote(hand, targetNote, targetOctave);
+  int notes[3] = {note1, note2, note3};
+  hand.lastTime = millis();
+  int holdTime = wait - (rezerva + hand.timeFromMoving);
+  if (holdTime < 0) {
+    Serial.printf("[%s] Pozor, negativny holdTime(%d ms). Ides na 50 ms.\n", handName, holdTime);
+    holdTime = 50;
+  }
+    // Stlač servá
+  for (int i = 0; i < 3; i++) {
+    if (notes[i] != NIC && notes[i] >= 0 && notes[i] < numServos) {
+      Serial.printf("[%s] Stlacanie serva %d na hodnote %d\n", handName, notes[i], hand.pressValue);
+      hand.pca9685->setPWM(notes[i], 0, hand.pressValue);
+    }
+  }
+void playNote(Hand& hand, int targetNote, int targetOctave, int wait, int note1, int note2, int note3) {
   hand.timeFromMoving = moveToNote(hand, targetNote, targetOctave);
   int notes[3] = {note1, note2, note3};
   hand.lastTime = millis();
@@ -143,21 +164,24 @@ void playNote(Hand& hand, int targetNote, int targetOctave, int wait, int note1,
     Serial.printf("Pozor, negativny holdTime(%d ms). Ides na 50 ms.\n", holdTime);
     holdTime = 50;
   }
-  while (millis() - hand.lastTime <= holdTime) {
-    for (int i = 0; i < 3; i++){
-      if (notes[i] != -1 && notes[i] <= numServos){
-        hand.pca9685->setPWM(notes[i], 0, hand.pressValue); 
-      }
+  // Čakaj na holdTime
+  Serial.printf("[%s] Cakanie %d ms na stlacenie\n", handName, holdTime);
+  delay(holdTime);
+
+  // Pusti servá
+  for (int i = 0; i < 3; i++) {
+    if (notes[i] != NIC && notes[i] >= 0 && notes[i] < numServos) {
+      Serial.printf("[%s] Pustanie serva %d na hodnote %d, stlacene bolo %lu ms\n", 
+                    handName, notes[i], hand.releaseValue, millis() - hand.lastTime);
+      hand.pca9685->setPWM(notes[i], 0, hand.releaseValue);
     }
   }
-  hand.lastTime = millis();
-  while (millis() - hand.lastTime <= rezerva ) {
-    for (int i = 0; i < 3; i++){
-      if (notes[i] != -1 && notes[i] <= numServos){
-        hand.pca9685->setPWM(notes[i], 0, hand.releaseValue); 
-      }
-    }
-  }
+
+  // Čakaj na rezervu
+  Serial.printf("[%s] Cakanie na rezervu %d ms\n", handName, rezerva);
+  delay(rezerva);
+
+  Serial.printf("[%s] playNote: Dokoncene, celkovy cas: %lu ms\n", handName, millis() - start);
 }
 
 void playMelody(Hand& hand, int melody[][6], int length) {
@@ -405,10 +429,11 @@ void loop() {
     vTaskDelete(NULL);
   }, "LeftHandTask", 4096, NULL, 1, NULL, 0);
   xTaskCreatePinnedToCore([] (void *) {
-      playMelody(rightHand, havasiFreedomRight1, sizeof(havasiFreedomRight1) / sizeof(havasiFreedomRight1[0]));
+      playMelody(rightHand, havasiFreedomRight5, sizeof(havasiFreedomRight5) / sizeof(havasiFreedomRight5[0]));
     vTaskDelete(NULL);
   }, "RightHandTask", 4096, NULL, 1, NULL, 1); 
 }
+
 void OnDataRecv(const uint8_t * mac, const uint8_t *incomingData, int len) {
   memcpy(&myData, incomingData, sizeof(myData));
   if(myData == 1){
