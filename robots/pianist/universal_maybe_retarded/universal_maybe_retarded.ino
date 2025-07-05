@@ -34,11 +34,13 @@ Adafruit_PWMServoDriver pca9685right(0x40, Wire);
 Adafruit_PWMServoDriver pca9685left(0x41, Wire);
 
 FastAccelStepperEngine engine = FastAccelStepperEngine();
-FastAccelStepper *stepperLeft = NULL;
-FastAccelStepper *stepperRight = NULL;
 
 enum moveNotes { C=0, D=1, E=2, F=3, G=4, A=5, H=6 };
+<<<<<<< HEAD
 enum actualServos { NIC = -1, SERVO1 = 8, SERVO2 = 9, SERVO3 = 10, SERVO4 = 11, SERVO5 = 12, SERVO6 = 13, SERVO7 = 14, SERVO8 = 15 };
+=======
+enum actualServos { NIC = 0, SERVO1 = 15, SERVO2 = 14, SERVO3 = 13, SERVO4 = 12, SERVO5 = 11, SERVO6 = 10, SERVO7 = 9, SERVO8 = 8 };
+>>>>>>> f2b64e6d136030fa7e3bd288a0f933d8f44cceaa
 
 struct Hand
 {
@@ -47,7 +49,7 @@ struct Hand
   FastAccelStepper* stepper;
   unsigned long timeFromMoving;
   unsigned long lastTime;
-  Adafruit_PWMServoDriver* pca9685; 
+  //Adafruit_PWMServoDriver* pca9685; 
   int pressValue;
   int releaseValue;
 };
@@ -58,7 +60,7 @@ Hand leftHand = {
   .stepper = NULL,
   .timeFromMoving = 0,
   .lastTime = 0,
-  .pca9685 = &pca9685left,
+  //.pca9685 = &pca9685left,
   .pressValue = SERVOMIN + 100,
   .releaseValue = SERVOMIN,
 };
@@ -68,11 +70,12 @@ Hand rightHand = {
   .stepper = NULL,
   .timeFromMoving = 0,
   .lastTime = 0,
-  .pca9685 = &pca9685right,
+  //.pca9685 = &pca9685right,
   .pressValue = SERVOMAX - 100,
   .releaseValue = SERVOMAX,
   
 };
+<<<<<<< HEAD
 void setup() {
   Serial.begin(115200);
   Wire.begin(21, 22);
@@ -175,6 +178,13 @@ void playMelody(Hand& hand, int melody[][6], int length) {
 int havasiFreedomRight1[][6] = {
     //prvy takt
     {A, 2, cel, NIC, NIC, NIC},
+=======
+
+int havasiFreedomRight1[][6] = {
+    //prvy takt
+    {A, 1, cel, NIC, NIC, NIC},
+    {},
+>>>>>>> f2b64e6d136030fa7e3bd288a0f933d8f44cceaa
 };
 int havasiFreedomRight2[][6] = {
     // druhy takt
@@ -399,8 +409,125 @@ int fireballLeft[][6] = {
   {F, 1, osm, SERVO5, NIC, NIC},
 };
 
-void loop() {
+void setup() {
+  Serial.begin(115200);
+  Wire.begin(21, 22);
+  pca9685right.begin();
+  pca9685left.begin();
+  pca9685right.setPWMFreq(50);
+  pca9685left.setPWMFreq(50); 
+  for (int i = 8; i <= numServos; i++){
+    pca9685right.setPWM(i, 0, SERVOMAX);
+    pca9685left.setPWM(i, 0, SERVOMIN); // 0 stupnov
+  }
+
+  engine.init();
+  leftHand.stepper = engine.stepperConnectToPin(leftHandStepPin);
+  rightHand.stepper = engine.stepperConnectToPin(rightHandStepPin);
+  if (rightHand.stepper == NULL || leftHand.stepper == NULL) {
+    Serial.println("Chyba pri pripojeni krokovych motorov.");
+    while (1);
+  }
+
+  leftHand.stepper->setDirectionPin(leftHandDirPin);
+  leftHand.stepper->setEnablePin(leftHandEnPin);
+  leftHand.stepper->setAutoEnable(true);
+
+  leftHand.stepper->setSpeedInHz(speedInHz);
+  leftHand.stepper->setAcceleration(acceleration);
+  leftHand.stepper->setCurrentPosition(0);
+  
+  rightHand.stepper->setDirectionPin(rightHandDirPin);
+  rightHand.stepper->setEnablePin(rightHandEnPin);
+  rightHand.stepper->setAutoEnable(true);
+
+  rightHand.stepper->setSpeedInHz(speedInHz);
+  rightHand.stepper->setAcceleration(acceleration);
+  rightHand.stepper->setCurrentPosition((stepsPerOctave * 2)); 
+  rightHand.stepper->moveTo(0);
+  while (rightHand.stepper->isRunning()) {
+  } 
+  leftHand.stepper->moveTo(0);
+  while (leftHand.stepper->isRunning()) {
+  }
 }
+
+
+void loop() {
+<<<<<<< HEAD
+}
+=======
+  xTaskCreatePinnedToCore([] (void *) {
+    playMelody(leftHand, *havasiFreedomLeft1, sizeof(havasiFreedomLeft1) / sizeof(havasiFreedomLeft1[0]));
+    vTaskDelete(NULL);
+  }, "LeftHandTask", 4096, NULL, 1, NULL, 0);
+  delay(2000);
+  xTaskCreatePinnedToCore([] (void *) {
+      playMelody(rightHand, *havasiFreedomRight5, sizeof(havasiFreedomRight5) / sizeof(havasiFreedomRight5[0]));
+    vTaskDelete(NULL);
+  }, "RightHandTask", 4096, NULL, 1, NULL, 1);
+  delay(2000);
+}
+
+unsigned long moveToNote(Hand& hand, int targetNote, int targetOctave) {
+  unsigned long start = millis();
+  if (targetNote < C || targetNote > H || targetOctave < 0 || targetOctave > 8) {
+    Serial.printf("Neplatny targetNote(%d) alebo targetOctave(%d).\n", targetNote, targetOctave);
+    return 0;
+  }
+  int lastSteps = (hand.currentOctave - 1) * stepsPerOctave + hand.currentNote * stepsPerNote;
+  int steps = (targetOctave - 1) * stepsPerOctave + targetNote * stepsPerNote;
+  if (steps - lastSteps == 0) return 0;
+  hand.stepper->moveTo(steps);
+  while (hand.stepper->isRunning());
+  hand.currentOctave = targetOctave;
+  hand.currentNote = targetNote;
+  return millis() - start;
+}
+
+void playNote(Hand& hand, int targetNote, int targetOctave, int wait, int note1, int note2, int note3) {
+  const char* handName = (hand.pca9685 == &pca9685right) ? "RIGHT" : "LEFT";
+  Serial.printf("[%s] playNote: Zacina, nota %d, oktava %d, wait %d ms, serva: %d, %d, %d\n", 
+                handName, targetNote, targetOctave, wait, note1, note2, note3);
+  unsigned long start = millis();
+  
+  hand.timeFromMoving = moveToNote(hand, targetNote, targetOctave);
+  int notes[3] = {note1, note2, note3};
+  hand.lastTime = millis();
+  int holdTime = wait - (rezerva + hand.timeFromMoving);
+  if (holdTime < 0) {
+    Serial.printf("[%s] Pozor, negativny holdTime(%d ms). Ides na 50 ms.\n", handName, holdTime);
+    holdTime = 50;
+  }
+    // Stlač servá
+  for (int i = 0; i < 3; i++) {
+    if (notes[i] != NIC && notes[i] >= 0 && notes[i] < numServos) {
+      Serial.printf("[%s] Stlacanie serva %d na hodnote %d\n", handName, notes[i], hand.pressValue);
+      hand.pca9685.setPWM(notes[i], 0, hand.pressValue);
+    }
+  }
+  for (int i = 0; i < 3; i++) {
+    if (notes[i] != NIC && notes[i] >= 0 && notes[i] < numServos) {
+      Serial.printf("[%s] Stlacanie serva %d na hodnote %d\n", handName, notes[i], hand.pressValue);
+      hand.pca9685.setPWM(notes[i], 0, hand.releaseValue);
+    }
+  }
+}
+void playMelody(Hand& hand, int melody[][6], int length) {
+  for (int i = 0; i < length; i++) {
+    int targetNote = melody[i][0];
+    int targetOctave = melody[i][1];
+    int wait = melody[i][2];
+    int note1 = melody[i][3];
+    int note2 = melody[i][4];
+    int note3 = melody[i][5];
+    playNote(hand, targetNote, targetOctave, wait, note1, note2, note3);
+  }
+}
+
+
+
+>>>>>>> f2b64e6d136030fa7e3bd288a0f933d8f44cceaa
 void OnDataRecv(const uint8_t * mac, const uint8_t *incomingData, int len) {
   memcpy(&myData, incomingData, sizeof(myData));
   if(myData == 1){
