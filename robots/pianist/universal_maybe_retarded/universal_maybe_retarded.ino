@@ -1,3 +1,4 @@
+#include <esp_log.h>
 #include <FastAccelStepper.h>
 #include <Adafruit_PWMServoDriver.h>
 #include <Wire.h>
@@ -30,8 +31,8 @@ const int rightHandDirPin = 17;
 const int rightHandEnPin = 15;
 
 // kniznice
-Adafruit_PWMServoDriver pca9685right(0x40, Wire);
-Adafruit_PWMServoDriver pca9685left(0x41, Wire);
+Adafruit_PWMServoDriver pca9685right(0x41, Wire);
+Adafruit_PWMServoDriver pca9685left(0x40, Wire);
 
 FastAccelStepperEngine engine = FastAccelStepperEngine();
 
@@ -57,8 +58,8 @@ Hand leftHand = {
   .timeFromMoving = 0,
   .lastTime = 0,
   //.pca9685 = &pca9685left,
-  .pressValue = SERVOMIN + 100,
-  .releaseValue = SERVOMIN,
+  .pressValue = SERVOMAX - 100,
+  .releaseValue = SERVOMAX,
 };
 Hand rightHand = {
   .currentOctave = 0,
@@ -67,84 +68,86 @@ Hand rightHand = {
   .timeFromMoving = 0,
   .lastTime = 0,
   //.pca9685 = &pca9685right,
-  .pressValue = SERVOMAX - 100,
-  .releaseValue = SERVOMAX,
-  
+  .pressValue = SERVOMIN + 100,
+  .releaseValue = SERVOMIN,
 };
 
-void havasiFreedomRight1(){
-  int start = millis();
-  int melody[][6] = {
-    {A, 1, cel, NIC, NIC, NIC},
+
+int havasiFreedomRight1[][4] = {
+    {A, 1, sest, 0b10101010}, // osm
+    {A, 1, sest, 0b00000000},
+    {A, 1, sest, 0b00000000}, 
+    {A, 1, sest, 0b10101010}, // osm
+    {A, 1, sest, 0b00000000},
+    {A, 1, sest, 0b00000000}, // stv pomlcka
+    {A, 1, sest, 0b10100000},
+    {A, 1, sest, 0b00000000},
+    {A, 1, sest, 0b00000000},
+    {A, 1, sest, 0b10000000},
+    {A, 1, sest, 0b01000000},
+    {A, 1, sest, 0b00100000},
+    {A, 1, sest, 0b01010000},
+    {A, 1, sest, 0b00000000},
+    {A, 1, sest, 0b00000000},
+    {A, 1, sest, 0b00001000},
   };
-  int lenght = sizeof(melody) / sizeof(melody[0])
-  for (int i = 0; i < lenght; i++)
-    {
+  int havasiFreedomLeft1[][4] = {
+    {A, 1, sest, 0b10000000}, //osm
+    {A, 1, sest, 0b00000000},
+    {A, 1, sest, 0b00000000}, // sest pomlcka
+    {A, 1, sest, 0b00000001}, //osm
+    {A, 1, sest, 0b00000000}, 
+    {A, 1, sest, 0b00000000}, //sest pomlcka
+    {A, 1, sest, 0b10000000}, //osm
+    {A, 1, sest, 0b00000000},
+    {A, 1, sest, 0b10000000}, //stv
+    {A, 1, sest, 0b00000000},
+    {A, 1, sest, 0b00000000},
+    {A, 1, sest, 0b00000000}, 
+    {A, 1, sest, 0b10000000}, //stv
+    {A, 1, sest, 0b00000000},
+    {A, 1, sest, 0b00000000},
+    {A, 1, sest, 0b00000000},
+  };
 
-      int targetNote = melody[i][0];
-      int targetOctave = melody[i][1];
-      int wait = melody[i][2];
-      int note1 = melody[i][3];
-      int note2 = melody[i][4];
-      int note3 = melody[i][5];
-      
-      int steps = stepsPerNote * targetNote + stepsPerNote * (targetOctave - 1);
-      rightHand.stepper->moveTo(steps);
-      while (rightHand.stepper->isRunning());
-      int notes[3] = {note1, note2, note3};
-      for (int i = 0; i < 3; i++)
-      {
-        if (notes[i] != NIC)
-        {
-          pca9685right.setPWM(notes[i], 0, rightHand.pressValue);
-        }
-        while (millis() - start <= wait - rezerva)
-        {
-        }
-      }
-      for (int i = 0; i < 3; i++)
-      {
-        pca9685right.setPWM(notes[i], 0, rightHand.releaseValue);
-      }
-    }
-}
+int havasiFreedomRight5[] = {
+  0b10101000, // osm
+  0b00000000,
+  0b00000000, // sest (no servo)
+  0b10101000, // osm
+  0b00000000,
+  0b00000000, // sest (no servo)
+  0b10100000, // stv
+  0b00000000,
+  0b00000000,
+  0b00000000,
+  0b01000000, // sest
+  0b00100000, // sest
+  0b00010000, // osm
+  0b00000000,
+  0b00000000, // sest (no servo)
+  0b00001000  // sest
+};
 
+int havasiFreedomRight6Bits[] = {
+  0b10100000, // line 1, stv
+  0b00000000, // wait 1
+  0b00000000, // wait 2
+  0b00000000, // wait 3
+  0b00000000, // line 2, osm
+  0b00000000, // wait 1
+  0b00000000, // line 3, stv
+  0b00000000, // wait 1
+  0b00000000, // wait 2
+  0b00000000, // wait 3
+  0b01000000, // line 4 sest
+  0b00100000, // line 5 sest
+  0b01010000, // line 6 osm
+  0b00000000, // wait 1
+  0b00101000, // line 7 osm
+  0b00000000  // wait 1
+};
 
-int havasiFreedomRight2[][6] = {
-    // druhy takt
-    {A, 2, cel, NIC, NIC, NIC},
-};
-int havasiFreedomRight3[][6] = {
-    //treti takt
-    {A, 2, cel, NIC, NIC, NIC},
-};
-int havasiFreedomRight4[][6] = {
-    //stvrty takt
-    {A, 2, cel, NIC, NIC, NIC},
-};
-int havasiFreedomRight5[][6] = {
-    //piaty takt
-    {A, 2, osm, SERVO1, SERVO3, SERVO5},
-    {A, 2, sest, NIC, NIC, NIC},
-    {A, 2, osm, SERVO1, SERVO3, SERVO5},
-    {A, 2, sest, NIC, NIC, NIC},
-    {A, 2, stv, SERVO1, SERVO3, NIC},
-    {A, 2, sest, SERVO2, NIC, NIC},
-    {A, 2, sest, SERVO3, NIC, NIC},
-    {A, 2, osm, SERVO4, NIC, NIC},
-    {A, 2, sest, NIC, NIC, NIC},
-    {A, 2, sest, SERVO5, NIC, NIC},
-};
-int havasiFreedomRight6[][6] = {
-    //prvy takt
-    {A, 2, stv, SERVO1, SERVO3, NIC},
-    {A, 2, osm, NIC, NIC, NIC},
-    {A, 2, stv, NIC, NIC, NIC},
-    {A, 2, sest, SERVO2, NIC, NIC},
-    {A, 2, sest, SERVO3, NIC, NIC},
-    {A, 2, osm, SERVO2, SERVO4, NIC},
-    {A, 2, osm, SERVO3, SERVO5, NIC},
-};
 int havasiFreedomRight7[][6] = {
     //druhy takt
     {A, 2, osm, SERVO1, SERVO3, SERVO5},
@@ -224,16 +227,6 @@ int havasiFreedomRight13[][6] = {
     //aaa tu sa to uz opakovat bude, nemam nervy pisat toto, a asi to nebude 
 };
 // freedon left hand
-int havasiFreedomLeft1[][6] = {
-    //prvy takt
-    {A, 1, osm, SERVO1, NIC, NIC},
-    {A, 1, sest, NIC, NIC, NIC},
-    {A, 1, osm, NIC, SERVO8, NIC},
-    {A, 1, sest, NIC, NIC, NIC},
-    {A, 1, osm, NIC, SERVO8, NIC},
-    {A, 1, stv, NIC, SERVO8, NIC},
-    {A, 1, stv, NIC, SERVO8, NIC},
-};
 
 int havasiFreedomLeft5[][6] = {
     //piaty takt
@@ -335,14 +328,15 @@ int fireballLeft[][6] = {
 
 void setup() {
   Serial.begin(115200);
+  esp_log_level_set("i2c.master", ESP_LOG_NONE);
   Wire.begin(21, 22);
   pca9685right.begin();
   pca9685left.begin();
   pca9685right.setPWMFreq(50);
   pca9685left.setPWMFreq(50); 
   for (int i = 8; i <= numServos; i++){
-    pca9685right.setPWM(i, 0, SERVOMAX);
-    pca9685left.setPWM(i, 0, SERVOMIN); // 0 stupnov
+    pca9685right.setPWM(i, 0, rightHand.releaseValue);
+    pca9685left.setPWM(i, 0, leftHand.releaseValue); // 0 stupnov
   }
 
   engine.init();
@@ -377,19 +371,65 @@ void setup() {
 }
 
 
+
+
+void havasiFreedom1(){
+  
+  int lenght2 = sizeof(havasiFreedomLeft1) / sizeof(havasiFreedomLeft1[0]);
+  int lenght = sizeof(havasiFreedomRight1) / sizeof(havasiFreedomRight1[0]);
+  
+  int targetNote = havasiFreedomRight1[0][0];
+  int targetOctave = havasiFreedomRight1[0][1];
+  int targetNote2 = havasiFreedomLeft1[0][0];
+  int targetOctave2 = havasiFreedomLeft1[0][1];
+  int steps = stepsPerNote * targetNote + stepsPerNote * (targetOctave - 1);
+  int steps2 = stepsPerNote * targetNote2 + stepsPerNote * (targetOctave2 - 1);
+  rightHand.stepper->moveTo(steps);
+  leftHand.stepper->moveTo(steps2);
+  while (rightHand.stepper->isRunning() || leftHand.stepper->isRunning()){};
+
+  for (int i = 0; i < lenght; i++)
+  {
+    unsigned long start = millis();
+    int wait = havasiFreedomRight1[i][2];
+    byte notes = havasiFreedomRight1[i][3];
+
+    int wait2 = havasiFreedomLeft1[i][2];
+    byte notes2 = havasiFreedomLeft1[i][3];
+    
+    for (int j = 0; j < 8; j++)
+    {
+      if (notes & 1<<j)
+      {
+        pca9685right.setPWM(j+8, 0, rightHand.pressValue);
+      }
+      if (notes2 & 1<<j)
+      {
+        pca9685left.setPWM(j+8, 0, leftHand.pressValue);
+      }
+    }
+    Serial.println("stlacene");
+    
+    delay(75);
+    for (int j = 0; j < 8; j++)
+    {
+      pca9685right.setPWM(j+8, 0, rightHand.releaseValue);
+      pca9685left.setPWM(j+8, 0, leftHand.releaseValue);
+    }
+    while (millis() - start <= wait)
+    {
+    }
+  }
+}
 void loop() {
-  xTaskCreatePinnedToCore([] (void *) {
-    havasiFreedomRight1()
-    vTaskDelete(NULL);
-  }, "LeftHandTask", 4096, NULL, 1, NULL, 0);
-  delay(2000);
-  xTaskCreatePinnedToCore([] (void *) {
-      playMelody(rightHand, *havasiFreedomRight5, sizeof(havasiFreedomRight5) / sizeof(havasiFreedomRight5[0]));
-    vTaskDelete(NULL);
-  }, "RightHandTask", 4096, NULL, 1, NULL, 1);
-  delay(2000);
+  //xTaskCreatePinnedToCore([] (void *) {
+  havasiFreedom1();
+  //  vTaskDelete(NULL);
+  //}, "LeftHandTask", 4096, NULL, 1, NULL, 0);
+  delay(500);
 }
 
+/*
 unsigned long moveToNote(Hand& hand, int targetNote, int targetOctave) {
   unsigned long start = millis();
   if (targetNote < C || targetNote > H || targetOctave < 0 || targetOctave > 8) {
@@ -621,4 +661,4 @@ void OnDataRecv(const uint8_t * mac, const uint8_t *incomingData, int len) {
     }, "RightHandTask", 4096, NULL, 1, NULL, 1);
   }
   
-}
+}*/
