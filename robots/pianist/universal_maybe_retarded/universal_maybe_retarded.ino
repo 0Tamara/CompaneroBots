@@ -14,13 +14,18 @@
 #define acceleration 40000
 // casy
 byte myData;
-int tempo = 2208;
+int targetNoteRight = 0
+int targetOctaveRight = 0;
+int targetNoteLeft = 0;
+int targetOctaveLeft = 0;
+int stepsRight = 0;
+int stepsLeft = 0;
+unsigned long timeBeforeMoving = 0;
+int timeFromMoving = 0;
+int takt = 2280;
+int tempo = 2100;
 int sest = tempo / 16; 
-int osm = tempo / 8;
-int stv = tempo / 4;
-int pol = tempo / 2;
-int cel = tempo;
-
+unsigned long start = millis();
 const int offset = 50; //konstanta, o tolko sa bude musiet pohnut kym sa dostane na klaviaturu
 const int rezerva = 20; 
 const int leftHandStepPin = 5; 
@@ -73,258 +78,6 @@ Hand rightHand = {
 };
 
 
-int havasiFreedomRight1[][4] = {
-    {A, 1, sest, 0b10101010}, // osm
-    {A, 1, sest, 0b00000000},
-    {A, 1, sest, 0b00000000}, 
-    {A, 1, sest, 0b10101010}, // osm
-    {A, 1, sest, 0b00000000},
-    {A, 1, sest, 0b00000000}, // stv pomlcka
-    {A, 1, sest, 0b10100000},
-    {A, 1, sest, 0b00000000},
-    {A, 1, sest, 0b00000000},
-    {A, 1, sest, 0b10000000},
-    {A, 1, sest, 0b01000000},
-    {A, 1, sest, 0b00100000},
-    {A, 1, sest, 0b01010000},
-    {A, 1, sest, 0b00000000},
-    {A, 1, sest, 0b00000000},
-    {A, 1, sest, 0b00001000},
-  };
-  int havasiFreedomLeft1[][4] = {
-    {A, 1, sest, 0b10000000}, //osm
-    {A, 1, sest, 0b00000000},
-    {A, 1, sest, 0b00000000}, // sest pomlcka
-    {A, 1, sest, 0b00000001}, //osm
-    {A, 1, sest, 0b00000000}, 
-    {A, 1, sest, 0b00000000}, //sest pomlcka
-    {A, 1, sest, 0b10000000}, //osm
-    {A, 1, sest, 0b00000000},
-    {A, 1, sest, 0b10000000}, //stv
-    {A, 1, sest, 0b00000000},
-    {A, 1, sest, 0b00000000},
-    {A, 1, sest, 0b00000000}, 
-    {A, 1, sest, 0b10000000}, //stv
-    {A, 1, sest, 0b00000000},
-    {A, 1, sest, 0b00000000},
-    {A, 1, sest, 0b00000000},
-  };
-
-int havasiFreedomRight5[] = {
-  0b10101000, // osm
-  0b00000000,
-  0b00000000, // sest (no servo)
-  0b10101000, // osm
-  0b00000000,
-  0b00000000, // sest (no servo)
-  0b10100000, // stv
-  0b00000000,
-  0b00000000,
-  0b00000000,
-  0b01000000, // sest
-  0b00100000, // sest
-  0b00010000, // osm
-  0b00000000,
-  0b00000000, // sest (no servo)
-  0b00001000  // sest
-};
-
-int havasiFreedomRight6Bits[] = {
-  0b10100000, // line 1, stv
-  0b00000000, // wait 1
-  0b00000000, // wait 2
-  0b00000000, // wait 3
-  0b00000000, // line 2, osm
-  0b00000000, // wait 1
-  0b00000000, // line 3, stv
-  0b00000000, // wait 1
-  0b00000000, // wait 2
-  0b00000000, // wait 3
-  0b01000000, // line 4 sest
-  0b00100000, // line 5 sest
-  0b01010000, // line 6 osm
-  0b00000000, // wait 1
-  0b00101000, // line 7 osm
-  0b00000000  // wait 1
-};
-
-int havasiFreedomRight7[][6] = {
-    //druhy takt
-    {A, 2, osm, SERVO1, SERVO3, SERVO5},
-    {A, 2, sest, NIC, NIC, NIC},
-    {A, 2, osm, SERVO1, SERVO3, NIC},
-    {A, 2, stv, NIC, NIC, NIC},
-    {A, 2, sest, SERVO1, NIC, NIC},
-    {A, 2, sest, SERVO2, NIC, NIC},
-    {A, 2, osm, SERVO1, SERVO3, NIC},
-    {A, 2, osm, SERVO2, SERVO4},
-};
-//druhy takt
-int havasiFreedomRight8[][6] = {
-    {A, 2, osm, SERVO1, SERVO3, SERVO5},
-    {A, 2, sest, NIC, NIC, NIC},
-    {A, 2, osm, SERVO1, SERVO3},
-    {A, 2, sest, NIC, NIC, NIC},
-    {A, 2, stv, NIC, NIC, NIC},
-    {A, 2, sest, SERVO2, NIC, NIC},
-    {A, 2, sest, SERVO3, NIC, NIC},
-    {A, 2, osm, SERVO4, NIC, NIC},
-    {A, 2, sest, NIC, NIC, NIC},
-    {A, 2, sest, SERVO5, NIC, NIC},
-};
-int havasiFreedomRight9[][6] = {
-    //treti takt
-    {A, 2, stv, SERVO1, SERVO3, NIC},
-    {A, 2, osm, NIC, NIC, NIC},
-    {A, 2, stv, NIC, NIC, NIC},
-    {A, 2, sest, SERVO1, NIC, NIC},
-    {A, 2, sest, SERVO2, NIC, NIC},
-    {A, 2, osm, SERVO1, SERVO3, NIC},
-    {A, 2, osm, SERVO1, SERVO4, NIC},
-};
-int havasiFreedomRight10[][6] = {
-    //stvrty takt
-    {A, 2, osm, SERVO1, SERVO3, SERVO5},
-    {A, 2, sest, NIC, NIC, NIC},
-    {A, 2, osm, SERVO1, SERVO3, SERVO5},
-    {A, 2, sest, NIC, NIC, NIC},
-    {A, 2, stv, NIC, NIC, NIC},
-    {A, 2, sest, SERVO2, NIC, NIC},
-    {A, 2, sest, SERVO3, NIC, NIC},
-    {A, 2, osm, SERVO2, SERVO4, NIC},
-    {A, 2, sest, NIC, NIC, NIC},
-    {A, 2, sest, SERVO3, SERVO5, NIC},
-};
-int havasiFreedomRight11[][6] = {
-    //prvy takt
-    {A, 2, stv, SERVO1, SERVO3, NIC},
-    {A, 2, stv, NIC, NIC, NIC},
-    {A, 2, sest, SERVO2, NIC, NIC},
-    {A, 2, sest, SERVO3, NIC, NIC},
-    {A, 2, osm, SERVO2, SERVO4, NIC},
-    {A, 2, osm, SERVO3, SERVO5, NIC},
-};
-int havasiFreedomRight12[][6] = {
-    //druhy takt
-    {A, 2, osm, SERVO1, SERVO3, SERVO5},
-    {A, 2, sest, NIC, NIC, NIC},
-    {A, 2, osm, SERVO1, SERVO3, NIC},
-    {A, 2, stv, NIC, NIC, NIC},
-    {A, 2, sest, SERVO1, NIC, NIC},
-    {A, 2, sest, SERVO2, NIC, NIC},
-    {A, 2, osm, SERVO1, SERVO3, NIC},
-    {A, 2, osm, SERVO2, SERVO4},
-};
-int havasiFreedomRight13[][6] = {
-    // treti takt, tu je toten krizik sprosty
-    {G, 2, osm, SERVO1, SERVO6, NIC },
-    {G, 2, sest, NIC, NIC, NIC},
-    {G, 2, osm, SERVO1, SERVO7, NIC },
-    {G, 2, osm, SERVO1, SERVO7, NIC },
-    {G, 2, sest, NIC, NIC, NIC},
-    {G, 2, stv, SERVO1, SERVO6, NIC },
-    {G, 2, stv, SERVO1, SERVO6, NIC },
-    //aaa tu sa to uz opakovat bude, nemam nervy pisat toto, a asi to nebude 
-};
-// freedon left hand
-
-int havasiFreedomLeft5[][6] = {
-    //piaty takt
-    {A, 1, osm, SERVO1, SERVO8, NIC},
-    {A, 1, sest, NIC, NIC, NIC},
-    {A, 1, osm, SERVO1, SERVO8, NIC},
-    {A, 1, sest, NIC, NIC, NIC},
-    {A, 1, osm, SERVO1, SERVO8, NIC},
-    {A, 1, sest, NIC, NIC, NIC},
-    {A, 1, osm, SERVO1, SERVO8, NIC},
-    {A, 1, sest, NIC, NIC, NIC},
-    {A, 1, stv, SERVO1, SERVO8, NIC},
-};
-int havasiFreedomLeft9[][6] = {
-    {F, 1, osm, SERVO1, SERVO8, NIC},
-    {F, 1, sest, NIC, NIC, NIC},
-    {F, 1, osm, SERVO1, SERVO8, NIC},
-    {F, 1, sest, NIC, NIC, NIC},
-    {F, 1, osm, SERVO1, SERVO8, NIC},
-    {F, 1, sest, NIC, NIC, NIC},
-    {F, 1, osm, SERVO1, SERVO8, NIC},
-    {F, 1, sest, NIC, NIC, NIC},
-    {F, 1, stv, SERVO1, SERVO8, NIC},
-};
-int havasiFreedomLeft12[][6] = {
-    {E, 1, osm, SERVO1, SERVO8, NIC},
-    {E, 1, sest, NIC, NIC, NIC},
-    {E, 1, osm, SERVO1, SERVO8, NIC},
-    {E, 1, sest, NIC, NIC, NIC},
-    {E, 1, osm, SERVO1, SERVO8, NIC},
-    {E, 1, sest, NIC, NIC, NIC},
-    {E, 1, osm, SERVO1, SERVO8, NIC},
-    {E, 1, sest, NIC, NIC, NIC},
-    {E, 1, stv, SERVO1, SERVO8, NIC},
-};  
-// fireball zatial nie je zahrnuta
-int fireballRight1[][6] = {
-  // prvy a treti takt
-  {G, 1, stv, SERVO1, NIC, NIC},
-  {G, 1, osm, SERVO8, NIC, NIC},
-  {G, 1, osm, SERVO8, NIC, NIC},
-  {G, 1, sest, SERVO7, NIC, NIC},
-  {G, 1, osm, SERVO7, NIC, NIC},
-  {G, 1, sest, SERVO7, NIC, NIC},
-  {G, 1, stv, NIC, NIC, NIC},
-};
-int fireballRight3[][6] = {
-  // druhy a stvrty takt
-  {G, 1, osm, NIC, NIC, NIC},
-  {G, 1, osm, SERVO1, NIC, NIC},
-  {G, 1, osm, SERVO8, NIC, NIC},
-  {G, 1, osm, SERVO8, NIC, NIC},
-  {G, 1, sest, SERVO7, NIC, NIC},
-  {G, 1, osm, SERVO7, NIC, NIC},
-  {G, 1, sest, SERVO7, NIC, NIC},
-  {C, 2, stv, NIC, NIC, NIC},
-};
-  //piaty a siedny takt
-int fireballRight5[][6] = {
-  {C, 2, stv, SERVO4, NIC, NIC},
-  {C, 2, osm, SERVO5, NIC, NIC},
-  {C, 2, osm, SERVO3, NIC, NIC},
-  {C, 2, sest, SERVO4, NIC, NIC},
-  {C, 2, osm, SERVO4, NIC, NIC},
-  {C, 2, sest, SERVO1, NIC, NIC},
-  {C, 2, stv, NIC, NIC, NIC},
-};
-int fireballRight6[][6] = {
-  //sesty takt
-  {C, 2, osm, NIC, NIC, NIC},
-  {C, 2, osm, SERVO4, NIC, NIC},
-  {C, 2, osm, SERVO5, NIC, NIC},
-  {C, 2, osm, SERVO3, NIC, NIC},
-  {C, 2, sest, SERVO4, NIC, NIC},
-  {C, 2, osm, SERVO4, NIC, NIC},
-  {C, 2, sest, SERVO1, NIC, NIC},
-  {C, 2, stv, NIC, NIC, NIC},
-};
-int fireballRight8[][6] = {
-  //osmy takt
-  {C, 2, osm, NIC, NIC, NIC},
-  {C, 2, osm, SERVO4, NIC, NIC},
-  {C, 2, osm, SERVO5, NIC, NIC},
-  {C, 2, osm, SERVO3, NIC, NIC},
-  {C, 2, sest, SERVO4, NIC, NIC},
-  {C, 2, osm, SERVO4, NIC, NIC},
-  {C, 2, sest, NIC, NIC, NIC},
-  {C, 2, stv, SERVO8, NIC, NIC},
-};
-int fireballLeft[][6] = {
-  // kazdy jeden
-  {F, 1, stv, SERVO1, NIC, NIC},
-  {F, 1, osm, SERVO5, NIC, NIC},
-  {F, 1, osm, SERVO7, NIC, NIC},
-  {F, 1, stv, SERVO8, NIC, NIC},
-  {F, 1, osm, SERVO7, NIC, NIC},
-  {F, 1, osm, SERVO5, NIC, NIC},
-};
 
 void setup() {
   Serial.begin(115200);
@@ -338,7 +91,6 @@ void setup() {
     pca9685right.setPWM(i, 0, rightHand.releaseValue);
     pca9685left.setPWM(i, 0, leftHand.releaseValue); // 0 stupnov
   }
-
   engine.init();
   leftHand.stepper = engine.stepperConnectToPin(leftHandStepPin);
   rightHand.stepper = engine.stepperConnectToPin(rightHandStepPin);
@@ -346,7 +98,6 @@ void setup() {
     Serial.println("Chyba pri pripojeni krokovych motorov.");
     while (1);
   }
-
   leftHand.stepper->setDirectionPin(leftHandDirPin);
   leftHand.stepper->setEnablePin(leftHandEnPin);
   leftHand.stepper->setAutoEnable(true);
@@ -369,41 +120,766 @@ void setup() {
   while (leftHand.stepper->isRunning()) {
   }
 }
+int havasiFreedomRightPosition1[]{A, 1};
+int havasiFreedomLeftPosition1[]{A, 1};
+int havasiFreedomRight1[][1]{
+  {0b00000000}, //cel pomlcka
+  {0b00000000},
+  {0b00000000},
+  {0b00000000},
+  {0b00000000},
+  {0b00000000},
+  {0b00000000},
+  {0b00000000},
+  {0b00000000},
+  {0b00000000},
+  {0b00000000},
+  {0b00000000},
+  {0b00000000},
+  {0b00000000},
+  {0b00000000},
+  {0b00000000},
+};
 
+int havasiFreedomLeft1[][1] = {
+  {0b10000000}, //osm
+  {0b00000000},
+  {0b00000000}, // sest pomlcka
+  {0b00000001}, //osm
+  {0b00000000}, 
+  {0b00000000}, //sest pomlcka
+  {0b10000001}, //osm
+  {0b00000000},
+  {0b10000001}, //stv
+  {0b00000000},
+  {0b00000000},
+  {0b00000000}, 
+  {0b10000001}, //stv
+  {0b00000000},
+  {0b00000000},
+  {0b00000000},
+};
+int havasiFreedomRight5[][1] = {
+  {0b10101010}, // osm
+  {0b00000000},
+  {0b00000000}, //sest pomlcka
+  {0b10101010}, // osm
+  {0b00000000},
+  {0b00000000}, //sest pomlcka
+  {0b10100000}, // stv
+  {0b00000000},
+  {0b00000000},
+  {0b00000000},
+  {0b10000000}, //sest
+  {0b01000000}, //sest
+  {0b00100000}, //sest
+  {0b01010000}, //osm
+  {0b00000000}, 
+  {0b00001000}, //sest
+}; 
+int havasiFreedomLeft5[][1]{
+  {0b10000001}, //osm
+  {0b00000000},
+  {0b00000000}, //sest pomlcka
+  {0b10000001}, //osm
+  {0b00000000},
+  {0b00000000}, //sest pomlcka
+  {0b10000001}, //osm
+  {0b00000000},
+  {0b00000000}, //sest pomlcka
+  {0b10000001}, //osm
+  {0b00000000},
+  {0b00000000}, //sest pomlcka
+  {0b10000001}, //stv
+  {0b00000000},
+  {0b00000000}, 
+  {0b00000000},
+};
+int havasiFreedomRight6[][1]{
+  {0b10100000}, //stv
+  {0b00000000},
+  {0b00000000},
+  {0b00000000},
+  {0b00000000}, // osm pomlcka
+  {0b00000000},
+  {0b00000000}, //stvrtova pomlcka
+  {0b00000000},
+  {0b00000000},
+  {0b00000000},
+  {0b01000000}, //sest
+  {0b00100000}, //sest
+  {0b01010000}, //osm
+  {0b00000000},
+  {0b00101000}, //sest
+  {0b00000000},
+};
+int havasiFreedomRight7[][1]{
+  //este len zacatok a uz si uvedomujem jak krasne vonka svieti slnko
+  {0b10101000}, // osm
+  {0b00000000},
+  {0b00000000}, //sest pomlcka
+  {0b10100000}, // osm
+  {0b00000000},
+  {0b00000000}, //sest pomlcka
+  {0b00000000}, // stv pomlcka
+  {0b00000000},
+  {0b00000000},
+  {0b00000000},
+  {0b10000000}, //sest
+  {0b01000000}, //sest
+  {0b10100000}, //osm
+  {0b00000000},
+  {0b00000000}, // sest pomlcka
+  {0b01010000}, // sest
+  
+};
+int havasiFreedomRight8[][1]{
+  {0b10100000}, //stv
+  {0b00000000},
+  {0b00000000},
+  {0b00000000},
+  {0b00000000}, //osm pomlcka
+  {0b00000000},
+  {0b00000000}, //stv pomlcka
+  {0b00000000},
+  {0b00000000},
+  {0b00000000},
+  {0b10000000}, //sest
+  {0b01000000}, //sest
+  {0b10100000}, //osm
+  {0b00000000},
+  {0b10010000}, //osm
+  {0b00000000},
+};
 
-
-
+int havasiFreedomLeftPosition9[]{F, 1};
+int havasiFreedomRight9[][1]{
+  //uz len kuuus... 
+  {0b10101010}, // osm
+  {0b00000000},
+  {0b00000000}, //sest pomlcka
+  {0b10101010}, // osm
+  {0b00000000},
+  {0b00000000}, //sest pomlcka
+  {0b00000000}, // stv
+  {0b00000000},
+  {0b00000000},
+  {0b00000000},
+  {0b10000000}, //sest
+  {0b01000000}, //sest
+  {0b10100000}, //osm
+  {0b00000000},
+  {0b00000000}, //sest pomlcka 
+  {0b01010000}, //sest
+};
+int havasiFreedomRight10[][1]{
+  {0b10100000}, //stv
+  {0b00000000},
+  {0b00000000},
+  {0b00000000},
+  {0b00000000}, //osm pomlcka
+  {0b00000000},
+  {0b00000000}, //stv pomlcka
+  {0b00000000},
+  {0b00000000},
+  {0b00000000},
+  {0b10000000}, //sest
+  {0b01000000}, //sest
+  {0b10100000}, //osm
+  {0b00000000},
+  {0b01010000}, //osm
+  {0b00000000},
+};
+int havasiFreedomRight11[][1]{
+  {0b10101000}, // osm
+  {0b00000000},
+  {0b00000000}, //sest pomlcka
+  {0b10100000}, // osm
+  {0b00000000},
+  {0b00000000}, //sest pomlcka
+  {0b00000000}, // stv pomlcka
+  {0b00000000},
+  {0b00000000},
+  {0b00000000},
+  {0b10000000}, //sest
+  {0b01000000}, //sest
+  {0b10100000}, //osm
+  {0b00000000},
+  {0b01010000}, // osm
+  {0b00000000}, 
+};
+int havasiFreedomRightPosition12[]{G, 1};
+int havasiFreedomLeftPosition12[]{E, 1};
+int havasiFreedomRight12[][1]{
+  //jak to bolo? Tech tisic mil tech tisic mil ma jeden daco, a jeden cil
+  {0b01000010}, //osm
+  {0b00000000},
+  {0b00000000}, //sest pomlcka
+  {0b01000010}, //osm
+  {0b00000000},
+  {0b00000000}, //sest pomlcka
+  {0b01000010}, //osm
+  {0b00000000},
+  {0b01000010}, //stv
+  {0b00000000}, 
+  {0b00000000}, 
+  {0b00000000}, 
+  {0b01000010}, //stv
+  {0b00000000}, 
+  {0b00000000}, 
+  {0b00000000}, 
+};
+int havasiFreedomLeft12[][1]{
+  {0b10000001}, //osm
+  {0b00000000},
+  {0b00000000}, //sest pomlcka
+  {0b10000001}, //osm
+  {0b00000000},
+  {0b00000000}, //sest pomlcka
+  {0b10000001}, //osm
+  {0b00000000},
+  {0b10000001}, //stv
+  {0b00000000}, 
+  {0b00000000}, 
+  {0b00000000}, 
+  {0b10000001}, //stv
+  {0b00000000}, 
+  {0b00000000}, 
+  {0b00000000},   
+};
+int fireballRightPosition1[]{G, 1};
+int fireballRight1[][1]{
+  {0b10000000}, //stv
+  {0b00000000}, 
+  {0b00000000}, 
+  {0b00000000},  
+  {0b00000001}, //osm
+  {0b00000000}, 
+  {0b00000001}, //osm
+  {0b00000000}, 
+  {0b00000001}, //sest
+  {0b00000001}, //osm
+  {0b00000000}, 
+  {0b00000001}, //sest
+  {0b00000000}, //stv pomlcka
+  {0b00000000}, 
+  {0b00000000}, 
+  {0b00000000}, 
+};
+int fireballLeftPosition1[]{F, 1};
+int fireballLeft1[][1]{
+  {0b10000000}, //stv
+  {0b00000000}, 
+  {0b00000000}, 
+  {0b00000000},  
+  {0b00001000}, //osm
+  {0b00000000},  
+  {0b00000010}, //osm
+  {0b00000000},  
+  {0b00000001}, //stv
+  {0b00000000}, 
+  {0b00000000}, 
+  {0b00000000},  
+  {0b00000010}, //osm
+  {0b00000000},  
+  {0b00001000}, //osm
+  {0b00000000},  
+};
 void havasiFreedom1(){
-  
-  int lenght2 = sizeof(havasiFreedomLeft1) / sizeof(havasiFreedomLeft1[0]);
-  int lenght = sizeof(havasiFreedomRight1) / sizeof(havasiFreedomRight1[0]);
-  
-  int targetNote = havasiFreedomRight1[0][0];
-  int targetOctave = havasiFreedomRight1[0][1];
-  int targetNote2 = havasiFreedomLeft1[0][0];
-  int targetOctave2 = havasiFreedomLeft1[0][1];
-  int steps = stepsPerNote * targetNote + stepsPerNote * (targetOctave - 1);
-  int steps2 = stepsPerNote * targetNote2 + stepsPerNote * (targetOctave2 - 1);
-  rightHand.stepper->moveTo(steps);
-  leftHand.stepper->moveTo(steps2);
+  targetNoteRight = havasiFreedomRightPosition1[0];
+  targetOctaveRight = havasiFreedomRightPosition1[1];
+  targetNoteLeft = havasiFreedomLeftPosition1[0];
+  targetOctaveLeft = havasiFreedomLeftPosition1[1];
+  stepsRight = stepsPerNote * targetNoteRight + stepsPerNote * (targetOctaveRight - 1);
+  stepsLeft = stepsPerNote * targetNoteLeft + stepsPerNote * (targetOctaveLeft - 1);
+  rightHand.stepper->moveTo(stepsRight);
+  leftHand.stepper->moveTo(stepsLeft);
+  timeBeforeMoving = millis();  
   while (rightHand.stepper->isRunning() || leftHand.stepper->isRunning()){};
-
-  for (int i = 0; i < lenght; i++)
+  timeFromMoving = millis() - timeFromMoving;
+  for (int i = 0; i < 16; i++)
   {
-    unsigned long start = millis();
-    int wait = havasiFreedomRight1[i][2];
-    byte notes = havasiFreedomRight1[i][3];
-
-    int wait2 = havasiFreedomLeft1[i][2];
-    byte notes2 = havasiFreedomLeft1[i][3];
+    int wait = sest;
+    if(timeFromMoving <= wait)
+    {
+      timeFromMoving -= wait;
+      break;
+    }
+    else
+    {  
+    start -= timeFromMoving;
+    timeFromMoving = 0;
+    }
+    byte notesRight = havasiFreedomRight1[i][0];
+    byte notesLeft = havasiFreedomLeft1[i][0];
     
     for (int j = 0; j < 8; j++)
     {
-      if (notes & 1<<j)
+      if (notesRight & 1<<j)
       {
         pca9685right.setPWM(j+8, 0, rightHand.pressValue);
       }
-      if (notes2 & 1<<j)
+      if (notesLeft & 1<<j)
+      {
+        pca9685left.setPWM(j+8, 0, leftHand.pressValue);
+      }
+    }
+    Serial.println("stlacene");
+    
+    delay(75);
+    for (int j = 0; j < 8; j++)
+    {
+      pca9685right.setPWM(j+8, 0, rightHand.releaseValue);
+      pca9685left.setPWM(j+8, 0, leftHand.releaseValue);
+    }
+    while (millis() - start <= wait * i)
+    {
+    }
+  }
+}
+
+void havasiFreedom5(){
+  targetNoteRight = havasiFreedomRightPosition1[0];
+  targetOctaveRight = havasiFreedomRightPosition1[1];
+  targetNoteLeft = havasiFreedomLeftPosition1[0];
+  targetOctaveLeft = havasiFreedomLeftPosition1[1];
+  stepsRight = stepsPerNote * targetNoteRight + stepsPerNote * (targetOctaveRight - 1);
+  stepsLeft = stepsPerNote * targetNoteLeft + stepsPerNote * (targetOctaveLeft - 1);
+  rightHand.stepper->moveTo(stepsRight);
+  leftHand.stepper->moveTo(stepsLeft);
+  timeBeforeMoving = millis();  
+  while (rightHand.stepper->isRunning() || leftHand.stepper->isRunning()){};
+  timeFromMoving = millis() - timeFromMoving;
+
+  for (int i = 0; i < 16; i++)
+  {
+      
+    int wait = sest;
+    byte notesRight = havasiFreedomRight5[i][0];
+    byte notesLeft = havasiFreedomLeft5[i][0];
+    if(timeFromMoving <= wait)
+    {
+      timeFromMoving -= wait;
+      break;
+    }
+    else
+    {  
+    start -= timeFromMoving;
+    timeFromMoving = 0;
+    }
+    for (int j = 0; j < 8; j++)
+    {
+      if (notesRight & 1<<j)
+      {
+        pca9685right.setPWM(j+8, 0, rightHand.pressValue);
+      }
+      if (notesLeft & 1<<j)
+      {
+        pca9685left.setPWM(j+8, 0, leftHand.pressValue);
+      }
+    }
+    Serial.println("stlacene");
+    
+    delay(75);
+    for (int j = 0; j < 8; j++)
+    {
+      pca9685right.setPWM(j+8, 0, rightHand.releaseValue);
+      pca9685left.setPWM(j+8, 0, leftHand.releaseValue);
+    }
+    while (millis() - start <= wait)
+    {
+    }
+  }
+}
+void havasiFreedom6(){
+  targetNoteRight = havasiFreedomRightPosition1[0];
+  targetOctaveRight = havasiFreedomRightPosition1[1];
+  targetNoteLeft = havasiFreedomLeftPosition1[0];
+  targetOctaveLeft = havasiFreedomLeftPosition1[1];
+  stepsRight = stepsPerNote * targetNoteRight + stepsPerNote * (targetOctaveRight - 1);
+  stepsLeft = stepsPerNote * targetNoteLeft + stepsPerNote * (targetOctaveLeft - 1);
+  rightHand.stepper->moveTo(stepsRight);
+  leftHand.stepper->moveTo(stepsLeft);
+  timeBeforeMoving = millis();  
+  while (rightHand.stepper->isRunning() || leftHand.stepper->isRunning()){};
+  timeFromMoving = millis() - timeFromMoving;
+  for (int i = 0; i < 16; i++)
+  {
+    if(timeFromMoving <= wait)
+    {
+      timeFromMoving -= wait;
+      break;
+    }
+    else
+    {  
+    start -= timeFromMoving;
+    timeFromMoving = 0;
+    }
+    int wait = sest;
+    byte notesRight = havasiFreedomRight6[i][0];
+    byte notesLeft = havasiFreedomLeft5[i][0];
+    
+    for (int j = 0; j < 8; j++)
+    {
+      if (notesRight & 1<<j)
+      {
+        pca9685right.setPWM(j+8, 0, rightHand.pressValue);
+      }
+      if (notesLeft & 1<<j)
+      {
+        pca9685left.setPWM(j+8, 0, leftHand.pressValue);
+      }
+    }
+    Serial.println("stlacene");
+    
+    delay(75);
+    for (int j = 0; j < 8; j++)
+    {
+      pca9685right.setPWM(j+8, 0, rightHand.releaseValue);
+      pca9685left.setPWM(j+8, 0, leftHand.releaseValue);
+    }
+    while (millis() - start <= wait)
+    {
+    }
+  }
+}
+void havasiFreedom7(){
+  targetNoteRight = havasiFreedomRightPosition1[0];
+  targetOctaveRight = havasiFreedomRightPosition1[1];
+  targetNoteLeft = havasiFreedomLeftPosition1[0];
+  targetOctaveLeft = havasiFreedomLeftPosition1[1];
+  stepsRight = stepsPerNote * targetNoteRight + stepsPerNote * (targetOctaveRight - 1);
+  stepsLeft = stepsPerNote * targetNoteLeft + stepsPerNote * (targetOctaveLeft - 1);
+  rightHand.stepper->moveTo(stepsRight);
+  leftHand.stepper->moveTo(stepsLeft);
+  timeBeforeMoving = millis();  
+  while (rightHand.stepper->isRunning() || leftHand.stepper->isRunning()){};
+  timeFromMoving = millis() - timeFromMoving;
+  for (int i = 0; i < 16; i++)
+  {
+    if(timeFromMoving <= wait)
+    {
+      timeFromMoving -= wait;
+      break;
+    }
+    else
+    {  
+    start -= timeFromMoving;
+    timeFromMoving = 0;
+    }
+    int wait = sest;
+    byte notesRight = havasiFreedomRight7[i][0];
+    byte notesLeft = havasiFreedomLeft5[i][0];
+    
+    for (int j = 0; j < 8; j++)
+    {
+      if (notesRight & 1<<j)
+      {
+        pca9685right.setPWM(j+8, 0, rightHand.pressValue);
+      }
+      if (notesLeft & 1<<j)
+      {
+        pca9685left.setPWM(j+8, 0, leftHand.pressValue);
+      }
+    }
+    Serial.println("stlacene");
+    
+    delay(75);
+    for (int j = 0; j < 8; j++)
+    {
+      pca9685right.setPWM(j+8, 0, rightHand.releaseValue);
+      pca9685left.setPWM(j+8, 0, leftHand.releaseValue);
+    }
+    while (millis() - start <= wait)
+    {
+    }
+  }
+}
+void havasiFreedom8(){
+  targetNoteRight = havasiFreedomRightPosition1[0];
+  targetOctaveRight = havasiFreedomRightPosition1[1];
+  targetNoteLeft = havasiFreedomLeftPosition1[0];
+  targetOctaveLeft = havasiFreedomLeftPosition1[1];
+  stepsRight = stepsPerNote * targetNoteRight + stepsPerNote * (targetOctaveRight - 1);
+  stepsLet = stepsPerNote * targetNoteLeft + stepsPerNote * (targetOctaveLeft - 1);
+  rightHand.stepper->moveTo(stepsRight);
+  leftHand.stepper->moveTo(stepsLeft);
+  timeBeforeMoving = millis();  
+  while (rightHand.stepper->isRunning() || leftHand.stepper->isRunning()){};
+  timeFromMoving = millis() - timeFromMoving;
+  for (int i = 0; i < 16; i++)
+  {
+    if(timeFromMoving <= wait)
+    {
+      timeFromMoving -= wait;
+      break;
+    }
+    else
+    {  
+    start -= timeFromMoving;
+    timeFromMoving = 0;
+    }
+    int wait = sest;
+    byte notesRight = havasiFreedomRight8[i][0];
+    byte notesLeft = havasiFreedomLeft5[i][0];
+    
+    for (int j = 0; j < 8; j++)
+    {
+      if (notesRight & 1<<j)
+      {
+        pca9685right.setPWM(j+8, 0, rightHand.pressValue);
+      }
+      if (notesLeft & 1<<j)
+      {
+        pca9685left.setPWM(j+8, 0, leftHand.pressValue);
+      }
+    }
+    Serial.println("stlacene");
+    
+    delay(75);
+    for (int j = 0; j < 8; j++)
+    {
+      pca9685right.setPWM(j+8, 0, rightHand.releaseValue);
+      pca9685left.setPWM(j+8, 0, leftHand.releaseValue);
+    }
+    while (millis() - start <= wait)
+    {
+    }
+  }
+}
+void havasiFreedom9(){
+  targetNoteRight = havasiFreedomRightPosition1[0];
+  targetOctaveRight = havasiFreedomRightPosition1[1];
+  targetNoteLeft = havasiFreedomLeftPosition9[0];
+  targetOctaveLeft = havasiFreedomLeftPosition9[1];
+  stepsRight = stepsPerNote * targetNoteRight + stepsPerNote * (targetOctaveRight - 1);
+  stepsLeft = stepsPerNote * targetNoteLeft + stepsPerNote * (targetOctaveLeft - 1);
+  rightHand.stepper->moveTo(stepsRight);
+  leftHand.stepper->moveTo(stepsLeft);
+  timeBeforeMoving = millis();  
+  while (rightHand.stepper->isRunning() || leftHand.stepper->isRunning()){};
+  timeFromMoving = millis() - timeFromMoving;
+  for (int i = 0; i < 16; i++)
+  {
+    if(timeFromMoving <= wait)
+    {
+      timeFromMoving -= wait;
+      break;
+    }
+    else
+    {  
+    start -= timeFromMoving;
+    timeFromMoving = 0;
+    }
+    int wait = sest;
+    byte notesRight = havasiFreedomRight9[i][0];
+    byte notesLeft = havasiFreedomLeft5[i][0];
+    
+    for (int j = 0; j < 8; j++)
+    {
+      if (notesRight & 1<<j)
+      {
+        pca9685right.setPWM(j+8, 0, rightHand.pressValue);
+      }
+      if (notesLeft & 1<<j)
+      {
+        pca9685left.setPWM(j+8, 0, leftHand.pressValue);
+      }
+    }
+    Serial.println("stlacene");
+    delay(75);
+    for (int j = 0; j < 8; j++)
+    {
+      pca9685right.setPWM(j+8, 0, rightHand.releaseValue);
+      pca9685left.setPWM(j+8, 0, leftHand.releaseValue);
+    }
+    while (millis() - start <= wait)
+    {
+    }
+  }
+}
+void havasiFreedom10(){
+  targetNoteRight = havasiFreedomRightPosition1[0];
+  targetOctaveRight = havasiFreedomRightPosition1[1];
+  targetNoteLeft = havasiFreedomLeftPosition9[0];
+  targetOctaveLeft = havasiFreedomLeftPosition9[1];
+  stepsRight = stepsPerNote * targetNoteRight + stepsPerNote * (targetOctaveRight - 1);
+  stepsLeft = stepsPerNote * targetNoteLeft + stepsPerNote * (targetOctaveLeft - 1);
+  rightHand.stepper->moveTo(stepsRight);
+  leftHand.stepper->moveTo(stepsLeft);
+  timeBeforeMoving = millis();  
+  while (rightHand.stepper->isRunning() || leftHand.stepper->isRunning()){};
+  timeFromMoving = millis() - timeFromMoving;
+  for (int i = 0; i < 16; i++)
+  {
+    if(timeFromMoving <= wait)
+    {
+      timeFromMoving -= wait;
+      break
+    }
+    else
+    {  
+    start -= timeFromMoving;
+    timeFromMoving = 0;
+    }
+    int wait = sest;
+    byte notesRight = havasiFreedomRight10[i][0];
+    byte notesLeft = havasiFreedomLeft5[i][0];
+    
+    for (int j = 0; j < 8; j++)
+    {
+      if (notesRight & 1<<j)
+      {
+        pca9685right.setPWM(j+8, 0, rightHand.pressValue);
+      }
+      if (notesLeft & 1<<j)
+      {
+        pca9685left.setPWM(j+8, 0, leftHand.pressValue);
+      }
+    }
+    Serial.println("stlacene");
+    
+    delay(75);
+    for (int j = 0; j < 8; j++)
+    {
+      pca9685right.setPWM(j+8, 0, rightHand.releaseValue);
+      pca9685left.setPWM(j+8, 0, leftHand.releaseValue);
+    }
+    while (millis() - start <= wait)
+    {
+    }
+  }
+}
+void havasiFreedom11(){
+  targetNoteRight = havasiFreedomRightPosition1[0];
+  targetOctaveRight = havasiFreedomRightPosition1[1];
+  targetNoteLeft = havasiFreedomLeftPosition9[0];
+  targetOctaveLeft = havasiFreedomLeftPosition9[1];
+  stepsRight = stepsPerNote * targetNoteRight + stepsPerNote * (targetOctaveRight - 1);
+  stepsLeft = stepsPerNote * targetNoteLeft + stepsPerNote * (targetOctaveLeft - 1);
+  rightHand.stepper->moveTo(stepsRight);
+  leftHand.stepper->moveTo(stepsLeft);
+  timeBeforeMoving = millis();  
+  while (rightHand.stepper->isRunning() || leftHand.stepper->isRunning()){};
+  timeFromMoving = millis() - timeFromMoving;
+  for (int i = 0; i < 16; i++)
+  {
+    unsigned long start = millis();
+    int wait = sest;
+    byte notesRight = havasiFreedomRight11[i][0];
+    byte notesLeft = havasiFreedomLeft5[i][0];
+    
+    for (int j = 0; j < 8; j++)
+    {
+      if (notesRight & 1<<j)
+      {
+        pca9685right.setPWM(j+8, 0, rightHand.pressValue);
+      }
+      if (notesLeft & 1<<j)
+      {
+        pca9685left.setPWM(j+8, 0, leftHand.pressValue);
+      }
+    }
+    Serial.println("stlacene");
+    
+    delay(75);
+    for (int j = 0; j < 8; j++)
+    {
+      pca9685right.setPWM(j+8, 0, rightHand.releaseValue);
+      pca9685left.setPWM(j+8, 0, leftHand.releaseValue);
+    }
+    while (millis() - start <= wait)
+    {
+    }
+  }
+}
+void havasiFreedom12(){
+  targetNoteRight = havasiFreedomRightPosition12[0];
+  targetOctaveRight = havasiFreedomRightPosition12[1];
+  targetNoteLeft = havasiFreedomLeftPosition12[0];
+  targetOctaveLeft = havasiFreedomLeftPosition12[1];
+  stepsRight = stepsPerNote * targetNoteRight + stepsPerNote * (targetOctaveRight - 1);
+  stepsLeft = stepsPerNote * targetNoteLeft + stepsPerNote * (targetOctaveLeft - 1);
+  rightHand.stepper->moveTo(stepsRight);
+  leftHand.stepper->moveTo(stepsLeft);
+  timeBeforeMoving = millis();  
+  while (rightHand.stepper->isRunning() || leftHand.stepper->isRunning()){};
+  timeFromMoving = millis() - timeFromMoving;
+  for (int i = 0; i < 16; i++)
+  {
+    if(timeFromMoving <= wait)
+    {
+      timeFromMoving -= wait;
+      break
+    }
+    else
+    {  
+    start -= timeFromMoving;
+    timeFromMoving = 0;
+    }
+    int wait = sest;
+    byte notesRight = havasiFreedomRight12[i][0];
+    byte notesLeft = havasiFreedomLeft12[i][0];
+    
+    for (int j = 0; j < 8; j++)
+    {
+      if (notesRight & 1<<j)
+      {
+        pca9685right.setPWM(j+8, 0, rightHand.pressValue);
+      }
+      if (notesLeft & 1<<j)
+      {
+        pca9685left.setPWM(j+8, 0, leftHand.pressValue);
+      }
+    }
+    Serial.println("stlacene");
+    
+    delay(75);
+    for (int j = 0; j < 8; j++)
+    {
+      pca9685right.setPWM(j+8, 0, rightHand.releaseValue);
+      pca9685left.setPWM(j+8, 0, leftHand.releaseValue);
+    }
+    while (millis() - start <= wait)
+    {
+    }
+  }
+}
+void fireball1(){
+  targetNoteRight = fireballRightPosition1[0];
+  targetOctaveRight = fireballRightPosition1[1];
+  targetNoteLeft = fireballLeftPosition1[0];
+  targetOctaveLeft = fireballLeftPosition1[1];
+  stepsRight = stepsPerNote * targetNoteRight + stepsPerNote * (targetOctaveRight - 1);
+  stepsLeft = stepsPerNote * targetNoteLeft + stepsPerNote * (targetOctaveLeft - 1);
+  rightHand.stepper->moveTo(stepsRight);
+  leftHand.stepper->moveTo(stepsLeft);
+  timeBeforeMoving = millis();  
+  while (rightHand.stepper->isRunning() || leftHand.stepper->isRunning()){};
+  timeFromMoving = millis() - timeFromMoving;
+  for (int i = 0; i < 16; i++)
+  {
+    if(timeFromMoving <= wait)
+    {
+      timeFromMoving -= wait;
+      break;
+    }
+    else
+    {  
+    start -= timeFromMoving;
+    timeFromMoving = 0;
+    }
+    int wait = sest;
+    byte notesRight = fireballRight1[i][0];
+    byte notesLeft = fireballLeft1[i][0];
+    
+    for (int j = 0; j < 8; j++)
+    {
+      if (notesRight & 1<<j)
+      {
+        pca9685right.setPWM(j+8, 0, rightHand.pressValue);
+      }
+      if (notesLeft & 1<<j)
       {
         pca9685left.setPWM(j+8, 0, leftHand.pressValue);
       }
@@ -422,243 +898,78 @@ void havasiFreedom1(){
   }
 }
 void loop() {
-  //xTaskCreatePinnedToCore([] (void *) {
-  havasiFreedom1();
+  if(myData == 1)
+  {
+    start = millis();
+    havasiFreedom1();
+  }
+  if(myData == 2)
+  {
+    start = millis();
+    havasiFreedom1();
+  }
+  if(myData == 3)
+  {
+    start = millis();
+    havasiFreedom1();
+  }
+  if(myData == 4)
+  {
+    start = millis();
+    havasiFreedom1();
+  }
+  if(myData == 5)
+  {
+    start = millis();
+    havasiFreedom5();
+  }
+  if(myData == 6)
+  {
+    start = millis();
+    havasiFreedom6();
+  }
+  if(myData == 7)
+  {
+    start = millis();
+    havasiFreedom7();
+  }
+  if(myData == 8)
+  {
+    start = millis();
+    havasiFreedom8();
+  }
+  if(myData == 9)
+  {
+    start = millis();
+    havasiFreedom9();
+  }
+  if(myData == 10)
+  {
+    start = millis();
+    havasiFreedom10();
+  }
+  if(myData == 11)
+  {
+    start = millis();
+    havasiFreedom11();
+  }
+  if(myData == 12)
+  {
+    start = millis();
+    havasiFreedom12();
+  }
   //  vTaskDelete(NULL);
   //}, "LeftHandTask", 4096, NULL, 1, NULL, 0);
+  /*
   delay(500);
+  fireball1(); 
+  */
 }
-
-/*
-unsigned long moveToNote(Hand& hand, int targetNote, int targetOctave) {
-  unsigned long start = millis();
-  if (targetNote < C || targetNote > H || targetOctave < 0 || targetOctave > 8) {
-    Serial.printf("Neplatny targetNote(%d) alebo targetOctave(%d).\n", targetNote, targetOctave);
-    return 0;
-  }
-  int lastSteps = (hand.currentOctave - 1) * stepsPerOctave + hand.currentNote * stepsPerNote;
-  int steps = (targetOctave - 1) * stepsPerOctave + targetNote * stepsPerNote;
-  if (steps - lastSteps == 0) return 0;
-  hand.stepper->moveTo(steps);
-  while (hand.stepper->isRunning());
-  hand.currentOctave = targetOctave;
-  hand.currentNote = targetNote;
-  return millis() - start;
-}
-
-void playNote(Hand& hand, int targetNote, int targetOctave, int wait, int note1, int note2, int note3) {
-  const char* handName = (hand.pca9685 == &pca9685right) ? "RIGHT" : "LEFT";
-  Serial.printf("[%s] playNote: Zacina, nota %d, oktava %d, wait %d ms, serva: %d, %d, %d\n", 
-                handName, targetNote, targetOctave, wait, note1, note2, note3);
-  unsigned long start = millis();
-  
-  hand.timeFromMoving = moveToNote(hand, targetNote, targetOctave);
-  int notes[3] = {note1, note2, note3};
-  hand.lastTime = millis();
-  int holdTime = wait - (rezerva + hand.timeFromMoving);
-  if (holdTime < 0) {
-    Serial.printf("[%s] Pozor, negativny holdTime(%d ms). Ides na 50 ms.\n", handName, holdTime);
-    holdTime = 50;
-  }
-    // Stlač servá
-  for (int i = 0; i < 3; i++) {
-    if (notes[i] != NIC && notes[i] >= 0 && notes[i] < numServos) {
-      Serial.printf("[%s] Stlacanie serva %d na hodnote %d\n", handName, notes[i], hand.pressValue);
-      hand.pca9685.setPWM(notes[i], 0, hand.pressValue);
-    }
-  }
-  for (int i = 0; i < 3; i++) {
-    if (notes[i] != NIC && notes[i] >= 0 && notes[i] < numServos) {
-      Serial.printf("[%s] Stlacanie serva %d na hodnote %d\n", handName, notes[i], hand.pressValue);
-      hand.pca9685.setPWM(notes[i], 0, hand.releaseValue);
-    }
-  }
-}
-void playMelody(Hand& hand, int melody[][6], int length) {
-  for (int i = 0; i < length; i++) {
-    int targetNote = melody[i][0];
-    int targetOctave = melody[i][1];
-    int wait = melody[i][2];
-    int note1 = melody[i][3];
-    int note2 = melody[i][4];
-    int note3 = melody[i][5];
-    playNote(hand, targetNote, targetOctave, wait, note1, note2, note3);
-  }
-}
-
-
-
 void OnDataRecv(const uint8_t * mac, const uint8_t *incomingData, int len) {
   memcpy(&myData, incomingData, sizeof(myData));
-  if(myData == 1){
-    xTaskCreatePinnedToCore([] (void *) {
-      playMelody(leftHand, havasiFreedomLeft1, sizeof(havasiFreedomLeft1) / sizeof(havasiFreedomLeft1[0]));
-      vTaskDelete(NULL);
-    }, "LeftHandTask", 4096, NULL, 1, NULL, 0);
-    xTaskCreatePinnedToCore([] (void *) {
-       playMelody(rightHand, havasiFreedomRight1, sizeof(havasiFreedomRight1) / sizeof(havasiFreedomRight1[0]));
-      vTaskDelete(NULL);
-    }, "RightHandTask", 4096, NULL, 1, NULL, 1); 
+  if(myData == 1)
+  {
+    start = millis();
+    havasiFreedom1();
   }
-  if(myData == 2) {
-    xTaskCreatePinnedToCore([] (void *) {
-        playMelody(leftHand, havasiFreedomLeft1, sizeof(havasiFreedomLeft1) / sizeof(havasiFreedomLeft1[0]));
-        vTaskDelete(NULL);
-    }, "LeftHandTask", 4096, NULL, 1, NULL, 0);
-    xTaskCreatePinnedToCore([] (void *) {
-        playMelody(rightHand, havasiFreedomRight2, sizeof(havasiFreedomRight2) / sizeof(havasiFreedomRight2[0]));
-        vTaskDelete(NULL);
-    }, "RightHandTask", 4096, NULL, 1, NULL, 1); 
-  }
-  if(myData == 3) {
-    xTaskCreatePinnedToCore([] (void *) {
-        playMelody(leftHand, havasiFreedomLeft1, sizeof(havasiFreedomLeft1) / sizeof(havasiFreedomLeft1[0]));
-        vTaskDelete(NULL);
-    }, "LeftHandTask", 4096, NULL, 1, NULL, 0);
-    xTaskCreatePinnedToCore([] (void *) {
-        playMelody(rightHand, havasiFreedomRight3, sizeof(havasiFreedomRight3) / sizeof(havasiFreedomRight3[0]));
-        vTaskDelete(NULL);
-    }, "RightHandTask", 4096, NULL, 1, NULL, 1); 
-  }
-  if(myData == 4) {
-    xTaskCreatePinnedToCore([] (void *) {
-        playMelody(leftHand, havasiFreedomLeft1, sizeof(havasiFreedomLeft1) / sizeof(havasiFreedomLeft1[0]));
-        vTaskDelete(NULL);
-    }, "LeftHandTask", 4096, NULL, 1, NULL, 0);
-    xTaskCreatePinnedToCore([] (void *) {
-        playMelody(rightHand, havasiFreedomRight4, sizeof(havasiFreedomRight4) / sizeof(havasiFreedomRight4[0]));
-        vTaskDelete(NULL);
-    }, "RightHandTask", 4096, NULL, 1, NULL, 1); 
-  }
-  if(myData == 5) {
-    xTaskCreatePinnedToCore([] (void *) {
-        playMelody(leftHand, havasiFreedomLeft5, sizeof(havasiFreedomLeft5) / sizeof(havasiFreedomLeft5[0]));
-        vTaskDelete(NULL);
-    }, "LeftHandTask", 4096, NULL, 1, NULL, 0);
-    xTaskCreatePinnedToCore([] (void *) {
-        playMelody(rightHand, havasiFreedomRight5, sizeof(havasiFreedomRight5) / sizeof(havasiFreedomRight5[0]));
-        vTaskDelete(NULL);
-    }, "RightHandTask", 4096, NULL, 1, NULL, 1); 
-  }
-  if(myData == 6) {
-    xTaskCreatePinnedToCore([] (void *) {
-        playMelody(leftHand, havasiFreedomLeft5, sizeof(havasiFreedomLeft5) / sizeof(havasiFreedomLeft5[0]));
-        vTaskDelete(NULL);
-    }, "LeftHandTask", 4096, NULL, 1, NULL, 0);
-    xTaskCreatePinnedToCore([] (void *) {
-        playMelody(rightHand, havasiFreedomRight6, sizeof(havasiFreedomRight6) / sizeof(havasiFreedomRight6[0]));
-        vTaskDelete(NULL);
-    }, "RightHandTask", 4096, NULL, 1, NULL, 1); 
-  }
-  if(myData == 7) {
-    xTaskCreatePinnedToCore([] (void *) {
-        playMelody(leftHand, havasiFreedomLeft5, sizeof(havasiFreedomLeft5) / sizeof(havasiFreedomLeft5[0]));
-        vTaskDelete(NULL);
-    }, "LeftHandTask", 4096, NULL, 1, NULL, 0);
-    xTaskCreatePinnedToCore([] (void *) {
-        playMelody(rightHand, havasiFreedomRight7, sizeof(havasiFreedomRight7) / sizeof(havasiFreedomRight7[0]));
-        vTaskDelete(NULL);
-    }, "RightHandTask", 4096, NULL, 1, NULL, 1); 
-  }
-  if(myData == 8) {
-    xTaskCreatePinnedToCore([] (void *) {
-        playMelody(leftHand, havasiFreedomLeft5, sizeof(havasiFreedomLeft5) / sizeof(havasiFreedomLeft5[0]));
-        vTaskDelete(NULL);
-    }, "LeftHandTask", 4096, NULL, 1, NULL, 0);
-    xTaskCreatePinnedToCore([] (void *) {
-        playMelody(rightHand, havasiFreedomRight8, sizeof(havasiFreedomRight8) / sizeof(havasiFreedomRight8[0]));
-        vTaskDelete(NULL);
-    }, "RightHandTask", 4096, NULL, 1, NULL, 1); 
-  }
-  if(myData == 9) {
-    xTaskCreatePinnedToCore([] (void *) {
-        playMelody(leftHand, havasiFreedomLeft9, sizeof(havasiFreedomLeft9) / sizeof(havasiFreedomLeft9[0]));
-        vTaskDelete(NULL);
-    }, "LeftHandTask", 4096, NULL, 1, NULL, 0);
-    xTaskCreatePinnedToCore([] (void *) {
-        playMelody(rightHand, havasiFreedomRight9, sizeof(havasiFreedomRight9) / sizeof(havasiFreedomRight9[0]));
-        vTaskDelete(NULL);
-    }, "RightHandTask", 4096, NULL, 1, NULL, 1); 
-  }
-  if(myData == 10) {
-    xTaskCreatePinnedToCore([] (void *) {
-        playMelody(leftHand, havasiFreedomLeft9, sizeof(havasiFreedomLeft9) / sizeof(havasiFreedomLeft9[0]));
-        vTaskDelete(NULL);
-    }, "LeftHandTask", 4096, NULL, 1, NULL, 0);
-    xTaskCreatePinnedToCore([] (void *) {
-        playMelody(rightHand, havasiFreedomRight10, sizeof(havasiFreedomRight10) / sizeof(havasiFreedomRight10[0]));
-        vTaskDelete(NULL);
-    }, "RightHandTask", 4096, NULL, 1, NULL, 1); 
-  }
-  if(myData == 11) {
-    xTaskCreatePinnedToCore([] (void *) {
-        playMelody(leftHand, havasiFreedomLeft9, sizeof(havasiFreedomLeft9) / sizeof(havasiFreedomLeft9[0]));
-        vTaskDelete(NULL);
-    }, "LeftHandTask", 4096, NULL, 1, NULL, 0);
-    xTaskCreatePinnedToCore([] (void *) {
-        playMelody(rightHand, havasiFreedomRight11, sizeof(havasiFreedomRight11) / sizeof(havasiFreedomRight11[0]));
-        vTaskDelete(NULL);
-    }, "RightHandTask", 4096, NULL, 1, NULL, 1); 
-  }
-  if(myData == 12) {
-    xTaskCreatePinnedToCore([] (void *) {
-        playMelody(leftHand, havasiFreedomLeft12, sizeof(havasiFreedomLeft12) / sizeof(havasiFreedomLeft12[0]));
-        vTaskDelete(NULL);
-    }, "LeftHandTask", 4096, NULL, 1, NULL, 0);
-    xTaskCreatePinnedToCore([] (void *) {
-        playMelody(rightHand, havasiFreedomRight12, sizeof(havasiFreedomRight12) / sizeof(havasiFreedomRight12[0]));
-        vTaskDelete(NULL);
-    }, "RightHandTask", 4096, NULL, 1, NULL, 1); 
-  }
-  if(myData == 20 || myData == 22){
-    xTaskCreatePinnedToCore([] (void *) {
-        playMelody(leftHand, fireballLeft, sizeof(fireballLeft) / sizeof(fireballLeft[0]));
-        vTaskDelete(NULL);
-    }, "LeftHandTask", 4096, NULL, 1, NULL, 0);
-    xTaskCreatePinnedToCore([] (void *) {
-        playMelody(rightHand, fireballRight1, sizeof(fireballRight1) / sizeof(fireballRight1[0]));
-        vTaskDelete(NULL);
-    }, "RightHandTask", 4096, NULL, 1, NULL, 1); 
-  }
-  if(myData == 21 || myData == 23){
-    xTaskCreatePinnedToCore([] (void *) {
-        playMelody(leftHand, fireballLeft, sizeof(fireballLeft) / sizeof(fireballLeft[0]));
-        vTaskDelete(NULL);
-    }, "LeftHandTask", 4096, NULL, 1, NULL, 0);
-    xTaskCreatePinnedToCore([] (void *) {
-        playMelody(rightHand, fireballRight3, sizeof(fireballRight3) / sizeof(fireballRight3[0]));
-        vTaskDelete(NULL);
-    }, "RightHandTask", 4096, NULL, 1, NULL, 1); 
-  }
-  if( myData == 24 || myData == 26){
-    xTaskCreatePinnedToCore([] (void *) {
-        playMelody(leftHand, fireballLeft, sizeof(fireballLeft) / sizeof(fireballLeft[0]));
-        vTaskDelete(NULL);
-    }, "LeftHandTask", 4096, NULL, 1, NULL, 0);
-    xTaskCreatePinnedToCore([] (void *) {
-        playMelody(rightHand, fireballRight5, sizeof(fireballRight5) / sizeof(fireballRight5[0]));
-        vTaskDelete(NULL);
-    }, "RightHandTask", 4096, NULL, 1, NULL, 1);
-  }
-  if(myData == 25) {
-    xTaskCreatePinnedToCore([] (void *) {
-        playMelody(leftHand, fireballLeft, sizeof(fireballLeft) / sizeof(fireballLeft[0]));
-        vTaskDelete(NULL);
-    }, "LeftHandTask", 4096, NULL, 1, NULL, 0);
-    xTaskCreatePinnedToCore([] (void *) {
-        playMelody(rightHand, fireballRight6, sizeof(fireballRight6) / sizeof(fireballRight6[0]));
-        vTaskDelete(NULL);
-    }, "RightHandTask", 4096, NULL, 1, NULL, 1);
-  }
-  if (myData == 28){
-    xTaskCreatePinnedToCore([] (void *) {
-        playMelody(leftHand, fireballLeft, sizeof(fireballLeft) / sizeof(fireballLeft[0]));
-        vTaskDelete(NULL);
-    }, "LeftHandTask", 4096, NULL, 1, NULL, 0);
-    xTaskCreatePinnedToCore([] (void *) {
-        playMelody(rightHand, fireballRight8, sizeof(fireballRight8) / sizeof(fireballRight8[0]));
-        vTaskDelete(NULL);
-    }, "RightHandTask", 4096, NULL, 1, NULL, 1);
-  }
-  
-}*/
+}
