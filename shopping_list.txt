@@ -1,2 +1,0 @@
-camera:
-  tripod: https://www.alza.sk/mozos-st-selfie-d7223823.htm

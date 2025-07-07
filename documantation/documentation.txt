@@ -45,3 +45,8 @@ Video:
     One of them is that we couldn't find steel axles for our wheels.
       We decided to make 3D-printed ones but they were too fragile and had to be replaced frequently.
       We came up with the idea to keep the 3D-printed parts but improve them with inserted aluminum threads which solved the problem.
+  
+  Pianist HW
+    In the middle section there's 7.4V LiPo battery powering the whole system, esp32 microcontroller controlling the whole pianist and a power switch.
+    From the middle section power and data cables are brought to both hands.
+    On each hand there's the stepper motor with a driver, 8 servo motors connected to an I2C driver and a DC-DC converter to 5V for servos.
