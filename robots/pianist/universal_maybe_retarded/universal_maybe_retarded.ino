@@ -14,7 +14,7 @@
 #define acceleration 40000
 // casy
 byte myData;
-int targetNoteRight = 0
+int targetNoteRight = 0;
 int targetOctaveRight = 0;
 int targetNoteLeft = 0;
 int targetOctaveLeft = 0;
