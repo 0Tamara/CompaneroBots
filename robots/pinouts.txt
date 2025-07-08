@@ -36,7 +36,7 @@ drummer
     23 eyes
 
 pianist
-  ESP32 MAC addr:
+  ESP32 MAC addr: {0xC0, 0x49, 0xEF, 0xD3, 0xE9, 0xA4}
   pins:
 
 camera_ESP
