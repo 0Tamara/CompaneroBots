@@ -4,12 +4,20 @@ Poster:
 Video:
   Na zacatku sa kazdy pred tou istou stenou predstavi, potom povieme nieco spolu, ako napr. "And we are companerobots" a potom zacne kazdy ohladom svojho robota vypravat
   
-  Communication
-    All of our robots have ESP32 microcontrollers and communicate between each other via the esp-now protocol.
-    We chose it because it's simple, fast, and doesn't rely on central server
-      - if one of the robots fails, the others continue working independently.
-    In the first part of our performance, the camra sends instructions to the other robots.
-    When the music starts, the drummer keeps track of the beat, while camera controls the dancer.
+  Features
+    Synchronization
+      All of our robots have ESP32 microcontrollers and communicate between each other via the esp-now protocol.
+      At first we wanted to use bluetooth, but we came across a problem where we could only connect 3 devices to 1 server.
+        Also if the server failed, the whole performance would stop working.
+      With esp-now it's simpler, faster, and doesn't rely on central server, so
+        if one of the robots fails, the others continue working independently.
+      In the first part of our performance, the camra sends instructions to the other robots.
+      When the music starts, the drummer keeps track of the beat for the pianist, while camera controls the dancer.
+    Visual and sound effects
+      Our performance isn't just about movement and dancing. It's a full show with live music.
+      The pianist doesn't just pretend to play to a playback. He can play the right notes, so that it sounds like original.
+      To enhance the experience we also played with colors and LEDs. The drummer is good with that.
+        A colorful light show on every drum hit adds to the overall experience of the performance.
 
   Drummer
     Our drummer robot is equipped with two side drums and one large kick drum.
@@ -18,7 +26,7 @@ Video:
     Each drum features an addressable RGB LED strip for better visual effects.
       As he plays to the rhythm of the music, the drums light up with every hit.
     He is powered by 2 Li-Ion 18650 batteries.
-      It has a DC-DC converter to 5V, 2 MG90S servo motors for the movement of its elbows, and a MG996R servo motor for the kick drum.
+      It has a DC-DC converter to 5V, 2 MG90S servo motors for the movement of its elbows, and an MG996R servo motor for the kick drum.
     The reason we chose servo motors is because they are affortable, easy to program and fast and strong enough for our usage.
     We used the dual-core feature of the ESP32 microcontroller. Thanks to that, the drummer can light up the LEDs while playing and synchronizing with the beat.
 
@@ -32,7 +40,7 @@ Video:
     The power system of the scenery consists of 2 Li-Ion 18650 batteries, a power switch, and a 5V converter.
     The microcontroller is ESP32, which controls a DC motor. The motor turns 2 pulleys. While one pulley is winding up the string, the other is unwinding.
     2 ends of the string are running between the sides of the curtains, and each curtain is tied with one of them.
-    Originally we had 2 motors that opened the scenery. However we upgraded the system so that we only need one motor and the scenery opens and closes. 
+    Originally we had 2 motors that opened the scenery. However we upgraded the system so that we only need one motor and the scenery can both - open and close. 
 
   Camera
     The power system of the camera consists of 2 Li-Ion 18650 batteries, a power switch, and a 5V converter.
@@ -47,6 +55,6 @@ Video:
       We came up with the idea to keep the 3D-printed parts but improve them with inserted aluminum threads which solved the problem.
   
   Pianist HW
-    In the middle section there's 7.4V LiPo battery powering the whole system, esp32 microcontroller controlling the whole pianist and a power switch.
-    From the middle section power and data cables are brought to both hands.
+    In the middle section there's 7.4V LiPo battery powering the whole system, ESP32 microcontroller and a power switch.
+    From the middle section power and data cables are led to both hands.
     On each hand there's the stepper motor with a driver, 8 servo motors connected to an I2C driver and a DC-DC converter to 5V for servos.
