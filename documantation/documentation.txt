@@ -20,7 +20,7 @@ Video:
       The pianist doesn't just pretend to play to a playback. He can play the right notes, so that it sounds like original.
       To enhance the experience we also played with colors and LEDs. The drummer is good with that.
         A colorful light show on every drum hit adds to the overall experience of the performance.
-      We chose this feature because it 
+      We chose this feature because it greatly enhances the immersing experience of the performance.
 
   Drummer
     Our drummer robot is equipped with two side drums and one large kick drum.
