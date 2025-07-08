@@ -1,0 +1,8 @@
+
+    The Pianist robot can play almost any easy to intermediate song thanks to its construction, hardware, and software.
+    The 5V slot profiles ensure the structure remains stable. Although we initially considered using wood, it was ruled out due to its tendency to warp over time.
+    Each hand is driven by a single GT2 belt. During the design phase, we experimented with different motor placements but ultimately chose a kit for moving that allows
+    both hands to move on the same V-slot. To adjust belt tension, we added two tensioners on the sides of the profile.
+    To organize the electronics, we needed a holder — and that’s where problems began. We first considered solenoids to press the keys, but they required high 
+    voltage and were too heavy. Instead, we chose MG90s servos, which are lighter and more agile, though slower.
+    To fit one servo per key, the holder had to match the length of one octave. However, the servos were wider than the keys, so we angled the entire holder at 68 degrees to make them fit.
