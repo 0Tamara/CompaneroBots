@@ -74,49 +74,6 @@ Hand rightHand = {
   .releaseValue = SERVOMIN,
 };
 
-
-
-void setup() {
-  Serial.begin(115200);
-  esp_log_level_set("i2c.master", ESP_LOG_NONE);
-  Wire.begin(21, 22);
-  pca9685right.begin();
-  pca9685left.begin();
-  pca9685right.setPWMFreq(50);
-  pca9685left.setPWMFreq(50); 
-  for (int i = 8; i <= numServos; i++){
-    pca9685right.setPWM(i, 0, rightHand.releaseValue);
-    pca9685left.setPWM(i, 0, leftHand.releaseValue); // 0 stupnov
-  }
-  engine.init();
-  leftHand.stepper = engine.stepperConnectToPin(leftHandStepPin);
-  rightHand.stepper = engine.stepperConnectToPin(rightHandStepPin);
-  if (rightHand.stepper == NULL || leftHand.stepper == NULL) {
-    Serial.println("Chyba pri pripojeni krokovych motorov.");
-    while (1);
-  }
-  leftHand.stepper->setDirectionPin(leftHandDirPin);
-  leftHand.stepper->setEnablePin(leftHandEnPin);
-  leftHand.stepper->setAutoEnable(true);
-
-  leftHand.stepper->setSpeedInHz(speedInHz);
-  leftHand.stepper->setAcceleration(acceleration);
-  leftHand.stepper->setCurrentPosition(0);
-  
-  rightHand.stepper->setDirectionPin(rightHandDirPin);
-  rightHand.stepper->setEnablePin(rightHandEnPin);
-  rightHand.stepper->setAutoEnable(true);
-
-  rightHand.stepper->setSpeedInHz(speedInHz);
-  rightHand.stepper->setAcceleration(acceleration);
-  rightHand.stepper->setCurrentPosition((stepsPerOctave * 2)); 
-  rightHand.stepper->moveTo(0);
-  while (rightHand.stepper->isRunning()) {
-  } 
-  leftHand.stepper->moveTo(0);
-  while (leftHand.stepper->isRunning()) {
-  }
-}
 int havasiFreedomRightPosition1[]{A, 1};
 int havasiFreedomLeftPosition1[]{A, 1};
 int havasiFreedomRight1[]{
@@ -387,8 +344,7 @@ int barRight[16];
 int positionLeft[2];
 int positionRight[2];
 
-void playBar(){
-  Serial.println("Start function");
+void playBar(){ 
   targetNoteRight = positionRight[0];
   targetOctaveRight = positionRight[1];
   targetNoteLeft = positionLeft[0];
@@ -400,7 +356,6 @@ void playBar(){
   timeBeforeMoving = millis();
   for (int i = 0; i < 16; i++)
   {
-    Serial.println("for");
     int wait = sest;
     byte notesRight = barRight[i];
     byte notesLeft = barLeft[i];
@@ -418,7 +373,6 @@ void playBar(){
           pca9685left.setPWM(j+8, 0, leftHand.pressValue);
         }
       }
-      Serial.println("stlacene");
     }
     
     delay(75);
@@ -433,46 +387,9 @@ void playBar(){
   }
 }
 
-void loop() {
-  start = millis();
-  for(int i=0; i<16; i++)
-  {
-    barLeft[i] = havasiFreedomLeft1[i];
-    barRight[i] = havasiFreedomRight1[i];
-  }
-  for(int i=0; i<2; i++)
-  {
-    positionLeft[i] = havasiFreedomLeftPosition1[i];
-    positionRight[i] = havasiFreedomRightPosition1[i];
-  }
-  playBar();
-  while(millis()-start < 2280);
-  start = millis();
-  for(int i=0; i<16; i++)
-  {
-    barLeft[i] = havasiFreedomLeft5[i];
-    barRight[i] = havasiFreedomRight5[i];
-  }
-  for(int i=0; i<2; i++)
-  {
-    positionLeft[i] = havasiFreedomLeftPosition9[i];
-  }
-  playBar();
-  while(millis()-start < 2280);
-
-  start = millis();
-  for(int i=0; i<16; i++)
-  {
-    barRight[i] = havasiFreedomRight6[i];
-  }
-  playBar();
-  while(millis()-start < 2280);
-}
 void OnDataRecv(const uint8_t * mac, const uint8_t *incomingData, int len) {
   memcpy(&myData, incomingData, sizeof(myData));
-
-  start = millis();
-  
+  Serial.printf("myData = %d\n", myData);
   if(myData == 1)
   {
     for(int i=0; i<16; i++)
@@ -487,4 +404,174 @@ void OnDataRecv(const uint8_t * mac, const uint8_t *incomingData, int len) {
     }
   }
   playBar();
+  //prvy takt
+  if(myData == 2)
+  {
+    start = millis();
+    playBar();
+    //druhy takt
+  }
+  playBar();
+  if(myData == 3)
+  {   
+    start = millis();
+    playBar();
+    //treti takt
+  }
+  playBar();
+  if(myData == 4)
+  {
+    start = millis();
+    playBar();
+    //stvrty takt
+  }
+  playBar();
+  if(myData == 5)
+  {
+    for(int i=0; i<16; i++)
+    {
+      barLeft[i] = havasiFreedomLeft5[i];
+      barRight[i] = havasiFreedomRight5[i];
+    }
+  }
+  playBar();
+  //piaty takt
+  if(myData == 6)
+  {
+    for(int i=0; i<16; i++)
+    {
+      barLeft[i] = havasiFreedomLeft5[i];
+      barRight[i] = havasiFreedomRight6[i];
+    }
+  }
+  playBar();
+  // siesty takt
+  if(myData == 7)
+  {
+    for(int i=0; i<16; i++)
+    {
+      barLeft[i] = havasiFreedomLeft5[i];
+      barRight[i] = havasiFreedomRight7[i];
+    }
+  }
+  playBar();
+  //siedmy takt
+  if(myData == 8)
+  {
+    for(int i=0; i<16; i++)
+    {
+      barLeft[i] = havasiFreedomLeft5[i];
+      barRight[i] = havasiFreedomRight8[i];
+    }
+  }
+  playBar();
+  //osmy takt
+  if(myData == 9)
+  {
+    for(int i=0; i<16; i++)
+    {
+      barLeft[i] = havasiFreedomLeft5[i];
+      barRight[i] = havasiFreedomRight9[i];
+    }
+    for(int i=0; i<2; i++)
+    {
+      positionLeft[i] = havasiFreedomLeftPosition9[i];
+    }
+  }
+  playBar();
+  //deviaty takt
+  if(myData == 10)
+  {
+    for(int i=0; i<16; i++)
+    {
+      barLeft[i] = havasiFreedomLeft5[i];
+      barRight[i] = havasiFreedomRight10[i];
+    }
+  }
+  playBar();
+  //desiaty takt
+  if(myData == 11)
+  {
+    for(int i=0; i<16; i++)
+    {
+      barLeft[i] = havasiFreedomLeft1[i];
+      barRight[i] = havasiFreedomRight1[i];
+    }
+  }
+  playBar();
+  //jedenasty takt
+  if(myData == 12)
+  {
+    for(int i=0; i<16; i++)
+    {
+      barLeft[i] = havasiFreedomLeft12[i];
+      barRight[i] = havasiFreedomRight12[i];
+    }
+    for(int i=0; i<2; i++)
+    {
+      positionLeft[i] = havasiFreedomLeftPosition12[i];
+      positionRight[i] = havasiFreedomRightPosition12[i];
+    }
+  }
+  playBar();
+  //dvanasty a posledny takt
+}
+
+void setup() {
+  Serial.begin(115200);
+  esp_log_level_set("i2c.master", ESP_LOG_NONE);
+  Wire.begin(21, 22);
+  pca9685right.begin();
+  pca9685left.begin();
+  pca9685right.setPWMFreq(50);
+  pca9685left.setPWMFreq(50); 
+  for (int i = 8; i <= numServos; i++){
+    pca9685right.setPWM(i, 0, rightHand.releaseValue);
+    pca9685left.setPWM(i, 0, leftHand.releaseValue); // 0 stupnov
+  }
+  engine.init();
+  leftHand.stepper = engine.stepperConnectToPin(leftHandStepPin);
+  rightHand.stepper = engine.stepperConnectToPin(rightHandStepPin);
+  if (rightHand.stepper == NULL || leftHand.stepper == NULL) {
+    Serial.println("Chyba pri pripojeni krokovych motorov.");
+    while (1);
+  }
+
+  // Set device as a Wi-Fi Station
+  WiFi.mode(WIFI_STA);
+
+  // Init ESP-NOW
+  if (esp_now_init() != ESP_OK) {
+    Serial.println("Error initializing ESP-NOW");
+    return;
+  }
+  
+  // Once ESPNow is successfully Init, we will register for recv CB to
+  // get recv packer info
+  esp_now_register_recv_cb(esp_now_recv_cb_t(OnDataRecv));
+  
+  leftHand.stepper->setDirectionPin(leftHandDirPin);
+  leftHand.stepper->setEnablePin(leftHandEnPin);
+  leftHand.stepper->setAutoEnable(true);
+
+  leftHand.stepper->setSpeedInHz(speedInHz);
+  leftHand.stepper->setAcceleration(acceleration);
+  leftHand.stepper->setCurrentPosition(0);
+  
+  rightHand.stepper->setDirectionPin(rightHandDirPin);
+  rightHand.stepper->setEnablePin(rightHandEnPin);
+  rightHand.stepper->setAutoEnable(true);
+
+  rightHand.stepper->setSpeedInHz(speedInHz);
+  rightHand.stepper->setAcceleration(acceleration);
+  rightHand.stepper->setCurrentPosition((stepsPerOctave * 2)); 
+  rightHand.stepper->moveTo(0);
+  while (rightHand.stepper->isRunning()) {
+  } 
+  leftHand.stepper->moveTo(0);
+  while (leftHand.stepper->isRunning()) {
+  }
+}
+
+void loop() {
 }
