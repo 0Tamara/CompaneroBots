@@ -4,7 +4,7 @@
 
 //messages = right up, right down, left up, left down
 
-char recvData;
+int recvData;
 
 // Create an instance of the HardwareSerial class for Serial 2
 HardwareSerial camSerial(2);
@@ -20,13 +20,17 @@ void setup(){
 }
 
 void loop(){
-  while (camSerial.available()){
-    digitalWrite(2, HIGH);
-    // get the byte data from the GPS
-    recvData = camSerial.read();
-    Serial.print(recvData);
+  if(camSerial.available())
+  {
+    while (camSerial.available()){
+      digitalWrite(2, HIGH);
+      // get the byte data from the GPS
+      recvData = camSerial.read();
+      Serial.print(recvData);
+      Serial.print(" ");
+    }
+  Serial.println();
   }
   delay(100);
   digitalWrite(2, LOW);
-  Serial.println("-------------------------------");
 }
