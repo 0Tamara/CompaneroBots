@@ -56,7 +56,7 @@ int LEDs_pos[3] = {0, 0, LED_COUNT_R-1};  //position on the LED ring
 bool rising[3] = {1, 1, 1};  //rising / lowering
 bool miss_out[3] = {0, 0, 0};  //missing out every other step to go slower
 
-uint8_t pianist_addr[] = {0xC0, 0x49, 0xEF, 0xD3, 0xE9, 0xA4};  //pianist MAC addr
+uint8_t pianist_addr[] = {0xA8, 0x42, 0xE3, 0xA8, 0x73, 0x44};  //pianist MAC addr
 esp_now_peer_info_t peer_info;
 byte song_progress = 0;
 byte recv_data;
@@ -527,8 +527,6 @@ void setup()
   memcpy(peer_info.peer_addr, pianist_addr, 6);
   peer_info.channel = 0;  
   peer_info.encrypt = false;
-  
-  //esp_now_register_send_cb(OnDataSent);
 
   //-add peer-
   if (esp_now_add_peer(&peer_info) != ESP_OK)
@@ -595,6 +593,7 @@ void loop()
     if((millis()-timer_music) >= 2280)
     {
       timer_music = millis();
+      Serial.println(song_progress);
       esp_now_send(pianist_addr, (uint8_t *) &song_progress, sizeof(song_progress));
       freedom();
       song_progress ++;

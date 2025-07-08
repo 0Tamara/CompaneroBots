@@ -30,7 +30,7 @@ int stepsLeft = 0;
 unsigned long timeBeforeMoving = 0;
 int timeFromMoving = 0;
 int takt = 2280;
-int tempo = 2100;
+int tempo = 2280;
 int sest = tempo / 16; 
 unsigned long start = millis();
 const int offset = 50; //konstanta, o tolko sa bude musiet pohnut kym sa dostane na klaviaturu
@@ -359,19 +359,17 @@ void playBar(){
     int wait = sest;
     byte notesRight = barRight[i];
     byte notesLeft = barLeft[i];
+    Serial.printf("notes number %d\n", i);
     
-    if(!(rightHand.stepper->isRunning() || leftHand.stepper->isRunning()))
+    for (int j = 0; j < 8; j++)
     {
-      for (int j = 0; j < 8; j++)
+      if ((notesRight & 1<<j) && !(rightHand.stepper->isRunning()))
       {
-        if (notesRight & 1<<j)
-        {
-          pca9685right.setPWM(j+8, 0, rightHand.pressValue);
-        }
-        if (notesLeft & 1<<j)
-        {
-          pca9685left.setPWM(j+8, 0, leftHand.pressValue);
-        }
+        pca9685right.setPWM(j+8, 0, rightHand.pressValue);
+      }
+      if ((notesLeft & 1<<j) && !(leftHand.stepper->isRunning()))
+      {
+        pca9685left.setPWM(j+8, 0, leftHand.pressValue);
       }
     }
     
@@ -385,9 +383,11 @@ void playBar(){
     {
     }
   }
+  Serial.println();
 }
 
 void OnDataRecv(const uint8_t * mac, const uint8_t *incomingData, int len) {
+  start = millis();
   memcpy(&myData, incomingData, sizeof(myData));
   Serial.printf("myData = %d\n", myData);
   if(myData == 1)
@@ -403,29 +403,6 @@ void OnDataRecv(const uint8_t * mac, const uint8_t *incomingData, int len) {
       positionRight[i] = havasiFreedomRightPosition1[i];
     }
   }
-  playBar();
-  //prvy takt
-  if(myData == 2)
-  {
-    start = millis();
-    playBar();
-    //druhy takt
-  }
-  playBar();
-  if(myData == 3)
-  {   
-    start = millis();
-    playBar();
-    //treti takt
-  }
-  playBar();
-  if(myData == 4)
-  {
-    start = millis();
-    playBar();
-    //stvrty takt
-  }
-  playBar();
   if(myData == 5)
   {
     for(int i=0; i<16; i++)
@@ -434,7 +411,6 @@ void OnDataRecv(const uint8_t * mac, const uint8_t *incomingData, int len) {
       barRight[i] = havasiFreedomRight5[i];
     }
   }
-  playBar();
   //piaty takt
   if(myData == 6)
   {
@@ -444,7 +420,6 @@ void OnDataRecv(const uint8_t * mac, const uint8_t *incomingData, int len) {
       barRight[i] = havasiFreedomRight6[i];
     }
   }
-  playBar();
   // siesty takt
   if(myData == 7)
   {
@@ -454,7 +429,6 @@ void OnDataRecv(const uint8_t * mac, const uint8_t *incomingData, int len) {
       barRight[i] = havasiFreedomRight7[i];
     }
   }
-  playBar();
   //siedmy takt
   if(myData == 8)
   {
@@ -464,7 +438,6 @@ void OnDataRecv(const uint8_t * mac, const uint8_t *incomingData, int len) {
       barRight[i] = havasiFreedomRight8[i];
     }
   }
-  playBar();
   //osmy takt
   if(myData == 9)
   {
@@ -478,7 +451,6 @@ void OnDataRecv(const uint8_t * mac, const uint8_t *incomingData, int len) {
       positionLeft[i] = havasiFreedomLeftPosition9[i];
     }
   }
-  playBar();
   //deviaty takt
   if(myData == 10)
   {
@@ -488,17 +460,15 @@ void OnDataRecv(const uint8_t * mac, const uint8_t *incomingData, int len) {
       barRight[i] = havasiFreedomRight10[i];
     }
   }
-  playBar();
   //desiaty takt
   if(myData == 11)
   {
     for(int i=0; i<16; i++)
     {
-      barLeft[i] = havasiFreedomLeft1[i];
-      barRight[i] = havasiFreedomRight1[i];
+      barLeft[i] = havasiFreedomLeft5[i];
+      barRight[i] = havasiFreedomRight11[i];
     }
   }
-  playBar();
   //jedenasty takt
   if(myData == 12)
   {
