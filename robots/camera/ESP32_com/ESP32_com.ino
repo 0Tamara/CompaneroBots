@@ -2,6 +2,8 @@
 #define TXD2 17
 #define CAM_BAUD 115200
 
+//messages = right up, right down, left up, left down
+
 char recvData;
 
 // Create an instance of the HardwareSerial class for Serial 2
@@ -24,7 +26,7 @@ void loop(){
     recvData = camSerial.read();
     Serial.print(recvData);
   }
-  delay(1000);
+  delay(100);
   digitalWrite(2, LOW);
   Serial.println("-------------------------------");
 }
