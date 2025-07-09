@@ -5,7 +5,7 @@
 
 #define R_ARM_PIN 13
 #define L_ARM_PIN 12
-#define KICK_PIN 33
+#define KICK_PIN 32
 
 #define R_UP 80
 #define R_DOWN 70
@@ -21,7 +21,7 @@ Servo kick;   //85-90-85 = kick
 #define LED_PIN_L 27     //left drum
 #define LED_COUNT_L 36
 CRGB left_ring[LED_COUNT_L];
-#define LED_PIN_K 32    //kick drum
+#define LED_PIN_K 33    //kick drum
 #define LED_COUNT_K 54
 CRGB kick_ring[LED_COUNT_K];
 #define LED_PIN_R 14    //right drum
@@ -56,9 +56,9 @@ int LEDs_pos[3] = {0, 0, LED_COUNT_R-1};  //position on the LED ring
 bool rising[3] = {1, 1, 1};  //rising / lowering
 bool miss_out[3] = {0, 0, 0};  //missing out every other step to go slower
 
-uint8_t pianist_addr[] = {0xA0, 0xDD, 0x6C, 0x0E, 0xFA, 0xA8};  //pianist MAC addr
+uint8_t pianist_addr[] = {0xA8, 0x42, 0xE3, 0xA8, 0x73, 0x44};  //pianist MAC addr
 esp_now_peer_info_t peer_info;
-byte send_data = 0;
+byte song_progress = 0;
 byte recv_data;
 
 void OnDataRecv(const uint8_t * mac, const uint8_t *incoming_data, int len) {
@@ -527,8 +527,6 @@ void setup()
   memcpy(peer_info.peer_addr, pianist_addr, 6);
   peer_info.channel = 0;  
   peer_info.encrypt = false;
-  
-  //esp_now_register_send_cb(OnDataSent);
 
   //-add peer-
   if (esp_now_add_peer(&peer_info) != ESP_OK)
@@ -574,29 +572,31 @@ void setup()
   }
 
   FastLED.show();
-  delay(500);
+  delay(1000);
   for (int i = 0; i < 54; i++) {
     if (i < LED_COUNT_R) right_ring[i] = 0x000000;
     if (i < LED_COUNT_L) left_ring[i] = 0x000000;
     if (i < LED_COUNT_K) kick_ring[i] = 0x000000;
   }
   FastLED.show();
+  delay(2000);
 }
 
 void loop()
 {
-  if(recv_data == 2)
+  /*if(recv_data == 2)
     ledky_vedlajsie();
   if(recv_data == 3)
     kick_ring_bubon();
   if(recv_data >= 5)
-  {
+  {*/
     if((millis()-timer_music) >= 2280)
     {
       timer_music = millis();
-      esp_now_send(pianist_addr, (uint8_t *) &send_data, sizeof(send_data));
+      Serial.println(song_progress);
+      esp_now_send(pianist_addr, (uint8_t *) &song_progress, sizeof(song_progress));
       freedom();
-      send_data ++;
+      song_progress ++;
     }
-  }
+  //}
 }
