@@ -563,7 +563,7 @@ void setup()
   FastLED.addLeds<WS2811, LED_PIN_R, GRB>(right_ring, LED_COUNT_R);
   FastLED.addLeds<WS2811, LED_PIN_EYES, GRB>(eyes, LED_COUNT_EYES);
 
-  FastLED.setBrightness(32);  //---temporary!!!
+  //FastLED.setBrightness(32);  //---temporary!!!
 
   for (int i = 0; i < 54; i++) {
     if (i < LED_COUNT_R) right_ring[i] = 0x808080;
@@ -572,7 +572,8 @@ void setup()
   }
 
   FastLED.show();
-  delay(1000);
+  openEyes(color_eyes);
+  delay(100);
   for (int i = 0; i < 54; i++) {
     if (i < LED_COUNT_R) right_ring[i] = 0x000000;
     if (i < LED_COUNT_L) left_ring[i] = 0x000000;
@@ -589,7 +590,7 @@ void loop()
   if(recv_data == 3)
     kick_ring_bubon();
   if(recv_data >= 5)
-  {*/
+  {
     if((millis()-timer_music) >= 2280)
     {
       timer_music = millis();
@@ -598,5 +599,41 @@ void loop()
       freedom();
       song_progress ++;
     }
-  //}
+  //}*/
+  ledky_vedlajsie();
+  kick_ring_bubon();
+  closeEyes();
+  openEyes(color_eyes);
+  closeEyes();
+  openEyes(color_eyes);
+  delay(2000);
+
+
+  kick.write(K_DOWN);
+  changeColorsKick();
+  delay(100);
+  kick.write(K_UP);
+  delay(500);
+  r_arm.write(R_DOWN);
+  changeColorsRight();
+  delay(100);
+  r_arm.write(R_UP);
+  delay(500);
+  l_arm.write(L_DOWN);
+  changeColorsLeft();
+  delay(100);
+  l_arm.write(L_UP);
+  delay(1000);
+
+  kick.write(K_DOWN);
+  changeColorsKick();
+  r_arm.write(R_DOWN);
+  changeColorsRight();
+  l_arm.write(L_DOWN);
+  changeColorsLeft();
+  delay(100);
+  kick.write(K_UP);
+  r_arm.write(R_UP);
+  l_arm.write(L_UP);
+  delay(5000);
 }
