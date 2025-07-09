@@ -85,6 +85,8 @@ void setup() {
   stepperRight->setAcceleration(acceleration);
   stepperRight->setCurrentPosition(0);
 
+  delay(3000);
+
   // Test krokových motorov
   unsigned long start = millis();
   lavy_doprava(stepsPerOctave);
