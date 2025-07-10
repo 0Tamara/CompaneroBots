@@ -38,10 +38,32 @@ drummer
 pianist
   ESP32 MAC addr: {0xA8, 0x42, 0xE3, 0xA8, 0x73, 0x44}
   pins:
+    left stepper motor:
+      5 step
+      16 dir
+      18 en
+    right stepper motor:
+      4 step
+      17 dir
+      15 en
+    I2C:
+      22 SCL
+      21 SDA
+      addr:
+        0x40 left
+        0x41 right
 
 camera_ESP
   ESP32 MAC addr:
   pins:
+    16 RX2
+    17 TX2
 
 camera_Raspberry
   pins:
+
+curtains
+  ESP32 MAC addr: {0x10, 0x06, 0x1C, 0x68, 0x42, 0x7C}
+  pins:
+    12 motor en1
+    13 motor en2
