@@ -411,6 +411,27 @@ int fireballRight8[] = {
   0b00000000, 
   0b00000000, 
 };
+int stupnicaRightAndLeftPosition[]{C, 1};
+int stupnicaRightAndLeft[]{
+  0b10000000,
+  0b01000000,
+  0b00100000,
+  0b00010000,
+  0b00001000,
+  0b00000100,
+  0b00000010,
+  0b00000001,
+  0b00000001,
+  0b00000010,
+  0b00000100,
+  0b00001000,
+  0b00010000,
+  0b00100000,
+  0b01000000,
+  0b10000000,
+};
+
+
 int barLeft[16];
 int barRight[16];
 int positionLeft[2];
