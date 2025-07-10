@@ -84,3 +84,5 @@ Video:
     The dancer dances in front of the audience by our gestures, or by his own program. We chose 3D printed models and V slots for the construction.
     as for hardware, dancer moves to every direction thanks to 4 motors with mecanumm wheels. his arms and shoulders are attached to mg996r servos. 
     In the base, there are 2 12V converters, motor drivers for motors, 5V converter for other parts like the ESP32.
+  TOF senzor - dodatok:
+    The time of flight sensor is also connected to raspberry pi, and it controlls the drummer and pianist at the start of the performance.
