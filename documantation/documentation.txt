@@ -22,8 +22,13 @@ Video:
       To enhance the experience we also played with colors and LEDs. The drummer is good with that.
         A colorful light show on every drum hit adds to the overall experience of the performance.
       We chose this feature because it greatly enhances the immersing experience of the performance.
+    Camera controlling dancer:
+      The dancer isn’t just hardcoded — it can also respond to our gestures
+      captured by the camera, making the performance more interactive for the audience.
+    Musicians controlled by our signed gestures:
+      Thanks to "time of flight sensor", we can command robots to play in different tempos, and sounds.
+      We achieved this thanks to our code.  
 
-  Drummer
     Our drummer robot is equipped with two side drums and one large kick drum.
     Beyond performance, the drummer plays a key role in synchronizing the entire system.
       —he counts the beats and wirelessly sends timing signals to the other robots, ensuring they stay in perfect sync with the music.
@@ -75,3 +80,7 @@ Video:
     In the middle section there's 7.4V LiPo battery powering the whole system, ESP32 microcontroller and a power switch.
     From the middle section power and data cables are led to both hands.
     On each hand there's the stepper motor with a driver, 8 servo motors connected to an I2C driver and a DC-DC converter to 5V for servos.
+  Dancer by Gondek
+    The dancer dances in front of the audience by our gestures, or by his own program. We chose 3D printed models and V slots for the construction.
+    as for hardware, dancer moves to every direction thanks to 4 motors with mecanumm wheels. his arms and shoulders are attached to mg996r servos. 
+    In the base, there are 2 12V converters, motor drivers for motors, 5V converter for other parts like the brain - ESP32.

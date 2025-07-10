@@ -29,7 +29,6 @@ int stepsRight = 0;
 int stepsLeft = 0;
 unsigned long timeBeforeMoving = 0;
 int timeFromMoving = 0;
-int takt = 2280;
 int tempo = 2280;
 int sest = tempo / 16; 
 unsigned long start = millis();
@@ -311,10 +310,10 @@ int fireballRight1[] = {
   0b00000000, 
   0b00000001, //osm
   0b00000000, 
-  0b00000001, //sest
-  0b00000001, //osm
+  0b00000010, //sest
+  0b00000010, //osm
   0b00000000, 
-  0b00000001, //sest
+  0b00000010, //sest
   0b00000000, //stv pomlcka
   0b00000000, 
   0b00000000, 
@@ -338,6 +337,79 @@ int fireballLeft1[] = {
   0b00000000,  
   0b00001000, //osm
   0b00000000,  
+};
+int fireballRight2[] = {
+  0b00000000, //osm pomlcka
+  0b00000000, 
+  0b10000000, //osm nota
+  0b00000000,  
+  0b00000001, //osm
+  0b00000000, 
+  0b00000001, //osm
+  0b00000000, 
+  0b00000010, //sest
+  0b00000010, //osm
+  0b00000000, 
+  0b00000010, //sest
+  0b00000000, //stv pomlcka
+  0b00000000, 
+  0b00000000, 
+  0b00000000, 
+};
+int fireballRightPosition5[]{D, 2};
+int fireballRight5[] = {
+  0b00010000, //stv
+  0b00000000, 
+  0b00000000, 
+  0b00000000,  
+  0b00001000, //osm
+  0b00000000, 
+  0b00100000, //osm
+  0b00000000, 
+  0b00010000, //sest
+  0b00000000, //osm
+  0b00000000, 
+  0b10000000, //sest
+  0b00000000, //stv pomlcka
+  0b00000000, 
+  0b00000000, 
+  0b00000000, 
+};
+int fireballRight6[] = {
+  0b00000000, //osm pomlcka
+  0b00000000, 
+  0b00010000, //osm 
+  0b00000000,  
+  0b00001000, //osm
+  0b00000000, 
+  0b00100000, //osm
+  0b00000000, 
+  0b00010000, //sest
+  0b00000000, //osm
+  0b00000000, 
+  0b10000000, //sest
+  0b00000000, //stv pomlcka
+  0b00000000, 
+  0b00000000, 
+  0b00000000, 
+};
+int fireballRight8[] = {
+  0b00000000, //osm pomlcka
+  0b00000000, 
+  0b00010000, //osm 
+  0b00000000,  
+  0b00001000, //osm
+  0b00000000, 
+  0b00100000, //osm
+  0b00000000, 
+  0b00010000, //sest
+  0b00000000, //osm
+  0b00000000, 
+  0b00000001, //sest
+  0b00000000, //stv pomlcka
+  0b00000000, 
+  0b00000000, 
+  0b00000000, 
 };
 int barLeft[16];
 int barRight[16];
@@ -483,8 +555,98 @@ void OnDataRecv(const uint8_t * mac, const uint8_t *incomingData, int len) {
       positionRight[i] = havasiFreedomRightPosition12[i];
     }
   }
-  playBar();
   //dvanasty a posledny takt
+  if(myData == 13)
+  {
+    for(int i=0; i<16; i++)
+    {
+      barLeft[i] = fireballLeft1[i];
+      barRight[i] = fireballRight1[i];
+    }
+    for(int i=0; i<2; i++)
+    {
+      positionLeft[i] = fireballLeftPosition1[i];
+      positionRight[i] = fireballRightPosition1[i];
+    }
+  }
+  if(myData == 14)
+  {
+    tempo = 1920; //dame tempo neskorej
+    sest = tempo / 16; 
+    for(int i=0; i<16; i++)
+    {
+      barRight[i] = fireballRight2[i];
+    }
+  }
+  if(myData == 15)
+  {
+    for(int i=0; i<16; i++)
+    {
+      barRight[i] = fireballRight1[i];
+    }
+  }
+  if(myData == 16)
+  {
+    
+    for(int i=0; i<16; i++)
+    {
+      barRight[i] = fireballRight2[i];
+    } 
+  }
+  if(myData == 17)
+  {
+    for(int i=0; i<16; i++)
+    {
+      barRight[i] = fireballRight5[i];
+    }
+    for(int i=0; i<2; i++)
+    {
+      positionRight[i] = fireballRightPosition5[i];
+    }
+  }
+  if(myData == 18)
+  {
+    for(int i=0; i<16; i++)
+    {
+      barRight[i] = fireballRight6[i];
+    }
+  }
+  if(myData == 19)
+  {
+    for(int i=0; i<16; i++)
+    {
+      barRight[i] = fireballRight5[i];
+    }
+  }
+  if(myData == 20)
+  {
+    for(int i=0; i<16; i++)
+    {
+      barRight[i] = fireballRight8[i];
+    }
+  }
+  if(myData == 21)
+  {
+    for(int i=0; i<16; i++)
+    {
+      barRight[i] = fireballRight5[i];
+    }
+  }
+  if(myData == 22)
+  {
+    for(int i=0; i<16; i++)
+    {
+      barRight[i] = fireballRight6[i];
+    }
+  }
+  if(myData == 23)
+  {
+    for(int i=0; i<16; i++)
+    {
+      barRight[i] = fireballRight5[i];
+    }
+  }
+  playBar();
 }
 
 void setup() {
