@@ -8,8 +8,8 @@
 #define SERVOMIN  125
 #define SERVOMAX  575
 #define numServos 16
-#define stepsPerNote 984
-#define stepsPerOctave 6840
+#define stepsPerNote 929
+#define stepsPerOctave 6498
 #define speedInHz 15000
 #define acceleration 40000
 
@@ -38,7 +38,6 @@ int timeFromMoving = 0;
 int tempo = 2280;
 int sest = tempo / 16; 
 unsigned long start = millis();
-const int offset = 50; //konstanta, o tolko sa bude musiet pohnut kym sa dostane na klaviaturu
 const int rezerva = 20;
 
 // kniznice
@@ -279,7 +278,7 @@ int havasiFreedomRight12[] = {
   0b00000000, //sest pomlcka
   0b01000010, //osm
   0b00000000,
-  0b01000010, //stv
+  0b10000010, //stv
   0b00000000, 
   0b00000000, 
   0b00000000, 
@@ -528,7 +527,8 @@ void playBar(){
 void OnDataRecv(const uint8_t * mac, const uint8_t *incomingData, int len) {
   start = millis();
   memcpy(&myData, incomingData, sizeof(myData));
-  Serial.printf("myData = %d\n", myData);
+  Serial.printf("song = %d\n", myData.song);
+  Serial.printf("time = %d\n", myData.time);
   if(myData.song == 1)
   {
     tempo = 2666; 
@@ -590,6 +590,8 @@ void OnDataRecv(const uint8_t * mac, const uint8_t *incomingData, int len) {
   }
   if(myData.song == 3)
   {
+    tempo = 2280;
+    sest = tempo/16;
     if(myData.time == 1)
     {
       for(int i=0; i<16; i++)
@@ -690,7 +692,7 @@ void OnDataRecv(const uint8_t * mac, const uint8_t *incomingData, int len) {
   {
     if(myData.time == 1)
     {
-      tempo = 1920; //dame tempo neskorej
+      tempo = 1950; 
       sest = tempo / 16; 
       for(int i=0; i<16; i++)
       {
@@ -773,14 +775,24 @@ void OnDataRecv(const uint8_t * mac, const uint8_t *incomingData, int len) {
     }
     if(myData.time == 11)
     {
-      for(int i=0; i<16; i++)
+      for(int i=0; i<16; i++) 
       {
         barRight[i] = fireballRight5[i];
       }
     }
+    if(myData.time == 12)
+    {
+      rightHand.stepper->moveTo(stepsPerOctave * 2);
+      while (rightHand.stepper->isRunning()) 
+      {
+      } 
+      leftHand.stepper->moveTo(0);
+      while (leftHand.stepper->isRunning()) 
+      {
+      }
+    }
     playBar();
   }
-  
 }
 
 void setup() {
@@ -835,7 +847,7 @@ void setup() {
   while (rightHand.stepper->isRunning()) {
   } 
   leftHand.stepper->moveTo(0);
-  while (leftHand.stepper->isRunning()) {
+  while (leftHand .stepper->isRunning()) {
   }
 }
 
