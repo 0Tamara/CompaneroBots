@@ -18,11 +18,11 @@ uint8_t curtains_addr[] = {0x10, 0x06, 0x1C, 0x68, 0x42, 0x7C};
 
 typedef struct struct_dancer
 {
-  byte value
-  byte param1
-  byte param2
-  byte param3
-  byte param4
+  byte value;
+  byte param1;
+  byte param2;
+  byte param3;
+  byte param4;
 } struct_dancer;
 
 typedef struct struct_musicians
@@ -31,10 +31,15 @@ typedef struct struct_musicians
   byte sync;
 } struct_musicians;
 
+typedef struct struct_curtains
+{
+  bool open;
+} struct_curtains;
+
 struct_dancer dancer_mes;
 struct_musicians drummer_mes;
 struct_musicians pianist_mes;
-bool curtains_mes = 0;  //0 = closed; 1 = open
+struct_curtains curtains_mes;  //0 = closed; 1 = open
 
 esp_now_peer_info_t peerInfo;
 
@@ -78,8 +83,6 @@ void setup(){
     return;
   }
 
-  pinMode(2, OUTPUT);
-
   dancer_mes.value = 0;
   dancer_mes.param1 = 0;
   dancer_mes.param2 = 0;
@@ -89,6 +92,9 @@ void setup(){
   drummer_mes.sync = 0;
   pianist_mes.song = 0;
   pianist_mes.sync = 0;
+  curtains_mes.open = 0;
+
+  pinMode(2, OUTPUT);
 }
 
 void loop(){
@@ -105,6 +111,13 @@ void loop(){
   delay(100);
   digitalWrite(2, LOW);*/
 
-  
-  esp_now_send(broadcastAddress1, (uint8_t *) &time_mess, sizeof(time_mess));
+  curtains_mes.open = !curtains_mes.open;
+  esp_err_t result = esp_now_send(curtains_addr, (uint8_t *) &curtains_mes, sizeof(curtains_mes));
+  if (result == ESP_OK) {
+    Serial.println("Sent");
+  }
+  else {
+    Serial.println("Error");
+  }
+  delay(4000);
 }
