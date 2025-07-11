@@ -58,7 +58,12 @@ bool miss_out[3] = {0, 0, 0};  //missing out every other step to go slower
 
 uint8_t pianist_addr[] = {0xA8, 0x42, 0xE3, 0xA8, 0x73, 0x44};  //pianist MAC addr
 esp_now_peer_info_t peer_info;
-byte song_progress = 0;
+
+typedef struct struct_send {
+  byte song;
+  byte sync;
+} struct_send;
+struct_send pianist_mes;
 byte recv_data;
 
 void OnDataRecv(const uint8_t * mac, const uint8_t *incoming_data, int len) {
@@ -581,6 +586,8 @@ void setup()
   }
   FastLED.show();
   delay(2000);
+
+  pianist_mes.song = 4;
 }
 
 void loop()
@@ -599,8 +606,8 @@ void loop()
       freedom();
       song_progress ++;
     }
-  //}*/
-  ledky_vedlajsie();
+  }*/
+  /*ledky_vedlajsie();
   kick_ring_bubon();
   closeEyes();
   openEyes(color_eyes);
@@ -635,5 +642,14 @@ void loop()
   kick.write(K_UP);
   r_arm.write(R_UP);
   l_arm.write(L_UP);
-  delay(5000);
+  delay(5000);*/
+
+  if((millis()-timer_music) >= 1950)
+  {
+    timer_music = millis();
+    Serial.println(pianist_mes.sync);
+    esp_now_send(pianist_addr, (uint8_t *) &pianist_mes, sizeof(pianist_mes));
+    pianist_mes.sync ++;
+    if(pianist_mes.sync == 14) pianist_mes.sync = 1;
+  }
 }
