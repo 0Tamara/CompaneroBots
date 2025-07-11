@@ -1,5 +1,6 @@
 //messages = right shoulder, right elbow, left shoulder, left elbow
 #include <WiFi.h>
+#include <esp_wifi.h>
 #include <esp_now.h>
 
 #define RXD2 16
@@ -47,8 +48,14 @@ void setup(){
   //init serial
   Serial.begin(115200);
   camSerial.begin(CAM_BAUD, SERIAL_8N1, RXD2, TXD2);
-  //init esp-now
+  //init WiFi & read MAC address
   WiFi.mode(WIFI_STA);
+  uint8_t baseMac[6];
+  esp_err_t ret = esp_wifi_get_mac(WIFI_IF_STA, baseMac);
+  Serial.printf("My MAC address: {0x%02X, 0x%02X, 0x%02X, 0x%02X, 0x%02X, 0x%02X}\n",
+                baseMac[0], baseMac[1], baseMac[2],
+                baseMac[3], baseMac[4], baseMac[5]);
+  //init esp-now
   if (esp_now_init() != ESP_OK)
   {
     Serial.println("Error initializing ESP-NOW");
@@ -89,12 +96,66 @@ void setup(){
   dancer_mes.param3 = 0;
   dancer_mes.param4 = 0;
   drummer_mes.song = 0;
-  drummer_mes.sync = 0;
+  drummer_mes.sync = 1;
   pianist_mes.song = 0;
-  pianist_mes.sync = 0;
+  pianist_mes.sync = 1;
   curtains_mes.open = 0;
 
   pinMode(2, OUTPUT);
+  delay(3000);
+
+  //---sensor <5cm---
+  dancer_mes.value = 1;
+  esp_now_send(dancer_addr, (uint8_t *) &dancer_mes, sizeof(dancer_mes));
+  drummer_mes.song = 1;
+  esp_now_send(drummer_addr, (uint8_t *) &drummer_mes, sizeof(drummer_mes));
+  digitalWrite(2, HIGH);
+  delay(100);
+  digitalWrite(2, LOW);
+  delay(1000);
+  pianist_mes.song = 1;
+  esp_now_send(pianist_addr, (uint8_t *) &pianist_mes, sizeof(pianist_mes));
+  digitalWrite(2, HIGH);
+  delay(100);
+  digitalWrite(2, LOW);
+  delay(3000);
+
+  //---sensor measuring---
+  drummer_mes.song = 2;
+  esp_now_send(drummer_addr, (uint8_t *) &drummer_mes, sizeof(drummer_mes));
+  digitalWrite(2, HIGH);
+  delay(100);
+  digitalWrite(2, LOW);
+  delay(5000);
+  drummer_mes.song = 3;
+  esp_now_send(drummer_addr, (uint8_t *) &drummer_mes, sizeof(drummer_mes));
+  digitalWrite(2, HIGH);
+  delay(100);
+  digitalWrite(2, LOW);
+  delay(5000);
+  pianist_mes.song = 2;
+  esp_now_send(pianist_addr, (uint8_t *) &pianist_mes, sizeof(pianist_mes));
+  digitalWrite(2, HIGH);
+  delay(100);
+  digitalWrite(2, LOW);
+  delay(5000);
+  pianist_mes.song = 3;
+  esp_now_send(pianist_addr, (uint8_t *) &pianist_mes, sizeof(pianist_mes));
+  digitalWrite(2, HIGH);
+  delay(100);
+  digitalWrite(2, LOW);
+  delay(10000);
+
+  //---music starts---
+  drummer_mes.song = 4;
+  esp_now_send(drummer_addr, (uint8_t *) &drummer_mes, sizeof(drummer_mes));
+  dancer_mes.value = 2;
+  esp_now_send(dancer_addr, (uint8_t *) &dancer_mes, sizeof(dancer_mes));
+  curtains_mes.open = 1;
+  esp_now_send(curtains_addr, (uint8_t *) &curtains_mes, sizeof(curtains_mes));
+  digitalWrite(2, HIGH);
+  delay(100);
+  digitalWrite(2, LOW);
 }
 
 void loop(){
@@ -110,14 +171,4 @@ void loop(){
   }
   delay(100);
   digitalWrite(2, LOW);*/
-
-  curtains_mes.open = !curtains_mes.open;
-  esp_err_t result = esp_now_send(curtains_addr, (uint8_t *) &curtains_mes, sizeof(curtains_mes));
-  if (result == ESP_OK) {
-    Serial.println("Sent");
-  }
-  else {
-    Serial.println("Error");
-  }
-  delay(4000);
 }

@@ -38,7 +38,7 @@ unsigned long timer_music;
 int kicks;
 int snares;
 
-uint color_eyes = 0x200102; //pink
+uint color_eyes = 0xFF00FF;
 uint color_palette[6] = {0xFF0000,  //colors cycling over
                         0x808000,
                         0x00FF00,
@@ -56,30 +56,24 @@ int LEDs_pos[3] = {0, 0, LED_COUNT_R-1};  //position on the LED ring
 bool rising[3] = {1, 1, 1};  //rising / lowering
 bool miss_out[3] = {0, 0, 0};  //missing out every other step to go slower
 
+int current_song = 0;
+
 uint8_t pianist_addr[] = {0xA8, 0x42, 0xE3, 0xA8, 0x73, 0x44};  //pianist MAC addr
 esp_now_peer_info_t peer_info;
 
-typedef struct struct_send {
+typedef struct struct_mes
+{
   byte song;
   byte sync;
-} struct_send;
-struct_send pianist_mes;
-byte recv_data;
-
-void OnDataRecv(const uint8_t * mac, const uint8_t *incoming_data, int len) {
-  memcpy(&recv_data, incoming_data, sizeof(recv_data));
-  Serial.print("Bytes received: ");
-  Serial.println(len);
-  Serial.print("Value: ");
-  Serial.println(recv_data);
-  Serial.println();
-}
+} struct_mes;
+struct_mes pianist_mes;
+struct_mes recv_data;
 
 // Zapína LED na všetkých pásikoch naraz
-void ledky_vedlajsie() {
+void ledky_vedlajsie(uint color) {
   for (int i = 0; i < LED_COUNT_R; i++) {
-    left_ring[i] = 0xFF0000;
-    right_ring[i] = 0xFF0000;
+    left_ring[i] = color;
+    right_ring[i] = color;
 
     FastLED.show();
     delay(50);
@@ -93,14 +87,16 @@ void ledky_vedlajsie() {
     delay(50);
   }
 }
-void kick_ring_bubon() {
-  for (int i = 0; i < LED_COUNT_K; i++) {
-    kick_ring[i] = 0xFF0000;
+void kick_ring_bubon(uint color) {
+  for (int i = 0; i < LED_COUNT_K/2; i++) {
+    kick_ring[i] = color;
+    kick_ring[(LED_COUNT_K-1)-i] = color;
     FastLED.show();
     delay(50);
   }
   for (int i = LED_COUNT_K - 1; i >= 0; i--) {
     kick_ring[i] = 0x000000;
+    kick_ring[(LED_COUNT_K-1)-i] = 0x000000;
     FastLED.show();
     delay(50);
   }
@@ -417,6 +413,46 @@ void openEyes(uint color)  //cca 300ms
   delay(50);
 }
 
+void firstLeds(uint color)
+{
+  ledky_vedlajsie(color);
+  kick_ring_bubon(color);
+}
+
+void OnDataRecv(const uint8_t * mac, const uint8_t *incoming_data, int len) {
+  memcpy(&recv_data, incoming_data, sizeof(recv_data));
+  Serial.print("Bytes received: ");
+  Serial.println(len);
+  Serial.print("song: ");
+  Serial.println(recv_data.song);
+  Serial.print("sync: ");
+  Serial.println(recv_data.sync);
+  Serial.println();
+
+  if(recv_data.song == 1)
+  {
+    openEyes(color_eyes);
+  }
+  if(recv_data.song == 2)
+  {
+    ledky_vedlajsie(0xFF0000);
+  }
+  if(recv_data.song == 3)
+  {
+    kick_ring_bubon(0x00FF00);
+  }
+  if(recv_data.song == 4)
+  {
+    current_song = 1;
+    pianist_mes.song = 4;
+    pianist_mes.sync = 1;
+    for (int i = 0; i < LED_COUNT_R; i++)
+      right_ring[i] = 0xFF0000;
+    FastLED.show();
+  }
+}
+
+//---main code---
 //---loop for rising effects (during music)---
 void loop_2(void* parameter)
 {
@@ -516,7 +552,6 @@ void loop_2(void* parameter)
   }
 }
 
-//---main code---
 void setup()
 {
   Serial.begin(115200);
@@ -568,15 +603,15 @@ void setup()
   FastLED.addLeds<WS2811, LED_PIN_R, GRB>(right_ring, LED_COUNT_R);
   FastLED.addLeds<WS2811, LED_PIN_EYES, GRB>(eyes, LED_COUNT_EYES);
 
-  //FastLED.setBrightness(32);  //---temporary!!!
+  FastLED.setBrightness(32);  //---temporary!!!
 
   for (int i = 0; i < 54; i++) {
     if (i < LED_COUNT_R) right_ring[i] = 0x808080;
     if (i < LED_COUNT_L) left_ring[i] = 0x808080;
     if (i < LED_COUNT_K) kick_ring[i] = 0x808080;
   }
-
   FastLED.show();
+
   openEyes(color_eyes);
   delay(100);
   for (int i = 0; i < 54; i++) {
@@ -586,70 +621,42 @@ void setup()
   }
   FastLED.show();
   delay(2000);
-
-  pianist_mes.song = 4;
 }
 
 void loop()
 {
-  /*if(recv_data == 2)
-    ledky_vedlajsie();
-  if(recv_data == 3)
-    kick_ring_bubon();
-  if(recv_data >= 5)
+  if(current_song == 1)
   {
     if((millis()-timer_music) >= 2280)
     {
       timer_music = millis();
-      Serial.println(song_progress);
-      esp_now_send(pianist_addr, (uint8_t *) &song_progress, sizeof(song_progress));
-      freedom();
-      song_progress ++;
+      esp_now_send(pianist_addr, (uint8_t *) &pianist_mes, sizeof(pianist_mes));
+      //freedom();
+      pianist_mes.sync ++;
+      if(pianist_mes.sync > 12)
+      {
+        current_song ++;
+        pianist_mes.song = 5;
+        pianist_mes.sync = 1;
+        for (int i = 0; i < LED_COUNT_L; i++)
+          left_ring[i] = 0xFF0000;
+        FastLED.show();
+        for (int i = 0; i < LED_COUNT_R; i++)
+          right_ring[i] = 0x000000;
+        FastLED.show();
+        while(millis() - timer_music < 2280 + 1000);  //between songs
+      }
     }
-  }*/
-  /*ledky_vedlajsie();
-  kick_ring_bubon();
-  closeEyes();
-  openEyes(color_eyes);
-  closeEyes();
-  openEyes(color_eyes);
-  delay(2000);
-
-
-  kick.write(K_DOWN);
-  changeColorsKick();
-  delay(100);
-  kick.write(K_UP);
-  delay(500);
-  r_arm.write(R_DOWN);
-  changeColorsRight();
-  delay(100);
-  r_arm.write(R_UP);
-  delay(500);
-  l_arm.write(L_DOWN);
-  changeColorsLeft();
-  delay(100);
-  l_arm.write(L_UP);
-  delay(1000);
-
-  kick.write(K_DOWN);
-  changeColorsKick();
-  r_arm.write(R_DOWN);
-  changeColorsRight();
-  l_arm.write(L_DOWN);
-  changeColorsLeft();
-  delay(100);
-  kick.write(K_UP);
-  r_arm.write(R_UP);
-  l_arm.write(L_UP);
-  delay(5000);*/
-
-  if((millis()-timer_music) >= 1950)
+  }
+  if(current_song == 2)
   {
-    timer_music = millis();
-    Serial.println(pianist_mes.sync);
-    esp_now_send(pianist_addr, (uint8_t *) &pianist_mes, sizeof(pianist_mes));
-    pianist_mes.sync ++;
-    if(pianist_mes.sync == 14) pianist_mes.sync = 1;
+    if((millis()-timer_music) >= 1950)
+    {
+      timer_music = millis();
+      esp_now_send(pianist_addr, (uint8_t *) &pianist_mes, sizeof(pianist_mes));
+      pianist_mes.sync ++;
+      if(pianist_mes.sync > 12)
+        current_song ++;
+    }
   }
 }

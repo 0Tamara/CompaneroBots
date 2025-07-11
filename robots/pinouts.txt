@@ -54,7 +54,7 @@ pianist
         0x41 right
 
 camera_ESP
-  ESP32 MAC addr:
+  ESP32 MAC addr: {0xC0, 0x49, 0xEF, 0xD0, 0x8C, 0xC0}
   pins:
     16 RX2
     17 TX2
