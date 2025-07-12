@@ -10,7 +10,7 @@
 int recv_data[5];
 int recv_index;
 int progress = 0;  //when in the performance we are
-bool start_done[] = {0, 0, 0, 0};  //if the start melodies are done - pianist fast, slow, drummer fast, slow
+bool start_done[] = {0, 0, 1, 1};  //if the start melodies are done - pianist fast, slow, drummer fast, slow
 
 HardwareSerial camSerial(2);
 
@@ -23,10 +23,11 @@ uint8_t curtains_addr[] = {0x10, 0x06, 0x1C, 0x68, 0x42, 0x7C};
 typedef struct struct_dancer
 {
   byte value;
-  byte param1;
-  byte param2;
-  byte param3;
-  byte param4;
+  byte r_shoulder;
+  byte r_elbow;
+  byte l_shoulder;
+  byte l_elbow;
+  byte movement;
 } struct_dancer;
 
 typedef struct struct_musicians
@@ -94,10 +95,11 @@ void setup(){
   }
 
   dancer_mes.value = 0;
-  dancer_mes.param1 = 0;
-  dancer_mes.param2 = 0;
-  dancer_mes.param3 = 0;
-  dancer_mes.param4 = 0;
+  dancer_mes.r_shoulder = 0;
+  dancer_mes.r_elbow = 0;
+  dancer_mes.l_shoulder = 0;
+  dancer_mes.l_elbow = 0;
+  dancer_mes.movement = 0;
   drummer_mes.song = 0;
   drummer_mes.sync = 1;
   pianist_mes.song = 0;
@@ -105,17 +107,6 @@ void setup(){
   curtains_mes.open = 0;
 
   pinMode(2, OUTPUT);
-  delay(3000);
-
-  //---music starts---
-  drummer_mes.song = 4;
-  esp_now_send(drummer_addr, (uint8_t *) &drummer_mes, sizeof(drummer_mes));
-  dancer_mes.value = 2;
-  esp_now_send(dancer_addr, (uint8_t *) &dancer_mes, sizeof(dancer_mes));
-  curtains_mes.open = 1;
-  esp_now_send(curtains_addr, (uint8_t *) &curtains_mes, sizeof(curtains_mes));
-  digitalWrite(2, HIGH);
-  delay(100);
   digitalWrite(2, LOW);
 }
 
@@ -152,6 +143,7 @@ void loop(){
           pianist_mes.song = 1;
           esp_now_send(pianist_addr, (uint8_t *) &pianist_mes, sizeof(pianist_mes));
           progress = 1;
+          Serial.println("Starting performance");
           break;
         case 2:
           //fast
@@ -160,6 +152,7 @@ void loop(){
             pianist_mes.song = 2;
             esp_now_send(pianist_addr, (uint8_t *) &pianist_mes, sizeof(pianist_mes));
             start_done[0] = 1;
+            start_done[2] = 0;
             Serial.println("Pianist playing fast");
           }
           if(!start_done[2])
@@ -177,6 +170,7 @@ void loop(){
             pianist_mes.song = 3;
             esp_now_send(pianist_addr, (uint8_t *) &pianist_mes, sizeof(pianist_mes));
             start_done[1] = 1;
+            start_done[3] = 0;
             Serial.println("Pianist playing slow");
           }
           if(!start_done[3])
@@ -190,17 +184,29 @@ void loop(){
       }
     } else
     {  //sending data to dancer
-      dancer_mes.param1 = recv_data[0];
-      dancer_mes.param2 = recv_data[1];
-      dancer_mes.param3 = recv_data[2];
-      dancer_mes.param4 = recv_data[3];
-      esp_now_send(pianist_addr, (uint8_t *) &pianist_mes, sizeof(pianist_mes));
+      dancer_mes.r_shoulder = recv_data[0];
+      dancer_mes.r_elbow = recv_data[1];
+      dancer_mes.l_shoulder = recv_data[2];
+      dancer_mes.l_elbow = recv_data[3];
+      dancer_mes.movement = recv_data[4];
+      esp_now_send(dancer_addr, (uint8_t *) &dancer_mes, sizeof(dancer_mes));
+      Serial.printf("Dancer dancing %d %d %d %d %d\n", recv_data[0], recv_data[1], recv_data[2], recv_data[3], recv_data[4]);
     }
+    Serial.println();
   }
 
-  if(start_done[0] && start_done[1] && start_done[2] && start_done[3])
+  if(start_done[0] && start_done[1] && start_done[2] && start_done[3] && progress < 2)
   {
     delay(5000);
-    camSarial.write(5);
+    //---music starts---
+    drummer_mes.song = 4;
+    esp_now_send(drummer_addr, (uint8_t *) &drummer_mes, sizeof(drummer_mes));
+    dancer_mes.value = 2;
+    esp_now_send(dancer_addr, (uint8_t *) &dancer_mes, sizeof(dancer_mes));
+    curtains_mes.open = 1;
+    esp_now_send(curtains_addr, (uint8_t *) &curtains_mes, sizeof(curtains_mes));
+    camSerial.write(5);
+    progress = 2;
+    Serial.println("Music starting");
   }
 }
