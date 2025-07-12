@@ -7,7 +7,10 @@
 #define TXD2 17
 #define CAM_BAUD 115200
 
-int recvData;
+int recv_data[5];
+int recv_index;
+int progress = 0;  //when in the performance we are
+bool start_done[] = {0, 0, 0, 0};  //if the start melodies are done - pianist fast, slow, drummer fast, slow
 
 HardwareSerial camSerial(2);
 
@@ -104,48 +107,6 @@ void setup(){
   pinMode(2, OUTPUT);
   delay(3000);
 
-  //---sensor <5cm---
-  dancer_mes.value = 1;
-  esp_now_send(dancer_addr, (uint8_t *) &dancer_mes, sizeof(dancer_mes));
-  drummer_mes.song = 1;
-  esp_now_send(drummer_addr, (uint8_t *) &drummer_mes, sizeof(drummer_mes));
-  digitalWrite(2, HIGH);
-  delay(100);
-  digitalWrite(2, LOW);
-  delay(1000);
-  pianist_mes.song = 1;
-  esp_now_send(pianist_addr, (uint8_t *) &pianist_mes, sizeof(pianist_mes));
-  digitalWrite(2, HIGH);
-  delay(100);
-  digitalWrite(2, LOW);
-  delay(3000);
-
-  //---sensor measuring---
-  drummer_mes.song = 2;
-  esp_now_send(drummer_addr, (uint8_t *) &drummer_mes, sizeof(drummer_mes));
-  digitalWrite(2, HIGH);
-  delay(100);
-  digitalWrite(2, LOW);
-  delay(5000);
-  drummer_mes.song = 3;
-  esp_now_send(drummer_addr, (uint8_t *) &drummer_mes, sizeof(drummer_mes));
-  digitalWrite(2, HIGH);
-  delay(100);
-  digitalWrite(2, LOW);
-  delay(5000);
-  pianist_mes.song = 2;
-  esp_now_send(pianist_addr, (uint8_t *) &pianist_mes, sizeof(pianist_mes));
-  digitalWrite(2, HIGH);
-  delay(100);
-  digitalWrite(2, LOW);
-  delay(5000);
-  pianist_mes.song = 3;
-  esp_now_send(pianist_addr, (uint8_t *) &pianist_mes, sizeof(pianist_mes));
-  digitalWrite(2, HIGH);
-  delay(100);
-  digitalWrite(2, LOW);
-  delay(10000);
-
   //---music starts---
   drummer_mes.song = 4;
   esp_now_send(drummer_addr, (uint8_t *) &drummer_mes, sizeof(drummer_mes));
@@ -159,16 +120,87 @@ void setup(){
 }
 
 void loop(){
-  /*if(camSerial.available())
+  if(camSerial.available())
   {
-    while (camSerial.available()){
-      digitalWrite(2, HIGH);
-      recvData = camSerial.read();
-      Serial.print(recvData);
+    for(int i=0; i<5; i++)
+      recv_data[i] = 0;
+    recv_index = 0;
+    while(camSerial.available())
+    {
+      recv_data[recv_index] = camSerial.read();
+      recv_index ++;
+    }
+
+    for(int i=0; i<5; i++)
+    {
+      Serial.print(recv_data[i]);
       Serial.print(" ");
     }
-  Serial.println();
+    Serial.println();
+
+    if(recv_data[1] == 0 && recv_data[2] == 0 && recv_data[3] == 0)
+    {
+      switch(recv_data[0])
+      {
+        case 1:
+          //start
+          dancer_mes.value = 1;
+          esp_now_send(dancer_addr, (uint8_t *) &dancer_mes, sizeof(dancer_mes));
+          drummer_mes.song = 1;
+          esp_now_send(drummer_addr, (uint8_t *) &drummer_mes, sizeof(drummer_mes));
+          delay(1000);
+          pianist_mes.song = 1;
+          esp_now_send(pianist_addr, (uint8_t *) &pianist_mes, sizeof(pianist_mes));
+          progress = 1;
+          break;
+        case 2:
+          //fast
+          if(!start_done[0])
+          {
+            pianist_mes.song = 2;
+            esp_now_send(pianist_addr, (uint8_t *) &pianist_mes, sizeof(pianist_mes));
+            start_done[0] = 1;
+            Serial.println("Pianist playing fast");
+          }
+          if(!start_done[2])
+          {
+            drummer_mes.song = 2;
+            esp_now_send(drummer_addr, (uint8_t *) &drummer_mes, sizeof(drummer_mes));
+            start_done[2] = 1;
+            Serial.println("Drummer playing fast");
+          }
+          break;
+        case 3:
+          //slow
+          if(!start_done[1])
+          {
+            pianist_mes.song = 3;
+            esp_now_send(pianist_addr, (uint8_t *) &pianist_mes, sizeof(pianist_mes));
+            start_done[1] = 1;
+            Serial.println("Pianist playing slow");
+          }
+          if(!start_done[3])
+          {
+            drummer_mes.song = 3;
+            esp_now_send(drummer_addr, (uint8_t *) &drummer_mes, sizeof(drummer_mes));
+            start_done[3] = 1;
+            Serial.println("Drummer playing slow");
+          }
+          break;
+      }
+    } else
+    {  //sending data to dancer
+      dancer_mes.param1 = recv_data[0];
+      dancer_mes.param2 = recv_data[1];
+      dancer_mes.param3 = recv_data[2];
+      dancer_mes.param4 = recv_data[3];
+      esp_now_send(pianist_addr, (uint8_t *) &pianist_mes, sizeof(pianist_mes));
+    }
   }
-  delay(100);
-  digitalWrite(2, LOW);*/
+
+  if(start_done[0] && start_done[1] && start_done[2] && start_done[3])
+  {
+    delay(5000);
+    camSarial.write(5);
+  }
 }
