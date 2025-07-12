@@ -10,7 +10,11 @@
 
 
 // Create a struct_message called myData
-byte myData;
+typedef struct struct_message
+{
+byte value;
+} struct_message;
+struct_message myData;
 
 // callback function that will be executed when data is received
 void OnDataRecv(const uint8_t * mac, const uint8_t *incomingData, int len) {
@@ -18,7 +22,7 @@ void OnDataRecv(const uint8_t * mac, const uint8_t *incomingData, int len) {
   Serial.print("Bytes received: ");
   Serial.println(len);
   Serial.print("Data: ");
-  Serial.println(myData);
+  Serial.println(myData.value);
   Serial.println();
 }
  
