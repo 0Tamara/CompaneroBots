@@ -11,6 +11,9 @@ int recv_data[5];
 int recv_index;
 int progress = 0;  //when in the performance we are
 bool start_done[] = {0, 0, 1, 1};  //if the start melodies are done - pianist fast, slow, drummer fast, slow
+bool start_playing = 0;
+bool start_loading = 0;
+unsigned long timer_start;
 
 HardwareSerial camSerial(2);
 
@@ -136,47 +139,53 @@ void loop(){
         case 1:
           //start
           dancer_mes.value = 1;
-          esp_now_send(dancer_addr, (uint8_t *) &dancer_mes, sizeof(dancer_mes));
           drummer_mes.song = 1;
-          esp_now_send(drummer_addr, (uint8_t *) &drummer_mes, sizeof(drummer_mes));
-          delay(1000);
           pianist_mes.song = 1;
+          esp_now_send(dancer_addr, (uint8_t *) &dancer_mes, sizeof(dancer_mes));
+          esp_now_send(drummer_addr, (uint8_t *) &drummer_mes, sizeof(drummer_mes));
           esp_now_send(pianist_addr, (uint8_t *) &pianist_mes, sizeof(pianist_mes));
           progress = 1;
+          start_loading = 1;
+          start_playing = 1;
+          timer_start = millis();
           Serial.println("Starting performance");
           break;
         case 2:
           //fast
-          if(!start_done[0])
+          if(!start_done[0] && !start_playing)
           {
             pianist_mes.song = 2;
             esp_now_send(pianist_addr, (uint8_t *) &pianist_mes, sizeof(pianist_mes));
+            start_playing = 1;
             start_done[0] = 1;
             start_done[2] = 0;
             Serial.println("Pianist playing fast");
           }
-          if(!start_done[2])
+          if(!start_done[2] && !start_playing)
           {
             drummer_mes.song = 2;
             esp_now_send(drummer_addr, (uint8_t *) &drummer_mes, sizeof(drummer_mes));
+            start_playing = 1;
             start_done[2] = 1;
             Serial.println("Drummer playing fast");
           }
           break;
         case 3:
           //slow
-          if(!start_done[1])
+          if(!start_done[1] && !start_playing)
           {
             pianist_mes.song = 3;
             esp_now_send(pianist_addr, (uint8_t *) &pianist_mes, sizeof(pianist_mes));
+            start_playing = 1;
             start_done[1] = 1;
             start_done[3] = 0;
             Serial.println("Pianist playing slow");
           }
-          if(!start_done[3])
+          if(!start_done[3] && !start_playing)
           {
             drummer_mes.song = 3;
             esp_now_send(drummer_addr, (uint8_t *) &drummer_mes, sizeof(drummer_mes));
+            start_playing = 1;
             start_done[3] = 1;
             Serial.println("Drummer playing slow");
           }
@@ -184,20 +193,24 @@ void loop(){
       }
     } else
     {  //sending data to dancer
-      dancer_mes.r_shoulder = recv_data[0];
-      dancer_mes.r_elbow = recv_data[1];
-      dancer_mes.l_shoulder = recv_data[2];
-      dancer_mes.l_elbow = recv_data[3];
-      dancer_mes.movement = recv_data[4];
-      esp_now_send(dancer_addr, (uint8_t *) &dancer_mes, sizeof(dancer_mes));
-      Serial.printf("Dancer dancing %d %d %d %d %d\n", recv_data[0], recv_data[1], recv_data[2], recv_data[3], recv_data[4]);
+      if(!start_playing)
+      {
+        dancer_mes.r_shoulder = recv_data[0];
+        dancer_mes.r_elbow = recv_data[1];
+        dancer_mes.l_shoulder = recv_data[2];
+        dancer_mes.l_elbow = recv_data[3];
+        dancer_mes.movement = recv_data[4];
+        esp_now_send(dancer_addr, (uint8_t *) &dancer_mes, sizeof(dancer_mes));
+        Serial.printf("Dancer dancing %d %d %d %d %d\n", recv_data[0], recv_data[1], recv_data[2], recv_data[3], recv_data[4]);
+      }
     }
     Serial.println();
   }
 
   if(start_done[0] && start_done[1] && start_done[2] && start_done[3] && progress < 2)
   {
-    delay(5000);
+    timer_start = millis();
+    while(timer_start - millis() < 10000);
     //---music starts---
     drummer_mes.song = 4;
     esp_now_send(drummer_addr, (uint8_t *) &drummer_mes, sizeof(drummer_mes));
@@ -208,5 +221,11 @@ void loop(){
     camSerial.write(5);
     progress = 2;
     Serial.println("Music starting");
+  }
+
+  if(start_loading && millis() - timer_start > 2000)  //time between the startup and measuring the sensor
+  {
+    start_loading = 0;
+    start_playing = 0;
   }
 }
