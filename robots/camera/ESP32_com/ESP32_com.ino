@@ -7,12 +7,14 @@
 #define TXD2 17
 #define CAM_BAUD 115200
 
-int recv_data[5];
+int serial_data[5];
 int recv_index;
 int progress = 0;  //when in the performance we are
 bool start_done[] = {0, 0, 1, 1};  //if the start melodies are done - pianist fast, slow, drummer fast, slow
 bool start_playing = 0;
 bool start_loading = 0;
+bool dancing_sync = 0;  //dancer dancing by camera
+
 unsigned long timer_start;
 
 HardwareSerial camSerial(2);
@@ -49,7 +51,30 @@ struct_musicians drummer_mes;
 struct_musicians pianist_mes;
 struct_curtains curtains_mes;  //0 = closed; 1 = open
 
+typedef struct struct_recv
+{
+  byte value;
+} struct_recv;
+
+struct_recv recv_data;
+
 esp_now_peer_info_t peerInfo;
+
+void OnDataRecv(const uint8_t * mac, const uint8_t *incomingData, int len) {
+  memcpy(&recv_data, incomingData, sizeof(recv_data));
+  Serial.printf("Recv data: %d\n", recv_data.value);
+
+  switch(recv_data.value)
+  {
+    case 1:  //end of starting melody
+      start_playing = 0;
+      break;
+    case 2:  //eng of freedom
+      camSerial.write(5);  //start scanning camera and playing music
+      dancer_mes.value = 3;  //dancer will dance by camera
+      break;
+  }
+}
 
 void setup(){
   //init serial
@@ -96,6 +121,8 @@ void setup(){
     Serial.println("Failed to add peer");
     return;
   }
+  
+  esp_now_register_recv_cb(esp_now_recv_cb_t(OnDataRecv));
 
   dancer_mes.value = 0;
   dancer_mes.r_shoulder = 0;
@@ -117,24 +144,25 @@ void loop(){
   if(camSerial.available())
   {
     for(int i=0; i<5; i++)
-      recv_data[i] = 0;
+      serial_data[i] = 0;
     recv_index = 0;
     while(camSerial.available())
     {
-      recv_data[recv_index] = camSerial.read();
+      serial_data[recv_index] = camSerial.read();
       recv_index ++;
     }
 
+    Serial.print("camSerial recieved: ");
     for(int i=0; i<5; i++)
     {
-      Serial.print(recv_data[i]);
+      Serial.print(serial_data[i]);
       Serial.print(" ");
     }
     Serial.println();
 
-    if(recv_data[1] == 0 && recv_data[2] == 0 && recv_data[3] == 0)
+    if(serial_data[1] == 0 && serial_data[2] == 0 && serial_data[3] == 0)  //if there's only one number sent
     {
-      switch(recv_data[0])
+      switch(serial_data[0])
       {
         case 1:
           //start
@@ -160,14 +188,24 @@ void loop(){
             start_done[0] = 1;
             start_done[2] = 0;
             Serial.println("Pianist playing fast");
-          }
-          if(!start_done[2] && !start_playing)
+          } else if(!start_done[2] && !start_playing)
           {
             drummer_mes.song = 2;
             esp_now_send(drummer_addr, (uint8_t *) &drummer_mes, sizeof(drummer_mes));
             start_playing = 1;
             start_done[2] = 1;
             Serial.println("Drummer playing fast");
+          } else if(millis()-timer_start > 5000)  //min time between starting melodies and main songs
+          {
+            //---music starts---
+            drummer_mes.song = 4;
+            esp_now_send(drummer_addr, (uint8_t *) &drummer_mes, sizeof(drummer_mes));
+            dancer_mes.value = 2;
+            esp_now_send(dancer_addr, (uint8_t *) &dancer_mes, sizeof(dancer_mes));
+            curtains_mes.open = 1;
+            esp_now_send(curtains_addr, (uint8_t *) &curtains_mes, sizeof(curtains_mes));
+            progress = 2;
+            Serial.println("Freedom starting");
           }
           break;
         case 3:
@@ -180,14 +218,24 @@ void loop(){
             start_done[1] = 1;
             start_done[3] = 0;
             Serial.println("Pianist playing slow");
-          }
-          if(!start_done[3] && !start_playing)
+          } else if(!start_done[3] && !start_playing)
           {
             drummer_mes.song = 3;
             esp_now_send(drummer_addr, (uint8_t *) &drummer_mes, sizeof(drummer_mes));
             start_playing = 1;
             start_done[3] = 1;
             Serial.println("Drummer playing slow");
+          } else if(millis()-timer_start > 5000)  //min time between starting melodies and main songs
+          {
+            //---music starts---
+            drummer_mes.song = 4;
+            esp_now_send(drummer_addr, (uint8_t *) &drummer_mes, sizeof(drummer_mes));
+            dancer_mes.value = 2;
+            esp_now_send(dancer_addr, (uint8_t *) &dancer_mes, sizeof(dancer_mes));
+            curtains_mes.open = 1;
+            esp_now_send(curtains_addr, (uint8_t *) &curtains_mes, sizeof(curtains_mes));
+            progress = 2;
+            Serial.println("Freedom starting");
           }
           break;
       }
@@ -195,33 +243,20 @@ void loop(){
     {  //sending data to dancer
       if(!start_playing)
       {
-        dancer_mes.r_shoulder = recv_data[0];
-        dancer_mes.r_elbow = recv_data[1];
-        dancer_mes.l_shoulder = recv_data[2];
-        dancer_mes.l_elbow = recv_data[3];
-        dancer_mes.movement = recv_data[4];
+        dancer_mes.r_shoulder = serial_data[0];
+        dancer_mes.r_elbow = serial_data[1];
+        dancer_mes.l_shoulder = serial_data[2];
+        dancer_mes.l_elbow = serial_data[3];
+        dancer_mes.movement = serial_data[4];
         esp_now_send(dancer_addr, (uint8_t *) &dancer_mes, sizeof(dancer_mes));
-        Serial.printf("Dancer dancing %d %d %d %d %d\n", recv_data[0], recv_data[1], recv_data[2], recv_data[3], recv_data[4]);
+        Serial.printf("Dancer dancing %d %d %d %d %d\n", serial_data[0], serial_data[1], serial_data[2], serial_data[3], serial_data[4]);
       }
     }
     Serial.println();
   }
 
-  if(start_done[0] && start_done[1] && start_done[2] && start_done[3] && progress < 2)
-  {
+  if(start_done[0] && start_done[1] && start_done[2] && start_done[3] && progress < 2 && !start_playing)  //all start melodies are done
     timer_start = millis();
-    while(timer_start - millis() < 10000);
-    //---music starts---
-    drummer_mes.song = 4;
-    esp_now_send(drummer_addr, (uint8_t *) &drummer_mes, sizeof(drummer_mes));
-    dancer_mes.value = 2;
-    esp_now_send(dancer_addr, (uint8_t *) &dancer_mes, sizeof(dancer_mes));
-    curtains_mes.open = 1;
-    esp_now_send(curtains_addr, (uint8_t *) &curtains_mes, sizeof(curtains_mes));
-    camSerial.write(5);
-    progress = 2;
-    Serial.println("Music starting");
-  }
 
   if(start_loading && millis() - timer_start > 2000)  //time between the startup and measuring the sensor
   {

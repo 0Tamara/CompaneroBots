@@ -59,6 +59,7 @@ bool miss_out[3] = {0, 0, 0};  //missing out every other step to go slower
 int current_song = 0;
 
 uint8_t pianist_addr[] = {0xA8, 0x42, 0xE3, 0xA8, 0x73, 0x44};  //pianist MAC addr
+uint8_t cam_addr[] = {0xC0, 0x49, 0xEF, 0xD0, 0x8C, 0xC0};  //camera esp MAC addr
 esp_now_peer_info_t peer_info;
 
 typedef struct struct_mes
@@ -66,8 +67,14 @@ typedef struct struct_mes
   byte song;
   byte sync;
 } struct_mes;
+typedef struct struct_cam
+{
+  byte feedback;
+} struct_cam;
+
 struct_mes pianist_mes;
 struct_mes recv_data;
+struct_cam cam_mes;
 
 // Zapína LED na všetkých pásikoch naraz
 void ledky_vedlajsie(uint color) {
@@ -436,10 +443,14 @@ void OnDataRecv(const uint8_t * mac, const uint8_t *incoming_data, int len) {
   if(recv_data.song == 2)
   {
     ledky_vedlajsie(0xFF0000);
+    cam_mes.feedback = 1;
+    esp_now_send(cam_addr, (uint8_t *) &cam_mes, sizeof(cam_mes));
   }
   if(recv_data.song == 3)
   {
     kick_ring_bubon(0x00FF00);
+    cam_mes.feedback = 1;
+    esp_now_send(cam_addr, (uint8_t *) &cam_mes, sizeof(cam_mes));
   }
   if(recv_data.song == 4)
   {
@@ -564,11 +575,17 @@ void setup()
     return;
   }
   //-register peer-
-  memcpy(peer_info.peer_addr, pianist_addr, 6);
   peer_info.channel = 0;  
   peer_info.encrypt = false;
 
   //-add peer-
+  memcpy(peer_info.peer_addr, pianist_addr, 6);
+  if (esp_now_add_peer(&peer_info) != ESP_OK)
+  {
+    Serial.println("Failed to add peer");
+    return;
+  }
+  memcpy(peer_info.peer_addr, cam_addr, 6);
   if (esp_now_add_peer(&peer_info) != ESP_OK)
   {
     Serial.println("Failed to add peer");
@@ -631,19 +648,16 @@ void loop()
     {
       timer_music = millis();
       esp_now_send(pianist_addr, (uint8_t *) &pianist_mes, sizeof(pianist_mes));
-      //freedom();
+      freedom();
       pianist_mes.sync ++;
       if(pianist_mes.sync > 12)
       {
         current_song ++;
         pianist_mes.song = 5;
         pianist_mes.sync = 1;
-        for (int i = 0; i < LED_COUNT_L; i++)
-          left_ring[i] = 0xFF0000;
-        FastLED.show();
-        for (int i = 0; i < LED_COUNT_R; i++)
-          right_ring[i] = 0x000000;
-        FastLED.show();
+
+        cam_mes.feedback = 2;
+        esp_now_send(cam_addr, (uint8_t *) &cam_mes, sizeof(cam_mes));
         while(millis() - timer_music < 2280 + 1000);  //between songs
       }
     }
@@ -654,6 +668,7 @@ void loop()
     {
       timer_music = millis();
       esp_now_send(pianist_addr, (uint8_t *) &pianist_mes, sizeof(pianist_mes));
+      //!!! add fireball bars by old conductor on github !!!
       pianist_mes.sync ++;
       if(pianist_mes.sync > 12)
         current_song ++;

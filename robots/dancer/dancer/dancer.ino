@@ -1,22 +1,29 @@
-#include <BLEDevice.h>
+#include <WiFi.h>
+#include <esp_now.h>
 #include <ESP32Servo.h>
-
-#define bleServerName "Companero"  //name of the BLE server we are connecting to
-//UUIDs of the service and characteristics:
-static BLEUUID serviceUUID("edddc3d6-5d4a-4677-87c5-f4f7d40b6111");
-static BLEUUID musicCharUUID("90c43130-b419-4bfd-bcf4-bb9c8373ddd6");
-
-static BLEAddress* serverAddress;  //address of the device
-static BLERemoteCharacteristic* music_char;  //characteristic for music sync
-//notification options
-const uint8_t notificationOn[] = {0x1, 0x0};
-const uint8_t notificationOff[] = {0x0, 0x0};
-
-static bool serverFound = false;
-static bool connected = false;
 
 int music_command;
 bool go = 0;
+
+uint8_t cam_addr[] = {0xC0, 0x49, 0xEF, 0xD0, 0x8C, 0xC0};  //camera esp MAC addr
+esp_now_peer_info_t peer_info;
+
+typedef struct struct_cam
+{
+  byte feedback;
+} struct_cam;
+typedef struct struct_mes
+{
+  byte value;
+  byte r_shoulder;
+  byte r_elbow;
+  byte l_shoulder;
+  byte l_elbow;
+  byte movement;
+} struct_mes;
+
+struct_mes recv_data;
+struct_cam cam_mes;
 
 Servo rd, rv, lv, ld, r, l;
 
@@ -32,89 +39,30 @@ const int LF_DIR[] = {33, 25}; // Left front direction pins
 
 unsigned long timer_reset;
 
-//---functions for getting notifications---
-static void notifyMusic(BLERemoteCharacteristic* pBLERemoteMusicChar, uint8_t* data, size_t length, bool isNotify)
-{
-  memcpy(&music_command, data, sizeof(music_command));
-  if(music_command == 17)
-    go = 1;
-}
-
-class MyAdvertisedDeviceCallbacks: public BLEAdvertisedDeviceCallbacks  //when found a server
-{
-  void onResult(BLEAdvertisedDevice advertisedDevice)
-  {
-    if(advertisedDevice.getName() == bleServerName)  //check if the server is the right one
-    {
-      advertisedDevice.getScan()->stop();  //stop scanning
-      serverAddress = new BLEAddress(advertisedDevice.getAddress());  //get the server's address
-      serverFound = true;
-      Serial.println(" + Device found. Connecting...");
-    }
-  }
-};
-//---connect to the BLE server---
-bool connectToServer(BLEAddress address)
-{
-  Serial.println("-+-Creating BLE client...");
-  BLEClient* bleClient = BLEDevice::createClient();
-  
-  Serial.println("-+-Attempting connection...");
-  if(!bleClient->connect(address))
-  {
-    Serial.println("-x-Connection failed!");
-    return false;
-  }
-  Serial.println("-+-Connected to server, searching for services...");
-  delay(500);  //time for client to initialize
-  //find service
-  BLERemoteService* remoteService = nullptr;
-  remoteService = bleClient->getService(serviceUUID);
-  if(remoteService == nullptr)
-  {
-    Serial.println("-x-Failed to find service UUID!");
-    return false;
-  }
-  Serial.println("-+-Found service!");
-  //find characteristic
-  music_char = remoteService->getCharacteristic(musicCharUUID);
-  if(music_char == nullptr)
-  {
-    Serial.println("-x-Failed to find music characteristic UUID!");
-    return false;
-  }
-  Serial.println("-+-Found music characteristic!");
-  //turn notifications on
-  music_char->registerForNotify(notifyMusic);
-  music_char->getDescriptor(BLEUUID((uint16_t)0x2902))->writeValue((uint8_t*)notificationOn, 2, true);
-  return true;
-}
-
 void setup() {
-  //restart BLE and flash its memory
-  BLEDevice::deinit(true);
-  delay(500);
-  BLEDevice::init("");
+  Serial.begin(115200);
 
-  //scan for servers
-  BLEScan* pBLEScan = BLEDevice::getScan();
-  pBLEScan->setAdvertisedDeviceCallbacks(new MyAdvertisedDeviceCallbacks());
-  pBLEScan->setActiveScan(true);
-  pBLEScan->start(30);
-  while(!serverFound) delay(20);  //wait till server is found
+  WiFi.mode(WIFI_STA);  //set wifi to station
+  //-init esp-now-
+  if (esp_now_init() != ESP_OK)
+  {
+    Serial.println("Error initializing ESP-NOW");
+    return;
+  }
+  //-register peer-
+  peer_info.channel = 0;  
+  peer_info.encrypt = false;
 
-  if(connectToServer(*serverAddress))
+  //-add peer-
+  memcpy(peer_info.peer_addr, cam_addr, 6);
+  if (esp_now_add_peer(&peer_info) != ESP_OK)
   {
-    Serial.println("-+-Successfully connected to BLE Server!");
-    connected = true;
-    serverFound = false;
+    Serial.println("Failed to add peer");
+    return;
   }
-  else
-  {
-    Serial.println("-x-Connection failed! Restarting...");
-    delay(500);
-    ESP.restart();
-  }
+  
+  //-register recieve callback-
+  esp_now_register_recv_cb(esp_now_recv_cb_t(OnDataRecv));
 
   rd.attach(13);
   rv.attach(12);
@@ -122,7 +70,6 @@ void setup() {
   ld.attach(22);
   r.attach(15);
   l.attach(21);
-  Serial.begin(115200);
 
   for(int i=0; i<2; i++) {
     pinMode(RR_DIR[i], OUTPUT);
