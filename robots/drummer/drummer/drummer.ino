@@ -567,18 +567,23 @@ void setup()
 {
   Serial.begin(115200);
 
-  WiFi.mode(WIFI_STA);  //set wifi to station
+  //-init WiFi & read MAC address-
+  WiFi.mode(WIFI_STA);
+  uint8_t baseMac[6];
+  esp_err_t ret = esp_wifi_get_mac(WIFI_IF_STA, baseMac);
+  Serial.printf("My MAC address: {0x%02X, 0x%02X, 0x%02X, 0x%02X, 0x%02X, 0x%02X}\n",
+                baseMac[0], baseMac[1], baseMac[2],
+                baseMac[3], baseMac[4], baseMac[5]);
   //-init esp-now-
   if (esp_now_init() != ESP_OK)
   {
     Serial.println("Error initializing ESP-NOW");
     return;
   }
-  //-register peer-
+  //-register peers-
   peer_info.channel = 0;  
   peer_info.encrypt = false;
-
-  //-add peer-
+  //-add peers-
   memcpy(peer_info.peer_addr, pianist_addr, 6);
   if (esp_now_add_peer(&peer_info) != ESP_OK)
   {
@@ -591,7 +596,6 @@ void setup()
     Serial.println("Failed to add peer");
     return;
   }
-
   //-register recieve callback-
   esp_now_register_recv_cb(esp_now_recv_cb_t(OnDataRecv));
 
