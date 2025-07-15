@@ -874,8 +874,13 @@ void setup() {
     while (1);
   }
 
-  // Set device as a Wi-Fi Station
+  //init WiFi & read MAC address
   WiFi.mode(WIFI_STA);
+  uint8_t baseMac[6];
+  esp_err_t ret = esp_wifi_get_mac(WIFI_IF_STA, baseMac);
+  Serial.printf("My MAC address: {0x%02X, 0x%02X, 0x%02X, 0x%02X, 0x%02X, 0x%02X}\n",
+                baseMac[0], baseMac[1], baseMac[2],
+                baseMac[3], baseMac[4], baseMac[5]);
 
   // Init ESP-NOW
   if (esp_now_init() != ESP_OK) {
