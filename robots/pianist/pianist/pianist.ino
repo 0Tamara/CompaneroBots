@@ -2,8 +2,9 @@
 #include <FastAccelStepper.h>
 #include <Adafruit_PWMServoDriver.h>
 #include <Wire.h>
-#include <esp_now.h>
 #include <WiFi.h>
+#include <esp_wifi.h>
+#include <esp_now.h>
 
 #define SERVOMIN  125
 #define SERVOMAX  575
