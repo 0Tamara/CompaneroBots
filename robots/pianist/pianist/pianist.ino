@@ -2,8 +2,9 @@
 #include <FastAccelStepper.h>
 #include <Adafruit_PWMServoDriver.h>
 #include <Wire.h>
-#include <esp_now.h>
 #include <WiFi.h>
+#include <esp_wifi.h>
+#include <esp_now.h>
 
 #define SERVOMIN  125
 #define SERVOMAX  575
@@ -32,7 +33,7 @@ typedef struct send_message {
 esp_now_peer_info_t peerInfo;
 
 // Create a struct_message called myData
-uint8_t broadcastAddress[] = {0xC0, 0x49, 0xEF, 0xD0, 0x8C, 0xC0};
+uint8_t camAddr[] = {0xC0, 0x49, 0xEF, 0xD0, 0x8C, 0xC0};
 struct_message myData;
 send_message sendData;
 int targetNoteRight = 0;
@@ -623,7 +624,7 @@ void OnDataRecv(const uint8_t * mac, const uint8_t *incomingData, int len) {
     while(millis() - start <= tempo ){}
     //stvrty takt
     sendData.end = 1;
-    esp_now_send(broadcastAddress, (uint8_t *) &sendData, sizeof(sendData));
+    esp_now_send(camAddr, (uint8_t *) &sendData, sizeof(sendData));
   }
   if(myData.song == 3)
   {
@@ -641,7 +642,8 @@ void OnDataRecv(const uint8_t * mac, const uint8_t *incomingData, int len) {
       positionRight[i] = stupnicaRightAndLeftPosition[i];
     }
     playBar();
-    esp_now_send(broadcastAddress, (uint8_t *) &sendData, sizeof(sendData));
+    sendData.end = 1;
+    esp_now_send(camAddr, (uint8_t *) &sendData, sizeof(sendData));
   }
   if(myData.song == 4)
   {
@@ -850,10 +852,6 @@ void OnDataRecv(const uint8_t * mac, const uint8_t *incomingData, int len) {
   }
 }
 
-void OnDataSent(const uint8_t *mac_addr, esp_now_send_status_t status) {
-  Serial.print("\r\nLast Packet Send Status:\t");
-  Serial.println(status == ESP_NOW_SEND_SUCCESS ? "Delivery Success" : "Delivery Fail");
-}
 void setup() {
   Serial.begin(115200);
   esp_log_level_set("i2c.master", ESP_LOG_NONE);
@@ -887,21 +885,19 @@ void setup() {
     Serial.println("Error initializing ESP-NOW");
     return;
   }
-  esp_now_register_send_cb(OnDataSent);
   
   // Register peer
-  memcpy(peerInfo.peer_addr, broadcastAddress, 6);
-  peerInfo.channel = 0;  
+  peerInfo.channel = 0;
   peerInfo.encrypt = false;
   
-  // Add peer        
+  // Add peer
+  memcpy(peerInfo.peer_addr, camAddr, 6);
   if (esp_now_add_peer(&peerInfo) != ESP_OK){
     Serial.println("Failed to add peer");
     return;
   }
   
-  // Once ESPNow is successfully Init, we will register for recv CB to
-  // get recv packer info
+  // register recv callback
   esp_now_register_recv_cb(esp_now_recv_cb_t(OnDataRecv));
   
   leftHand.stepper->setDirectionPin(leftHandDirPin);
