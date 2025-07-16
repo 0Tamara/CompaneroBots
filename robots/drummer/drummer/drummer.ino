@@ -59,7 +59,7 @@ bool miss_out[3] = {0, 0, 0};  //missing out every other step to go slower
 
 int current_song = 0;
 
-uint8_t pianist_addr[] = {0xA8, 0x42, 0xE3, 0xA8, 0x73, 0x44};  //pianist MAC addr
+uint8_t pianist_addr[] = {0x84, 0x0D, 0x8E, 0xE4, 0xB4, 0x58};  //pianist MAC addr
 uint8_t cam_addr[] = {0xC0, 0x49, 0xEF, 0xD0, 0x8C, 0xC0};  //camera esp MAC addr
 esp_now_peer_info_t peer_info;
 
