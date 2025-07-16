@@ -4,7 +4,7 @@ dancer
     13 right arm (green)
     12 left arm (yellow)
     14 right elbow (green)
-    27 left elbow (yellow)
+    33 left elbow (yellow)
     32 eyes
     motors:
       front right:
@@ -18,9 +18,9 @@ dancer
       rear right:
         19 en
         21 dir
-        33 dir
-      rear left:
         25 dir
+      rear left:
+        26 dir
         22 dir
         23 en
 

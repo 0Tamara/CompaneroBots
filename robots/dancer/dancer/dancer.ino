@@ -3,14 +3,14 @@
 #include <ESP32Servo.h>
 
 //motors
-#define RR_EN 18                  // Right rear enable pin
-const int RR_DIR[] = { 17, 5 };   // Right rear direction pins
-#define LR_EN 2                   // Left rear enable pin
-const int LR_DIR[] = { 16, 4 };   // Left rear direction pins
-#define RF_EN 14                  // Right front enable pin
-const int RF_DIR[] = { 26, 27 };  // Right front direction pins
-#define LF_EN 32                  // Left front enable pin
-const int LF_DIR[] = { 33, 25 };  // Left front direction pins
+#define RR_EN 19                   // Right rear enable pin
+const int RR_DIR[] = { 25, 21 };   // Right rear direction pins
+#define LR_EN 23                   // Left rear enable pin
+const int LR_DIR[] = { 22, 26 };   // Left rear direction pins
+#define RF_EN 2                    // Right front enable pin
+const int RF_DIR[] = { 4, 16 };    // Right front direction pins
+#define LF_EN 18                   // Left front enable pin
+const int LF_DIR[] = { 5, 17 };    // Left front direction pins
 
 //communication
 uint8_t cam_addr[] = { 0xC0, 0x49, 0xEF, 0xD0, 0x8C, 0xC0 };  //camera esp MAC addr
@@ -163,7 +163,7 @@ void setup() {
   rightShoulder.attach(13);
   rightElbow.attach(14);
   leftShoulder.attach(12);
-  leftElbow.attach(27);
+  leftElbow.attach(33);
 
   for (int i = 0; i < 2; i++) {
     pinMode(RR_DIR[i], OUTPUT);
@@ -180,6 +180,7 @@ void setup() {
 
 
 void loop() {
+  
 }
 
 //motor movement
@@ -306,21 +307,21 @@ void arms_down() {
   rightShoulder.write(180);
   rightElbow.write(70);
   leftShoulder.write(0);
-  leftElbow.write(0);
+  leftElbow.write(70);
 }
 
 void arms_horizontally() {
   rightShoulder.write(90);
   rightElbow.write(70);
   leftShoulder.write(90);
-  leftElbow.write(0);
+  leftElbow.write(70);
 }
 
 void arms_up() {
   rightShoulder.write(10);
   rightElbow.write(70);
   leftShoulder.write(150);
-  leftElbow.write(0);
+  leftElbow.write(70);
 }
 
 void wave() {
@@ -331,7 +332,7 @@ void wave() {
 
 
   leftShoulder.write(90);
-  leftElbow.write(0);
+  leftElbow.write(70);
 }
 
 void wave2() {
@@ -345,21 +346,21 @@ void askew() {
   rightShoulder.write(160);
   rightElbow.write(70);
   leftShoulder.write(150);
-  leftElbow.write(0);
+  leftElbow.write(70);
 }
 
 void askew2() {
   rightShoulder.write(30);
   rightElbow.write(70);
   leftShoulder.write(20);
-  leftElbow.write(0);
+  leftElbow.write(70);
 }
 
 void right_hip() {
   rightShoulder.write(140);
   rightElbow.write(120);
   leftShoulder.write(150);
-  leftElbow.write(0);
+  leftElbow.write(70);
 }
 
 void left_hip() {
@@ -373,14 +374,14 @@ void head() {
   rightShoulder.write(60);
   rightElbow.write(20);
   leftShoulder.write(120);
-  leftElbow.write(0);
+  leftElbow.write(70);
 }
 
 void waving() {
   rightShoulder.write(50);
   rightElbow.write(70);
   leftShoulder.write(0);
-  leftElbow.write(0);
+  leftElbow.write(70);
   delay(800);
   rightElbow.write(30);
   delay(800);
