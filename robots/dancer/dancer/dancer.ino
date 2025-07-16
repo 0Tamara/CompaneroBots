@@ -31,8 +31,8 @@ typedef struct struct_mes {
 struct_mes recv_data;
 struct_cam cam_mes;
 
-const int min_delay = 5;
-const int max_delay = 20;
+const int min_delay = 0;
+const int max_delay = 15;
 Servo rightShoulder, leftShoulder, rightElbow, leftElbow;
 
 void servoRamp(byte end, Servo& servo) {
@@ -66,38 +66,32 @@ void servoRamp(byte end, Servo& servo) {
   Serial.println();
 }
 
-void moveAll(byte param1, Servo& servo1, byte param2, Servo& servo2, byte param3, Servo& servo3, byte param4, Servo& servo4) {
+void moveAll(byte end1, Servo& servo1, byte end2, Servo& servo2, byte end3, Servo& servo3, byte end4, Servo& servo4) {
   int t;
   byte start1 = servo1.read() + 1;
   byte start2 = servo2.read() + 1;
   byte start3 = servo3.read() + 1;
   byte start4 = servo4.read() + 1;
+  byte angle1; byte angle2; byte angle3; byte angle4;
   unsigned long timer;
-  if (start < end) {
-    for (int i = start; i <= end; i++) {
-      timer = micros();
-      if (i < ((end - start) / 2) + start)
-        t = map(i, start, (start + end) / 2, max_delay, min_delay);
-      else
-        t = map(i, (start + end) / 2, end, min_delay, max_delay);
+  for (int i = 0; i <= 64; i++)
+  {
+    angle1 = map(i, 0, 64, start1, end1);
+    angle2 = map(i, 0, 64, start2, end2);
+    angle3 = map(i, 0, 64, start3, end3);
+    angle4 = map(i, 0, 64, start4, end4);
+    timer = micros();
+    if (i < 32)
+      t = map(i, 0, 32, max_delay, min_delay);
+    else
+      t = map(i, 32, 64, min_delay, max_delay);
 
-      servo.write(i);
-      delay(t);
-      //Serial.printf("position: %d\tdelay: %d\n", i, t);
-    }
-  } else {
-    for (int i = start; i >= end; i--) {
-      if (i > ((start + end) / 2))
-        t = map(i, start, (start + end) / 2, max_delay, min_delay);
-      else
-        t = map(i, (start + end) / 2, end, min_delay, max_delay);
-
-      servo.write(i);
-      delay(t);
-      //Serial.printf("position: %d\tdelay: %d\n", i, t);
-    }
+    servo1.write(angle1);
+    servo2.write(angle2);
+    servo3.write(angle3);
+    servo4.write(angle4);
+    delay(t);
   }
-  Serial.println();
 }
 
 
@@ -139,12 +133,8 @@ void OnDataRecv(const uint8_t* mac, const uint8_t* incomingData, int len) {
     Serial.printf("Daco sa prijalo, left elbow: %d, left shoulder: %d, right elbow: %d, right shoulder: %d, movement: %d \n",
                   recv_data.l_elbow, recv_data.l_shoulder, recv_data.r_elbow,
                   recv_data.r_shoulder, recv_data.movement);
-    /*
-    servoRamp(180 - recv_data.r_shoulder, rightShoulder);
-    servoRamp(70 + recv_data.r_elbow, rightElbow); // toto je 70 pri nule
-    servoRamp(recv_data.l_elbow, leftElbow); 
-    servoRamp(70 + recv_data.l_shoulder, leftShoulder);
-    */
+                  
+    moveAll(180 - recv_data.r_shoulder, rightShoulder, 70 + recv_data.r_elbow, rightElbow, recv_data.l_elbow, leftElbow, 70 + recv_data.l_shoulder, leftShoulder);
   }
 }
 void setup() {
@@ -185,6 +175,7 @@ void setup() {
   ledcAttachChannel(LR_EN, 1000, 8, 1);
   ledcAttachChannel(RF_EN, 1000, 8, 1);
   ledcAttachChannel(LF_EN, 1000, 8, 1);
+  arms_down();
 }
 
 
