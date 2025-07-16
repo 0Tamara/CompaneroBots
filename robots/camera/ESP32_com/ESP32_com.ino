@@ -22,7 +22,7 @@ HardwareSerial camSerial(2);
 //MAC addr:
 uint8_t dancer_addr[] = {0xA0, 0xDD, 0x6C, 0x0F, 0x79, 0x38};
 uint8_t drummer_addr[] = {0xA0, 0xA3, 0xB3, 0xFE, 0xD7, 0xC4};
-uint8_t pianist_addr[] = {0xA8, 0x42, 0xE3, 0xA8, 0x73, 0x44};
+uint8_t pianist_addr[] = {0x84, 0x0D, 0x8E, 0xE4, 0xB4, 0x58};
 uint8_t curtains_addr[] = {0x10, 0x06, 0x1C, 0x68, 0x42, 0x7C};
 
 typedef struct struct_dancer
@@ -124,7 +124,7 @@ void setup(){
   //register recieve callback
   esp_now_register_recv_cb(esp_now_recv_cb_t(OnDataRecv));
 
-  dancer_mes.value = 3;
+  dancer_mes.value = 0;
   dancer_mes.r_shoulder = 0;
   dancer_mes.r_elbow = 0;
   dancer_mes.l_shoulder = 0;
@@ -195,7 +195,7 @@ void loop(){
             start_playing = 1;
             start_done[2] = 1;
             Serial.println("Drummer playing fast");
-          } else if(millis()-timer_start > 5000)  //min time between starting melodies and main songs
+          } else if(millis()-timer_start > 5000 && start_done[1] && start_done[3])  //min time between starting melodies and main songs
           {
             //---music starts---
             drummer_mes.song = 4;
@@ -225,7 +225,7 @@ void loop(){
             start_playing = 1;
             start_done[3] = 1;
             Serial.println("Drummer playing slow");
-          } else if(millis()-timer_start > 5000)  //min time between starting melodies and main songs
+          } else if(millis()-timer_start > 5000 && start_done[0] && start_done[2])  //min time between starting melodies and main songs
           {
             //---music starts---
             drummer_mes.song = 4;
@@ -250,10 +250,6 @@ void loop(){
         dancer_mes.movement = serial_data[4];
         esp_now_send(dancer_addr, (uint8_t *) &dancer_mes, sizeof(dancer_mes));
         Serial.printf("Dancer dancing %d %d %d %d %d\n", serial_data[0], serial_data[1], serial_data[2], serial_data[3], serial_data[4]);
-
-        timer_start = millis();
-        start_loading = 1;
-        start_playing = 1;
       }
     }
     Serial.println();
