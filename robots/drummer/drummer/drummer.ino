@@ -653,7 +653,9 @@ void loop()
     {
       timer_music = millis();
       esp_now_send(pianist_addr, (uint8_t *) &pianist_mes, sizeof(pianist_mes));
-      freedom();
+      if(5 <= pianist_mes && pianist_mes <= 12);
+        freedom();
+
       pianist_mes.sync ++;
       if(pianist_mes.sync > 12)
       {
@@ -673,7 +675,16 @@ void loop()
     {
       timer_music = millis();
       esp_now_send(pianist_addr, (uint8_t *) &pianist_mes, sizeof(pianist_mes));
-      //!!! add fireball bars by old conductor on github !!!
+      if(1 <= pianist_mes && pianist_mes <= 14)
+        fireball_clapping();
+      if(17 <= pianist_mes && pianist_mes <= 23)
+        fireball_drop();
+      if(25 <= pianist_mes && pianist_mes <= 27)
+        fireball_bass();
+      if(29 <= pianist_mes && pianist_mes <= 31)
+        fireball_bass();
+      if(33 <= pianist_mes && pianist_mes <= 46)
+        fireball_chill();
       pianist_mes.sync ++;
       if(pianist_mes.sync > 12)
         current_song ++;
