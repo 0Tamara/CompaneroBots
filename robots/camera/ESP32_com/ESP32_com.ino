@@ -75,7 +75,9 @@ void OnDataRecv(const uint8_t * mac, const uint8_t *incomingData, int len) {
       break;
     case 3:  //end of all songs      
       curtains_mes.open = 0;
+      dancer_mes.value = 4;
       esp_now_send(curtains_addr, (uint8_t *) &curtains_mes, sizeof(curtains_mes));
+      esp_now_send(dancer_addr, (uint8_t *) &dancer_mes, sizeof(dancer_mes));
       break;
   }
 }

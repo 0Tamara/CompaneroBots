@@ -625,8 +625,6 @@ void setup()
   FastLED.addLeds<WS2811, LED_PIN_R, GRB>(right_ring, LED_COUNT_R);
   FastLED.addLeds<WS2811, LED_PIN_EYES, GRB>(eyes, LED_COUNT_EYES);
 
-  FastLED.setBrightness(32);  //---temporary!!!
-
   for (int i = 0; i < 54; i++) {
     if (i < LED_COUNT_R) right_ring[i] = 0x808080;
     if (i < LED_COUNT_L) left_ring[i] = 0x808080;
@@ -634,7 +632,6 @@ void setup()
   }
   FastLED.show();
 
-  openEyes(color_eyes);
   delay(100);
   for (int i = 0; i < 54; i++) {
     if (i < LED_COUNT_R) right_ring[i] = 0x000000;
@@ -642,7 +639,6 @@ void setup()
     if (i < LED_COUNT_K) kick_ring[i] = 0x000000;
   }
   FastLED.show();
-  delay(2000);
 }
 
 void loop()
@@ -665,7 +661,7 @@ void loop()
 
         cam_mes.feedback = 2;
         esp_now_send(cam_addr, (uint8_t *) &cam_mes, sizeof(cam_mes));
-        while(millis() - timer_music < 2280 + 1000);  //between songs
+        while(millis() - timer_music < 2280 + 9500);  //between songs
       }
     }
   }
@@ -686,7 +682,7 @@ void loop()
       if(33 <= pianist_mes.sync && pianist_mes.sync <= 46)
         fireball_chill();
       pianist_mes.sync ++;
-      if(pianist_mes.sync > 12)
+      if(pianist_mes.sync > 46)
       {
         current_song ++;
         cam_mes.feedback = 3;

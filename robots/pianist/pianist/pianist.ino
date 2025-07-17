@@ -749,7 +749,7 @@ void OnDataRecv(const uint8_t * mac, const uint8_t *incomingData, int len) {
   {
     if(myData.time == 1)
     {
-      tempo = 1950; 
+      tempo = 2100; 
       sest = tempo / 16; 
       for(int i=0; i<16; i++)
       {
