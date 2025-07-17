@@ -653,7 +653,7 @@ void loop()
     {
       timer_music = millis();
       esp_now_send(pianist_addr, (uint8_t *) &pianist_mes, sizeof(pianist_mes));
-      if(5 <= pianist_mes && pianist_mes <= 12);
+      if(5 <= pianist_mes.sync && pianist_mes.sync <= 12);
         freedom();
 
       pianist_mes.sync ++;
@@ -671,23 +671,27 @@ void loop()
   }
   if(current_song == 2)
   {
-    if((millis()-timer_music) >= 1950)
+    if((millis()-timer_music) >= 2100)
     {
       timer_music = millis();
       esp_now_send(pianist_addr, (uint8_t *) &pianist_mes, sizeof(pianist_mes));
-      if(1 <= pianist_mes && pianist_mes <= 14)
+      if(1 <= pianist_mes.sync && pianist_mes.sync <= 14)
         fireball_clapping();
-      if(17 <= pianist_mes && pianist_mes <= 23)
+      if(17 <= pianist_mes.sync && pianist_mes.sync <= 23)
         fireball_drop();
-      if(25 <= pianist_mes && pianist_mes <= 27)
+      if(25 <= pianist_mes.sync && pianist_mes.sync <= 27)
         fireball_bass();
-      if(29 <= pianist_mes && pianist_mes <= 31)
+      if(29 <= pianist_mes.sync && pianist_mes.sync <= 31)
         fireball_bass();
-      if(33 <= pianist_mes && pianist_mes <= 46)
+      if(33 <= pianist_mes.sync && pianist_mes.sync <= 46)
         fireball_chill();
       pianist_mes.sync ++;
       if(pianist_mes.sync > 12)
+      {
         current_song ++;
+        cam_mes.feedback = 3;
+        esp_now_send(cam_addr, (uint8_t *) &cam_mes, sizeof(cam_mes));
+      }
     }
   }
 }

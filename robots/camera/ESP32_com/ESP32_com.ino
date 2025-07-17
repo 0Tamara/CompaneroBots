@@ -73,6 +73,10 @@ void OnDataRecv(const uint8_t * mac, const uint8_t *incomingData, int len) {
       camSerial.write(5);  //start scanning camera and playing music
       dancer_mes.value = 3;  //dancer will dance by camera
       break;
+    case 3:  //end of all songs      
+      curtains_mes.open = 0;
+      esp_now_send(curtains_addr, (uint8_t *) &curtains_mes, sizeof(curtains_mes));
+      break;
   }
 }
 
