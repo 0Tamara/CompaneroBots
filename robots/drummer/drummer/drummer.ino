@@ -629,6 +629,7 @@ void setup()
     if (i < LED_COUNT_R) right_ring[i] = 0x808080;
     if (i < LED_COUNT_L) left_ring[i] = 0x808080;
     if (i < LED_COUNT_K) kick_ring[i] = 0x808080;
+    if (i < LED_COUNT_EYES) eyes[i] = 0x808080;
   }
   FastLED.show();
 
@@ -637,6 +638,7 @@ void setup()
     if (i < LED_COUNT_R) right_ring[i] = 0x000000;
     if (i < LED_COUNT_L) left_ring[i] = 0x000000;
     if (i < LED_COUNT_K) kick_ring[i] = 0x000000;
+    if (i < LED_COUNT_EYES) eyes[i] = 0x000000;
   }
   FastLED.show();
 }

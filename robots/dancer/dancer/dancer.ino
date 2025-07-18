@@ -1,6 +1,7 @@
 #include <WiFi.h>
 #include <esp_now.h>
 #include <ESP32Servo.h>
+#include <FastLED.h>
 
 //motors
 #define RR_EN 19                   // Right rear enable pin
@@ -11,6 +12,13 @@ const int LR_DIR[] = { 22, 26 };   // Left rear direction pins
 const int RF_DIR[] = { 4, 16 };    // Right front direction pins
 #define LF_EN 18                   // Left front enable pin
 const int LF_DIR[] = { 5, 17 };    // Left front direction pins
+
+
+#define LED_PIN_EYES 32
+#define LED_COUNT_EYES 50
+CRGB eyes[LED_COUNT_EYES];
+TaskHandle_t Task1;
+uint color_eyes = 0xFF00FF;
 
 //communication
 uint8_t cam_addr[] = { 0xC0, 0x49, 0xEF, 0xD0, 0x8C, 0xC0 };  //camera esp MAC addr
@@ -35,6 +43,77 @@ const int min_delay = 0;
 const int max_delay = 15;
 Servo rightShoulder, leftShoulder, rightElbow, leftElbow;
 
+//---eyes functions---
+void closeEyes()  //cca 300ms
+{
+  // Blink LEDs in reverse order (off in sections)
+  for (int i = 20; i < 25; i++) eyes[i] = 0x000000; // Left eye
+  for (int i = 45; i < 50; i++) eyes[i] = 0x000000; // Right eye
+  FastLED.show();
+
+  delay(50);
+
+  // Now let's go down the LED sections
+  for (int i = 15; i < 20; i++) eyes[i] = 0x000000;
+  for (int i = 40; i < 45; i++) eyes[i] = 0x000000;
+  FastLED.show();
+
+  delay(50);
+
+  for (int i = 10; i < 15; i++) eyes[i] = 0x000000;
+  for (int i = 35; i < 40; i++) eyes[i] = 0x000000;
+  FastLED.show();
+
+  delay(50);
+
+  for (int i = 5; i < 10; i++) eyes[i] = 0x000000;
+  for (int i = 30; i < 35; i++) eyes[i] = 0x000000;
+  FastLED.show();
+
+  delay(50);
+
+  for (int i = 0; i < 5; i++) eyes[i] = 0x000000;
+  for (int i = 25; i < 30; i++) eyes[i] = 0x000000;
+  FastLED.show();
+
+  delay(50);
+}
+
+void openEyes(uint color)  //cca 300ms
+{
+  // Blink LEDs in reverse order (turning LEDs back on)
+  for (int i = 0; i < 5; i++) eyes[i] = color; // Left eye
+  for (int i = 25; i < 30; i++) eyes[i] = color; // Right eye
+  FastLED.show();
+
+  delay(50);
+
+  for (int i = 5; i < 10; i++) eyes[i] = color;
+  for (int i = 30; i < 35; i++) eyes[i] = color;
+  FastLED.show();
+
+  delay(50);
+
+  for (int i = 10; i < 15; i++) eyes[i] = color;
+  for (int i = 35; i < 40; i++) eyes[i] = color;
+  FastLED.show();
+
+  delay(50);
+
+  for (int i = 15; i < 20; i++) eyes[i] = color;
+  for (int i = 40; i < 45; i++) eyes[i] = color;
+  FastLED.show();
+
+  delay(50);
+
+  for (int i = 20; i < 25; i++) eyes[i] = color;
+  for (int i = 45; i < 50; i++) eyes[i] = color;
+  FastLED.show();
+
+  delay(50);
+}
+
+//---servo functions---
 void servoRamp(byte end, Servo& servo) {
   int t;
   byte start = servo.read() + 1;
@@ -137,6 +216,17 @@ void OnDataRecv(const uint8_t* mac, const uint8_t* incomingData, int len) {
     moveAll(180 - recv_data.r_shoulder, rightShoulder, 70 + recv_data.r_elbow, rightElbow, recv_data.l_elbow, leftElbow, 70 + recv_data.l_shoulder, leftShoulder);
   }
 }
+
+void loop_2(void* parameter)
+{
+  while(true)
+  {
+    closeEyes();
+    openEyes(color_eyes);
+    delay(5000);
+  }
+}
+
 void setup() {
   Serial.begin(115200);
   // communication
@@ -159,7 +249,21 @@ void setup() {
   //-register recieve callback-
   esp_now_register_recv_cb(esp_now_recv_cb_t(OnDataRecv));
 
+  //-create loop 2-
+  xTaskCreatePinnedToCore(
+    loop_2, /* Function to implement the task */
+    "Task1", /* Name of the task */
+    10000,  /* Stack size in words */
+    NULL,  /* Task input parameter */
+    0,  /* Priority of the task */
+    &Task1,  /* Task handle. */
+    0); /* Core where the task should run */
+
   // hardware init
+  FastLED.addLeds<WS2811, LED_PIN_EYES, GRB>(eyes, LED_COUNT_EYES);
+  for (int i = 0; i < 50; i++)
+    eyes[i] = 0x000000;
+  FastLED.show();
   rightShoulder.attach(13);
   rightElbow.attach(14);
   leftShoulder.attach(12);
