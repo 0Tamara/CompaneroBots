@@ -178,10 +178,12 @@ unsigned long timer_reset;
 void OnDataRecv(const uint8_t* mac, const uint8_t* incomingData, int len) {
   
   memcpy(&recv_data, incomingData, sizeof(recv_data));
-  if (recv_data.value == 1) {
-    //zapneme ledky
-    Serial.printf("Prijala sa: %d\n", recv_data.value);
+  if (recv_data.value == 12) {
+    Serial.printf("Prijala sa: %d, spustam natvrdo pohyb\n", recv_data.value);
     //natvrdo tancuje
+    forward(255);
+    delay(5000);
+    stop();
     arms_up();
     delay(1000);
     arms_horizontally();
@@ -205,10 +207,7 @@ void OnDataRecv(const uint8_t* mac, const uint8_t* incomingData, int len) {
     waving();
     delay(1000);
   }
-  if (recv_data.value == 2) {
-    Serial.printf("Prijala sa: %d, spustam natvrdo pohyb\n", recv_data.value);
-  }
-  if (recv_data.value == 3) {
+  if (recv_data.value == 13) {
     Serial.printf("Daco sa prijalo, left elbow: %d, left shoulder: %d, right elbow: %d, right shoulder: %d, movement: %d \n",
                   recv_data.l_elbow, recv_data.l_shoulder, recv_data.r_elbow,
                   recv_data.r_shoulder, recv_data.movement);
