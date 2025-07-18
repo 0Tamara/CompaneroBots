@@ -42,9 +42,6 @@ struct_cam cam_mes;
 const int min_delay = 0;
 const int max_delay = 15;
 Servo rightShoulder, leftShoulder, rightElbow, leftElbow;
-<<<<<<< HEAD
-/*
-=======
 
 //---eyes functions---
 void closeEyes()  //cca 300ms
@@ -117,7 +114,6 @@ void openEyes(uint color)  //cca 300ms
 }
 
 //---servo functions---
->>>>>>> 7377959489c063eaa5272a736a6211aef90a0827
 void servoRamp(byte end, Servo& servo) {
   int t;
   byte start = servo.read() + 1;
@@ -216,14 +212,25 @@ void OnDataRecv(const uint8_t* mac, const uint8_t* incomingData, int len) {
     Serial.printf("Daco sa prijalo, left elbow: %d, left shoulder: %d, right elbow: %d, right shoulder: %d, movement: %d \n",
                   recv_data.l_elbow, recv_data.l_shoulder, recv_data.r_elbow,
                   recv_data.r_shoulder, recv_data.movement);
+
+
+    if(recv_data.r_elbow < 90)
+      recv_data.r_elbow = 0;
+    else
+      recv_data.r_elbow -= 90;
+    if(recv_data.l_elbow < 90)
+      recv_data.l_elbow = 0;
+    else
+      recv_data.l_elbow -= 90;
+    if(recv_data.r_elbow > 180)
+      recv_data.r_elbow = 180;
+    if(recv_data.l_elbow > 180)
+      recv_data.l_elbow = 180;
                   
-    moveAll(recv_data.r_shoulder, rightShoulder, 70 + recv_data.r_elbow, rightElbow, recv_data.l_elbow, leftElbow, 70 + recv_data.l_shoulder, leftShoulder);
+    moveAll(180 - recv_data.r_shoulder, rightShoulder, /*180 - recv_data.r_elbow*/70, rightElbow, /*180 - recv_data.l_elbow*/70, leftElbow, recv_data.l_shoulder, leftShoulder);
   }
   
 }
-<<<<<<< HEAD
-*/
-=======
 
 void loop_2(void* parameter)
 {
@@ -234,12 +241,11 @@ void loop_2(void* parameter)
     delay(5000);
   }
 }
->>>>>>> 7377959489c063eaa5272a736a6211aef90a0827
 
 void setup() {
   Serial.begin(115200);
   // communication
-  /*
+  
   WiFi.mode(WIFI_STA);  //set wifi to station
   //-init esp-now-
   if (esp_now_init() != ESP_OK) {
@@ -258,9 +264,7 @@ void setup() {
   }
   //-register recieve callback-
   esp_now_register_recv_cb(esp_now_recv_cb_t(OnDataRecv));
-<<<<<<< HEAD
-  */
-=======
+  
 
   //-create loop 2-
   xTaskCreatePinnedToCore(
@@ -272,7 +276,6 @@ void setup() {
     &Task1,  /* Task handle. */
     0); /* Core where the task should run */
 
->>>>>>> 7377959489c063eaa5272a736a6211aef90a0827
   // hardware init
   FastLED.addLeds<WS2811, LED_PIN_EYES, GRB>(eyes, LED_COUNT_EYES);
   for (int i = 0; i < 50; i++)
@@ -281,12 +284,9 @@ void setup() {
   rightShoulder.attach(13);
   rightElbow.attach(14);
   leftShoulder.attach(12);
-<<<<<<< HEAD
   leftElbow.attach(27);
-=======
   leftElbow.attach(33);
 
->>>>>>> 7377959489c063eaa5272a736a6211aef90a0827
   for (int i = 0; i < 2; i++) {
     pinMode(RR_DIR[i], OUTPUT);
     pinMode(LR_DIR[i], OUTPUT);
@@ -301,58 +301,6 @@ void setup() {
 
 
 void loop() {
-<<<<<<< HEAD
-  //hore
-  for (int  i = 0; i < 180; i++)
-  {
-    rightElbow.write(i);
-    Serial.printf("Serv rightElbow  na uhle: %d \n", i);
-    delay(50);
-  }
-  delay(1000);
-  //dole
-  for (int  i = 180; i > 0; i--)
-  {
-    rightElbow.write(i);
-    Serial.printf("Serv rightElbow  na uhle: %d \n", i);
-    delay(50);
-  }
-  delay(1000);
-  //hore
-  for (int  i = 0; i < 180; i++)
-  {
-    leftShoulder.write(i);
-    Serial.printf("Serv leftShoulder  na uhle: %d \n", i);
-    delay(50);
-  }
-  delay(1000);
-  //dole
-  for (int i = 180; i > 0; i--)
-  {
-    leftShoulder.write(i);
-    Serial.printf("Serv leftShoulder  na uhle: %d \n", i);
-    delay(50);
-  }
-  delay(1000);
-  //hore
-  for (int  i = 0; i < 180; i++)
-  {
-    leftElbow.write(i);
-    Serial.printf("Serv leftShoulder  na uhle: %d \n", i);
-    delay(50);
-  }
-  delay(1000);
-  //dole
-  for (int  i = 180; i > 0; i--)
-  {
-    leftElbow.write(i);
-    Serial.printf("Serv leftShoulder  na uhle: %d \n", i);
-    delay(50);
-  } 
-  delay(1000);
-=======
-  
->>>>>>> 7377959489c063eaa5272a736a6211aef90a0827
 }
 
 //motor movement
