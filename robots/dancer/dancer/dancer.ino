@@ -34,7 +34,7 @@ struct_cam cam_mes;
 const int min_delay = 0;
 const int max_delay = 15;
 Servo rightShoulder, leftShoulder, rightElbow, leftElbow;
-
+/*
 void servoRamp(byte end, Servo& servo) {
   int t;
   byte start = servo.read() + 1;
@@ -96,8 +96,8 @@ void moveAll(byte end1, Servo& servo1, byte end2, Servo& servo2, byte end3, Serv
 
 
 unsigned long timer_reset;
-
 void OnDataRecv(const uint8_t* mac, const uint8_t* incomingData, int len) {
+  
   memcpy(&recv_data, incomingData, sizeof(recv_data));
   if (recv_data.value == 1) {
     //zapneme ledky
@@ -134,12 +134,16 @@ void OnDataRecv(const uint8_t* mac, const uint8_t* incomingData, int len) {
                   recv_data.l_elbow, recv_data.l_shoulder, recv_data.r_elbow,
                   recv_data.r_shoulder, recv_data.movement);
                   
-    moveAll(180 - recv_data.r_shoulder, rightShoulder, 70 + recv_data.r_elbow, rightElbow, recv_data.l_elbow, leftElbow, 70 + recv_data.l_shoulder, leftShoulder);
+    moveAll(recv_data.r_shoulder, rightShoulder, 70 + recv_data.r_elbow, rightElbow, recv_data.l_elbow, leftElbow, 70 + recv_data.l_shoulder, leftShoulder);
   }
+  
 }
+*/
+
 void setup() {
   Serial.begin(115200);
   // communication
+  /*
   WiFi.mode(WIFI_STA);  //set wifi to station
   //-init esp-now-
   if (esp_now_init() != ESP_OK) {
@@ -158,13 +162,12 @@ void setup() {
   }
   //-register recieve callback-
   esp_now_register_recv_cb(esp_now_recv_cb_t(OnDataRecv));
-
+  */
   // hardware init
   rightShoulder.attach(13);
   rightElbow.attach(14);
   leftShoulder.attach(12);
   leftElbow.attach(27);
-
   for (int i = 0; i < 2; i++) {
     pinMode(RR_DIR[i], OUTPUT);
     pinMode(LR_DIR[i], OUTPUT);
@@ -175,11 +178,58 @@ void setup() {
   ledcAttachChannel(LR_EN, 1000, 8, 1);
   ledcAttachChannel(RF_EN, 1000, 8, 1);
   ledcAttachChannel(LF_EN, 1000, 8, 1);
-  arms_down();
 }
 
 
 void loop() {
+  //hore
+  for (int  i = 0; i < 180; i++)
+  {
+    rightElbow.write(i);
+    Serial.printf("Serv rightElbow  na uhle: %d \n", i);
+    delay(50);
+  }
+  delay(1000);
+  //dole
+  for (int  i = 180; i > 0; i--)
+  {
+    rightElbow.write(i);
+    Serial.printf("Serv rightElbow  na uhle: %d \n", i);
+    delay(50);
+  }
+  delay(1000);
+  //hore
+  for (int  i = 0; i < 180; i++)
+  {
+    leftShoulder.write(i);
+    Serial.printf("Serv leftShoulder  na uhle: %d \n", i);
+    delay(50);
+  }
+  delay(1000);
+  //dole
+  for (int i = 180; i > 0; i--)
+  {
+    leftShoulder.write(i);
+    Serial.printf("Serv leftShoulder  na uhle: %d \n", i);
+    delay(50);
+  }
+  delay(1000);
+  //hore
+  for (int  i = 0; i < 180; i++)
+  {
+    leftElbow.write(i);
+    Serial.printf("Serv leftShoulder  na uhle: %d \n", i);
+    delay(50);
+  }
+  delay(1000);
+  //dole
+  for (int  i = 180; i > 0; i--)
+  {
+    leftElbow.write(i);
+    Serial.printf("Serv leftShoulder  na uhle: %d \n", i);
+    delay(50);
+  } 
+  delay(1000);
 }
 
 //motor movement

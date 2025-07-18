@@ -42,7 +42,6 @@ int targetNoteLeft = 0;
 int targetOctaveLeft = 0;
 int stepsRight = 0;
 int stepsLeft = 0;
-unsigned long timeBeforeMoving = 0;
 int timeFromMoving = 0;
 int tempo = 2280;
 int sest = tempo / 16; 
@@ -532,7 +531,6 @@ void playBar(){
   stepsLeft = stepsPerNote * targetNoteLeft + stepsPerNote * (targetOctaveLeft - 1);
   rightHand.stepper->moveTo(stepsRight);
   leftHand.stepper->moveTo(stepsLeft);
-  timeBeforeMoving = millis();
   for (int i = 0; i < 16; i++)
   {
     int wait = sest;
@@ -625,6 +623,7 @@ void OnDataRecv(const uint8_t * mac, const uint8_t *incomingData, int len) {
     //stvrty takt
     sendData.end = 1;
     esp_now_send(camAddr, (uint8_t *) &sendData, sizeof(sendData));
+    Serial.printf("Data sended: %d\n",sendData.end );
   }
   if(myData.song == 3)
   {
@@ -644,6 +643,7 @@ void OnDataRecv(const uint8_t * mac, const uint8_t *incomingData, int len) {
     playBar();
     sendData.end = 1;
     esp_now_send(camAddr, (uint8_t *) &sendData, sizeof(sendData));
+    Serial.printf("Data sended: %d\n",sendData.end );
   }
   if(myData.song == 4)
   {
@@ -839,6 +839,7 @@ void OnDataRecv(const uint8_t * mac, const uint8_t *incomingData, int len) {
     }
     if(myData.time == 12)
     {
+      start = millis();
       rightHand.stepper->moveTo(stepsPerOctave * 2);
       while (rightHand.stepper->isRunning()) 
       {
@@ -847,6 +848,7 @@ void OnDataRecv(const uint8_t * mac, const uint8_t *incomingData, int len) {
       while (leftHand.stepper->isRunning()) 
       {
       }
+      while(millis() - start <= tempo){}
     }
     playBar();
   }
@@ -918,66 +920,4 @@ void setup() {
 }
 
 void loop() {
-  /*
-  start = millis();
-  tempo = 890; 
-  sest = tempo / 16; 
-  for(int i=0; i<16; i++)
-  {
-    barLeft[i] = osudovaRightAndLeft1[i];
-    barRight[i] = osudovaRightAndLeft1[i];
-  }
-  for(int i=0; i<2; i++) 
-  {
-    positionLeft[i] = osudovaRightAndLeftPosition[i];
-    positionRight[i] = osudovaRightAndLeftPosition[i];
-  }
-  playBar();
-  while(millis() - start <= tempo ){}
-  //prvy takt
-  start = millis();
-  for(int i=0; i<16; i++)
-  {
-    barLeft[i] = osudovaRightAndLeft2[i];
-    barRight[i] =osudovaRightAndLeft2[i];
-  }
-  playBar();
-  while(millis() - start <= tempo ){}
-  //druhy takt
-  start = millis();
-  for(int i=0; i<16; i++)
-  {
-    barLeft[i] = osudovaRightAndLeft3[i];
-    barRight[i] =osudovaRightAndLeft3[i];
-  }
-  playBar();
-  while(millis() - start <= tempo ){}
-  //treti takt
-  start = millis();
-  for(int i=0; i<16; i++)
-  {
-    barLeft[i] = osudovaRightAndLeft4[i];
-    barRight[i] =osudovaRightAndLeft4[i];
-  }
-  playBar();
-  while(millis() - start <= tempo ){}
-  //stvrty takt
-  start = millis();
-  tempo == 5830;
-  sest = tempo / 16;
-  for(int i=0; i<16; i++)
-  {
-    barLeft[i] = stupnicaRightAndLeft[i];
-    barRight[i] = stupnicaRightAndLeft[i];
-  }
-  for(int i=0; i<2; i++)
-  {
-    positionLeft[i] = stupnicaRightAndLeftPosition[i];
-    positionRight[i] = stupnicaRightAndLeftPosition[i];
-  }
-  playBar();
-  while(millis() - start <= tempo){}
-
-  delay(5000);
-  */
 }
