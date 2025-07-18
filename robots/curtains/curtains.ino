@@ -2,8 +2,8 @@
 #include <esp_wifi.h>
 #include <esp_now.h>
 
-#define MOTOR_1 12
-#define MOTOR_2 13
+#define MOTOR_1 13
+#define MOTOR_2 12
 
 typedef struct struct_recv
 {

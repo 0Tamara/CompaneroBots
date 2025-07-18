@@ -4,7 +4,7 @@ dancer
     13 right arm (green)
     12 left arm (yellow)
     14 right elbow (green)
-    27 left elbow (yellow)
+    33 left elbow (yellow)
     32 eyes
     motors:
       front right:
@@ -18,9 +18,9 @@ dancer
       rear right:
         19 en
         21 dir
-        33 dir
-      rear left:
         25 dir
+      rear left:
+        26 dir
         22 dir
         23 en
 
@@ -36,7 +36,7 @@ drummer
     23 eyes
 
 pianist
-  ESP32 MAC addr: {0xA8, 0x42, 0xE3, 0xA8, 0x73, 0x44}
+  ESP32 MAC addr: {0x84, 0x0D, 0x8E, 0xE4, 0xB4, 0x58}
   pins:
     left stepper motor:
       5 step

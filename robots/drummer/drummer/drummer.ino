@@ -59,7 +59,7 @@ bool miss_out[3] = {0, 0, 0};  //missing out every other step to go slower
 
 int current_song = 0;
 
-uint8_t pianist_addr[] = {0xA8, 0x42, 0xE3, 0xA8, 0x73, 0x44};  //pianist MAC addr
+uint8_t pianist_addr[] = {0x84, 0x0D, 0x8E, 0xE4, 0xB4, 0x58};  //pianist MAC addr
 uint8_t cam_addr[] = {0xC0, 0x49, 0xEF, 0xD0, 0x8C, 0xC0};  //camera esp MAC addr
 esp_now_peer_info_t peer_info;
 
@@ -625,24 +625,22 @@ void setup()
   FastLED.addLeds<WS2811, LED_PIN_R, GRB>(right_ring, LED_COUNT_R);
   FastLED.addLeds<WS2811, LED_PIN_EYES, GRB>(eyes, LED_COUNT_EYES);
 
-  FastLED.setBrightness(32);  //---temporary!!!
-
   for (int i = 0; i < 54; i++) {
     if (i < LED_COUNT_R) right_ring[i] = 0x808080;
     if (i < LED_COUNT_L) left_ring[i] = 0x808080;
     if (i < LED_COUNT_K) kick_ring[i] = 0x808080;
+    if (i < LED_COUNT_EYES) eyes[i] = 0x808080;
   }
   FastLED.show();
 
-  openEyes(color_eyes);
   delay(100);
   for (int i = 0; i < 54; i++) {
     if (i < LED_COUNT_R) right_ring[i] = 0x000000;
     if (i < LED_COUNT_L) left_ring[i] = 0x000000;
     if (i < LED_COUNT_K) kick_ring[i] = 0x000000;
+    if (i < LED_COUNT_EYES) eyes[i] = 0x000000;
   }
   FastLED.show();
-  delay(2000);
 }
 
 void loop()
@@ -653,7 +651,9 @@ void loop()
     {
       timer_music = millis();
       esp_now_send(pianist_addr, (uint8_t *) &pianist_mes, sizeof(pianist_mes));
-      freedom();
+      if(5 <= pianist_mes.sync && pianist_mes.sync <= 12);
+        freedom();
+
       pianist_mes.sync ++;
       if(pianist_mes.sync > 12)
       {
@@ -663,20 +663,33 @@ void loop()
 
         cam_mes.feedback = 2;
         esp_now_send(cam_addr, (uint8_t *) &cam_mes, sizeof(cam_mes));
-        while(millis() - timer_music < 2280 + 1000);  //between songs
+        while(millis() - timer_music < 2280 + 9500);  //between songs
       }
     }
   }
   if(current_song == 2)
   {
-    if((millis()-timer_music) >= 1950)
+    if((millis()-timer_music) >= 2100)
     {
       timer_music = millis();
       esp_now_send(pianist_addr, (uint8_t *) &pianist_mes, sizeof(pianist_mes));
-      //!!! add fireball bars by old conductor on github !!!
+      if(1 <= pianist_mes.sync && pianist_mes.sync <= 14)
+        fireball_clapping();
+      if(17 <= pianist_mes.sync && pianist_mes.sync <= 23)
+        fireball_drop();
+      if(25 <= pianist_mes.sync && pianist_mes.sync <= 27)
+        fireball_bass();
+      if(29 <= pianist_mes.sync && pianist_mes.sync <= 31)
+        fireball_bass();
+      if(33 <= pianist_mes.sync && pianist_mes.sync <= 46)
+        fireball_chill();
       pianist_mes.sync ++;
-      if(pianist_mes.sync > 12)
+      if(pianist_mes.sync > 46)
+      {
         current_song ++;
+        cam_mes.feedback = 3;
+        esp_now_send(cam_addr, (uint8_t *) &cam_mes, sizeof(cam_mes));
+      }
     }
   }
 }

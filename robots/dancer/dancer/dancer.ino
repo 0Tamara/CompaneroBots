@@ -1,16 +1,24 @@
 #include <WiFi.h>
 #include <esp_now.h>
 #include <ESP32Servo.h>
+#include <FastLED.h>
 
 //motors
-#define RR_EN 18                  // Right rear enable pin
-const int RR_DIR[] = { 17, 5 };   // Right rear direction pins
-#define LR_EN 2                   // Left rear enable pin
-const int LR_DIR[] = { 16, 4 };   // Left rear direction pins
-#define RF_EN 14                  // Right front enable pin
-const int RF_DIR[] = { 26, 27 };  // Right front direction pins
-#define LF_EN 32                  // Left front enable pin
-const int LF_DIR[] = { 33, 25 };  // Left front direction pins
+#define RR_EN 19                   // Right rear enable pin
+const int RR_DIR[] = { 25, 21 };   // Right rear direction pins
+#define LR_EN 23                   // Left rear enable pin
+const int LR_DIR[] = { 22, 26 };   // Left rear direction pins
+#define RF_EN 2                    // Right front enable pin
+const int RF_DIR[] = { 4, 16 };    // Right front direction pins
+#define LF_EN 18                   // Left front enable pin
+const int LF_DIR[] = { 5, 17 };    // Left front direction pins
+
+
+#define LED_PIN_EYES 32
+#define LED_COUNT_EYES 50
+CRGB eyes[LED_COUNT_EYES];
+TaskHandle_t Task1;
+uint color_eyes = 0xFF00FF;
 
 //communication
 uint8_t cam_addr[] = { 0xC0, 0x49, 0xEF, 0xD0, 0x8C, 0xC0 };  //camera esp MAC addr
@@ -34,7 +42,82 @@ struct_cam cam_mes;
 const int min_delay = 0;
 const int max_delay = 15;
 Servo rightShoulder, leftShoulder, rightElbow, leftElbow;
+<<<<<<< HEAD
 /*
+=======
+
+//---eyes functions---
+void closeEyes()  //cca 300ms
+{
+  // Blink LEDs in reverse order (off in sections)
+  for (int i = 20; i < 25; i++) eyes[i] = 0x000000; // Left eye
+  for (int i = 45; i < 50; i++) eyes[i] = 0x000000; // Right eye
+  FastLED.show();
+
+  delay(50);
+
+  // Now let's go down the LED sections
+  for (int i = 15; i < 20; i++) eyes[i] = 0x000000;
+  for (int i = 40; i < 45; i++) eyes[i] = 0x000000;
+  FastLED.show();
+
+  delay(50);
+
+  for (int i = 10; i < 15; i++) eyes[i] = 0x000000;
+  for (int i = 35; i < 40; i++) eyes[i] = 0x000000;
+  FastLED.show();
+
+  delay(50);
+
+  for (int i = 5; i < 10; i++) eyes[i] = 0x000000;
+  for (int i = 30; i < 35; i++) eyes[i] = 0x000000;
+  FastLED.show();
+
+  delay(50);
+
+  for (int i = 0; i < 5; i++) eyes[i] = 0x000000;
+  for (int i = 25; i < 30; i++) eyes[i] = 0x000000;
+  FastLED.show();
+
+  delay(50);
+}
+
+void openEyes(uint color)  //cca 300ms
+{
+  // Blink LEDs in reverse order (turning LEDs back on)
+  for (int i = 0; i < 5; i++) eyes[i] = color; // Left eye
+  for (int i = 25; i < 30; i++) eyes[i] = color; // Right eye
+  FastLED.show();
+
+  delay(50);
+
+  for (int i = 5; i < 10; i++) eyes[i] = color;
+  for (int i = 30; i < 35; i++) eyes[i] = color;
+  FastLED.show();
+
+  delay(50);
+
+  for (int i = 10; i < 15; i++) eyes[i] = color;
+  for (int i = 35; i < 40; i++) eyes[i] = color;
+  FastLED.show();
+
+  delay(50);
+
+  for (int i = 15; i < 20; i++) eyes[i] = color;
+  for (int i = 40; i < 45; i++) eyes[i] = color;
+  FastLED.show();
+
+  delay(50);
+
+  for (int i = 20; i < 25; i++) eyes[i] = color;
+  for (int i = 45; i < 50; i++) eyes[i] = color;
+  FastLED.show();
+
+  delay(50);
+}
+
+//---servo functions---
+>>>>>>> 7377959489c063eaa5272a736a6211aef90a0827
 void servoRamp(byte end, Servo& servo) {
   int t;
   byte start = servo.read() + 1;
@@ -138,7 +221,20 @@ void OnDataRecv(const uint8_t* mac, const uint8_t* incomingData, int len) {
   }
   
 }
+<<<<<<< HEAD
 */
+=======
+
+void loop_2(void* parameter)
+{
+  while(true)
+  {
+    closeEyes();
+    openEyes(color_eyes);
+    delay(5000);
+  }
+}
+>>>>>>> 7377959489c063eaa5272a736a6211aef90a0827
 
 void setup() {
   Serial.begin(115200);
@@ -162,12 +258,35 @@ void setup() {
   }
   //-register recieve callback-
   esp_now_register_recv_cb(esp_now_recv_cb_t(OnDataRecv));
+<<<<<<< HEAD
   */
+=======
+
+  //-create loop 2-
+  xTaskCreatePinnedToCore(
+    loop_2, /* Function to implement the task */
+    "Task1", /* Name of the task */
+    10000,  /* Stack size in words */
+    NULL,  /* Task input parameter */
+    0,  /* Priority of the task */
+    &Task1,  /* Task handle. */
+    0); /* Core where the task should run */
+
+>>>>>>> 7377959489c063eaa5272a736a6211aef90a0827
   // hardware init
+  FastLED.addLeds<WS2811, LED_PIN_EYES, GRB>(eyes, LED_COUNT_EYES);
+  for (int i = 0; i < 50; i++)
+    eyes[i] = 0x000000;
+  FastLED.show();
   rightShoulder.attach(13);
   rightElbow.attach(14);
   leftShoulder.attach(12);
+<<<<<<< HEAD
   leftElbow.attach(27);
+=======
+  leftElbow.attach(33);
+
+>>>>>>> 7377959489c063eaa5272a736a6211aef90a0827
   for (int i = 0; i < 2; i++) {
     pinMode(RR_DIR[i], OUTPUT);
     pinMode(LR_DIR[i], OUTPUT);
@@ -182,6 +301,7 @@ void setup() {
 
 
 void loop() {
+<<<<<<< HEAD
   //hore
   for (int  i = 0; i < 180; i++)
   {
@@ -230,6 +350,9 @@ void loop() {
     delay(50);
   } 
   delay(1000);
+=======
+  
+>>>>>>> 7377959489c063eaa5272a736a6211aef90a0827
 }
 
 //motor movement
@@ -356,21 +479,21 @@ void arms_down() {
   rightShoulder.write(180);
   rightElbow.write(70);
   leftShoulder.write(0);
-  leftElbow.write(0);
+  leftElbow.write(70);
 }
 
 void arms_horizontally() {
   rightShoulder.write(90);
   rightElbow.write(70);
   leftShoulder.write(90);
-  leftElbow.write(0);
+  leftElbow.write(70);
 }
 
 void arms_up() {
   rightShoulder.write(10);
   rightElbow.write(70);
   leftShoulder.write(150);
-  leftElbow.write(0);
+  leftElbow.write(70);
 }
 
 void wave() {
@@ -381,7 +504,7 @@ void wave() {
 
 
   leftShoulder.write(90);
-  leftElbow.write(0);
+  leftElbow.write(70);
 }
 
 void wave2() {
@@ -395,21 +518,21 @@ void askew() {
   rightShoulder.write(160);
   rightElbow.write(70);
   leftShoulder.write(150);
-  leftElbow.write(0);
+  leftElbow.write(70);
 }
 
 void askew2() {
   rightShoulder.write(30);
   rightElbow.write(70);
   leftShoulder.write(20);
-  leftElbow.write(0);
+  leftElbow.write(70);
 }
 
 void right_hip() {
   rightShoulder.write(140);
   rightElbow.write(120);
   leftShoulder.write(150);
-  leftElbow.write(0);
+  leftElbow.write(70);
 }
 
 void left_hip() {
@@ -423,14 +546,14 @@ void head() {
   rightShoulder.write(60);
   rightElbow.write(20);
   leftShoulder.write(120);
-  leftElbow.write(0);
+  leftElbow.write(70);
 }
 
 void waving() {
   rightShoulder.write(50);
   rightElbow.write(70);
   leftShoulder.write(0);
-  leftElbow.write(0);
+  leftElbow.write(70);
   delay(800);
   rightElbow.write(30);
   delay(800);

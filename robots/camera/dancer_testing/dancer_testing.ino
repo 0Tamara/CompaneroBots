@@ -73,12 +73,6 @@ void OnDataRecv(const uint8_t * mac, const uint8_t *incomingData, int len) {
       camSerial.write(5);  //start scanning camera and playing music
       dancer_mes.value = 3;  //dancer will dance by camera
       break;
-    case 3:  //end of all songs      
-      curtains_mes.open = 0;
-      dancer_mes.value = 4;
-      esp_now_send(curtains_addr, (uint8_t *) &curtains_mes, sizeof(curtains_mes));
-      esp_now_send(dancer_addr, (uint8_t *) &dancer_mes, sizeof(dancer_mes));
-      break;
   }
 }
 
@@ -130,7 +124,7 @@ void setup(){
   //register recieve callback
   esp_now_register_recv_cb(esp_now_recv_cb_t(OnDataRecv));
 
-  dancer_mes.value = 0;
+  dancer_mes.value = 3;
   dancer_mes.r_shoulder = 0;
   dancer_mes.r_elbow = 0;
   dancer_mes.l_shoulder = 0;
@@ -256,6 +250,10 @@ void loop(){
         dancer_mes.movement = serial_data[4];
         esp_now_send(dancer_addr, (uint8_t *) &dancer_mes, sizeof(dancer_mes));
         Serial.printf("Dancer dancing %d %d %d %d %d\n", serial_data[0], serial_data[1], serial_data[2], serial_data[3], serial_data[4]);
+
+        timer_start = millis();
+        start_loading = 1;
+        start_playing = 1;
       }
     }
     Serial.println();
@@ -264,7 +262,7 @@ void loop(){
   if(start_done[0] && start_done[1] && start_done[2] && start_done[3] && progress < 2 && !start_playing)  //all start melodies are done
     timer_start = millis();
 
-  if(start_loading && millis() - timer_start > 2000)  //time between the startup and measuring the sensor
+  if(start_loading && millis() - timer_start > 1000)  //time between the startup and measuring the sensor
   {
     start_loading = 0;
     start_playing = 0;
