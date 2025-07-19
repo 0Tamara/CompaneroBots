@@ -625,7 +625,7 @@ void setup() {
   
   leftHand.stepper->setDirectionPin(leftHandDirPin);
   leftHand.stepper->setEnablePin(leftHandEnPin);
-  leftHand.stepper->setAutoEnable(true);
+  leftHand.stepper->setAutoEnable(true); 
 
   leftHand.stepper->setSpeedInHz(speedInHz);
   leftHand.stepper->setAcceleration(acceleration);
