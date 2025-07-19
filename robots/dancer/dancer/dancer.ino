@@ -18,7 +18,7 @@ const int LF_DIR[] = { 5, 17 };    // Left front direction pins
 #define LED_COUNT_EYES 50
 CRGB eyes[LED_COUNT_EYES];
 TaskHandle_t Task1;
-uint color_eyes = 0xFF00FF;
+uint color_eyes = 0x400040;
 
 //communication
 uint8_t cam_addr[] = { 0xC0, 0x49, 0xEF, 0xD0, 0x8C, 0xC0 };  //camera esp MAC addr
@@ -182,7 +182,9 @@ void OnDataRecv(const uint8_t* mac, const uint8_t* incomingData, int len) {
     Serial.printf("Prijala sa: %d, spustam natvrdo pohyb\n", recv_data.value);
     //natvrdo tancuje
     forward(255);
-    delay(5000);
+    delay(12000);
+    right(255);
+    delay(1500);
     stop();
     arms_up();
     delay(1000);
@@ -228,7 +230,14 @@ void OnDataRecv(const uint8_t* mac, const uint8_t* incomingData, int len) {
                   
     moveAll(180 - recv_data.r_shoulder, rightShoulder, /*180 - recv_data.r_elbow*/70, rightElbow, /*180 - recv_data.l_elbow*/70, leftElbow, recv_data.l_shoulder, leftShoulder);
   }
-  
+  if (recv_data.value == 14)
+  {
+    rightShoulder.write(40);
+    rightElbow.write(70);
+    leftShoulder.write(120);
+    leftElbow.write(70);
+    closeEyes();
+  }
 }
 
 void loop_2(void* parameter)
