@@ -272,7 +272,10 @@ void setup() {
   }
   //-register recieve callback-
   esp_now_register_recv_cb(esp_now_recv_cb_t(OnDataRecv));
+<<<<<<< HEAD
+=======
   
+>>>>>>> c839f5f981ca207fe90631694b103f639ebc06ec
 
   //-create loop 2-
   xTaskCreatePinnedToCore(
@@ -292,7 +295,10 @@ void setup() {
   rightShoulder.attach(13);
   rightElbow.attach(14);
   leftShoulder.attach(12);
+<<<<<<< HEAD
+=======
   leftElbow.attach(27);
+>>>>>>> c839f5f981ca207fe90631694b103f639ebc06ec
   leftElbow.attach(33);
 
   for (int i = 0; i < 2; i++) {
@@ -309,6 +315,10 @@ void setup() {
 
 
 void loop() {
+<<<<<<< HEAD
+  
+=======
+>>>>>>> c839f5f981ca207fe90631694b103f639ebc06ec
 }
 
 //motor movement
