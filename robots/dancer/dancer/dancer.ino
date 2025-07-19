@@ -178,10 +178,12 @@ unsigned long timer_reset;
 void OnDataRecv(const uint8_t* mac, const uint8_t* incomingData, int len) {
   
   memcpy(&recv_data, incomingData, sizeof(recv_data));
-  if (recv_data.value == 1) {
-    //zapneme ledky
-    Serial.printf("Prijala sa: %d\n", recv_data.value);
+  if (recv_data.value == 12) {
+    Serial.printf("Prijala sa: %d, spustam natvrdo pohyb\n", recv_data.value);
     //natvrdo tancuje
+    forward(255);
+    delay(5000);
+    stop();
     arms_up();
     delay(1000);
     arms_horizontally();
@@ -205,15 +207,26 @@ void OnDataRecv(const uint8_t* mac, const uint8_t* incomingData, int len) {
     waving();
     delay(1000);
   }
-  if (recv_data.value == 2) {
-    Serial.printf("Prijala sa: %d, spustam natvrdo pohyb\n", recv_data.value);
-  }
-  if (recv_data.value == 3) {
+  if (recv_data.value == 13) {
     Serial.printf("Daco sa prijalo, left elbow: %d, left shoulder: %d, right elbow: %d, right shoulder: %d, movement: %d \n",
                   recv_data.l_elbow, recv_data.l_shoulder, recv_data.r_elbow,
                   recv_data.r_shoulder, recv_data.movement);
+
+
+    if(recv_data.r_elbow < 90)
+      recv_data.r_elbow = 0;
+    else
+      recv_data.r_elbow -= 90;
+    if(recv_data.l_elbow < 90)
+      recv_data.l_elbow = 0;
+    else
+      recv_data.l_elbow -= 90;
+    if(recv_data.r_elbow > 180)
+      recv_data.r_elbow = 180;
+    if(recv_data.l_elbow > 180)
+      recv_data.l_elbow = 180;
                   
-    moveAll(recv_data.r_shoulder, rightShoulder, 70 + recv_data.r_elbow, rightElbow, recv_data.l_elbow, leftElbow, 70 + recv_data.l_shoulder, leftShoulder);
+    moveAll(180 - recv_data.r_shoulder, rightShoulder, /*180 - recv_data.r_elbow*/70, rightElbow, /*180 - recv_data.l_elbow*/70, leftElbow, recv_data.l_shoulder, leftShoulder);
   }
   
 }
@@ -231,7 +244,7 @@ void loop_2(void* parameter)
 void setup() {
   Serial.begin(115200);
   // communication
-  /*
+  
   WiFi.mode(WIFI_STA);  //set wifi to station
   //-init esp-now-
   if (esp_now_init() != ESP_OK) {
@@ -250,6 +263,10 @@ void setup() {
   }
   //-register recieve callback-
   esp_now_register_recv_cb(esp_now_recv_cb_t(OnDataRecv));
+<<<<<<< HEAD
+=======
+  
+>>>>>>> c839f5f981ca207fe90631694b103f639ebc06ec
 
   //-create loop 2-
   xTaskCreatePinnedToCore(
@@ -269,6 +286,10 @@ void setup() {
   rightShoulder.attach(13);
   rightElbow.attach(14);
   leftShoulder.attach(12);
+<<<<<<< HEAD
+=======
+  leftElbow.attach(27);
+>>>>>>> c839f5f981ca207fe90631694b103f639ebc06ec
   leftElbow.attach(33);
 
   for (int i = 0; i < 2; i++) {
@@ -285,7 +306,10 @@ void setup() {
 
 
 void loop() {
+<<<<<<< HEAD
   
+=======
+>>>>>>> c839f5f981ca207fe90631694b103f639ebc06ec
 }
 
 //motor movement

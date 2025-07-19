@@ -71,11 +71,11 @@ void OnDataRecv(const uint8_t * mac, const uint8_t *incomingData, int len) {
       break;
     case 2:  //eng of freedom
       camSerial.write(5);  //start scanning camera and playing music
-      dancer_mes.value = 3;  //dancer will dance by camera
+      dancer_mes.value = 13;  //dancer will dance by camera
       break;
     case 3:  //end of all songs      
       curtains_mes.open = 0;
-      dancer_mes.value = 4;
+      dancer_mes.value = 14;
       esp_now_send(curtains_addr, (uint8_t *) &curtains_mes, sizeof(curtains_mes));
       esp_now_send(dancer_addr, (uint8_t *) &dancer_mes, sizeof(dancer_mes));
       break;
@@ -172,10 +172,8 @@ void loop(){
       {
         case 1:
           //start
-          dancer_mes.value = 1;
           drummer_mes.song = 1;
           pianist_mes.song = 1;
-          esp_now_send(dancer_addr, (uint8_t *) &dancer_mes, sizeof(dancer_mes));
           esp_now_send(drummer_addr, (uint8_t *) &drummer_mes, sizeof(drummer_mes));
           esp_now_send(pianist_addr, (uint8_t *) &pianist_mes, sizeof(pianist_mes));
           progress = 1;
@@ -201,12 +199,12 @@ void loop(){
             start_playing = 1;
             start_done[2] = 1;
             Serial.println("Drummer playing fast");
-          } else if(millis()-timer_start > 5000 && start_done[1] && start_done[3])  //min time between starting melodies and main songs
+          } else if(start_done[1] && start_done[3] && !start_playing)  //min time between starting melodies and main songs
           {
             //---music starts---
             drummer_mes.song = 4;
             esp_now_send(drummer_addr, (uint8_t *) &drummer_mes, sizeof(drummer_mes));
-            dancer_mes.value = 2;
+            dancer_mes.value = 12;
             esp_now_send(dancer_addr, (uint8_t *) &dancer_mes, sizeof(dancer_mes));
             curtains_mes.open = 1;
             esp_now_send(curtains_addr, (uint8_t *) &curtains_mes, sizeof(curtains_mes));
@@ -231,12 +229,12 @@ void loop(){
             start_playing = 1;
             start_done[3] = 1;
             Serial.println("Drummer playing slow");
-          } else if(millis()-timer_start > 5000 && start_done[0] && start_done[2])  //min time between starting melodies and main songs
+          } else if(start_done[0] && start_done[2] && !start_playing)  //min time between starting melodies and main songs
           {
             //---music starts---
             drummer_mes.song = 4;
             esp_now_send(drummer_addr, (uint8_t *) &drummer_mes, sizeof(drummer_mes));
-            dancer_mes.value = 2;
+            dancer_mes.value = 12;
             esp_now_send(dancer_addr, (uint8_t *) &dancer_mes, sizeof(dancer_mes));
             curtains_mes.open = 1;
             esp_now_send(curtains_addr, (uint8_t *) &curtains_mes, sizeof(curtains_mes));
