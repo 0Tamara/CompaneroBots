@@ -261,8 +261,8 @@ int kernkraftRight1[] =
   0b00000000,
 };
 
-int kernkraftLeftPosition1[] = {H, 1};
-int kernkraftLeftPosition2[] = {F, 2};
+int kernkraftLeftPosition1[] = {A, 1};
+int kernkraftLeftPosition2[] = {D, 2};
 int kernkraftLeft1[]
 {
   0b10000000, //osm
