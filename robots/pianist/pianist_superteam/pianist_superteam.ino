@@ -404,10 +404,8 @@ void OnDataRecv(const uint8_t * mac, const uint8_t *incomingData, int len) {
   if(myData.song == 2)
   { 
     rightHand.stepper->moveTo(stepsPerNote * finalCountdownRightPosition1[0] + stepsPerOctave * (finalCountdownRightPosition1[1]  - 1));
-    while (rightHand.stepper->isRunning()) {
-    } 
     leftHand.stepper->moveTo(stepsPerNote * finalCountdownLeftPosition1[0] + stepsPerOctave * (finalCountdownLeftPosition1[1] - 1));
-    while (leftHand.stepper->isRunning()) {
+    while (leftHand.stepper->isRunning() || rightHand.stepper->isRunning()) {
     }
     //prvy takt
     start = millis();
