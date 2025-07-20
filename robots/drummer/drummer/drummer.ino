@@ -39,7 +39,7 @@ unsigned long timer_music;
 int kicks;
 int snares;
 
-uint color_eyes = 0xFF00FF;
+uint color_eyes = 0x400040;
 uint color_palette[6] = {0xFF0000,  //colors cycling over
                         0x808000,
                         0x00FF00,
@@ -102,12 +102,7 @@ void kick_ring_bubon(uint color) {
     FastLED.show();
     delay(50);
   }
-  for (int i = LED_COUNT_K - 1; i >= 0; i--) {
-    kick_ring[i] = 0x000000;
-    kick_ring[(LED_COUNT_K-1)-i] = 0x000000;
-    FastLED.show();
-    delay(50);
-  }
+  
 }
 
 void changeColorsLeft()
@@ -421,12 +416,6 @@ void openEyes(uint color)  //cca 300ms
   delay(50);
 }
 
-void firstLeds(uint color)
-{
-  ledky_vedlajsie(color);
-  kick_ring_bubon(color);
-}
-
 void OnDataRecv(const uint8_t * mac, const uint8_t *incoming_data, int len) {
   memcpy(&recv_data, incoming_data, sizeof(recv_data));
   Serial.print("Bytes received: ");
@@ -443,13 +432,52 @@ void OnDataRecv(const uint8_t * mac, const uint8_t *incoming_data, int len) {
   }
   if(recv_data.song == 2)
   {
-    ledky_vedlajsie(0xFF0000);
+    for (int i = 0; i < LED_COUNT_R; i++)
+    {
+      left_ring[i] = 0x00FF00;
+      right_ring[i] = 0x0000FF;
+
+      FastLED.show();
+      delay(50);
+    }
+    r_arm.write(R_DOWN);
+    l_arm.write(L_DOWN);
+    delay(100);
+    r_arm.write(R_UP);
+    l_arm.write(L_UP);
+    for (int i = LED_COUNT_R - 1; i >= 0; i--)
+    {
+      left_ring[i] = 0x000000;
+      right_ring[i] = 0x000000;
+
+      FastLED.show();
+      delay(25);
+    }
+
     cam_mes.feedback = 1;
     esp_now_send(cam_addr, (uint8_t *) &cam_mes, sizeof(cam_mes));
   }
   if(recv_data.song == 3)
   {
     kick_ring_bubon(0x00FF00);
+    for (int i = 0; i < LED_COUNT_K/2; i++)
+    {
+      kick_ring[i] = 0xFF0000;
+      kick_ring[(LED_COUNT_K-1)-i] = 0xFF0000;
+      FastLED.show();
+      delay(50);
+    }
+    kick.write(K_DOWN);
+    delay(100);
+    kick.write(K_UP);
+    for (int i = (LED_COUNT_K/2) - 1; i >= 0; i--)
+    {
+      kick_ring[i] = 0x000000;
+      kick_ring[(LED_COUNT_K-1)-i] = 0x000000;
+      FastLED.show();
+      delay(25);
+    }
+
     cam_mes.feedback = 1;
     esp_now_send(cam_addr, (uint8_t *) &cam_mes, sizeof(cam_mes));
   }
