@@ -259,7 +259,105 @@ int stupnicaRightAndLeft[]{
   0b01000000,
   0b10000000,
 };
+int kernkraftRightPosition1[] = {F, 2};
+int kernkraftRight1[] = 
+{
+  0b00000000,//osm pomlcka
+  0b00000000,
+  0b00100000,//osm
+  0b00000000,
+  0b00001000,//osm
+  0b00000000,
+  0b00000100,//osm
+  0b00000000,
+  0b00000010,//osm
+  0b00000000,
+  0b00100000,//osm
+  0b00000000,
+  0b00000000,//stv pomlcka
+  0b00000000,
+  0b00000000,
+  0b00000000,
+};
 
+int kernkraftLeftPosition1[] = {H, 1};
+int kernkraftLeftPosition2[] = {F, 2};
+int kernkraftLeft1[]
+{
+  0b10000000, //osm
+  0b00000000,
+  0b00000001, //osm
+  0b00000000,
+  0b10000000, //osm
+  0b00000000,
+  0b00000001, //osm
+  0b00000000,
+  0b10000000, //osm
+  0b00000000,
+  0b00000001, //osm
+  0b00000000,
+  0b10000000, //osm
+  0b00000000,
+  0b00000001, //osm
+  0b00000000,
+};
+int kernkraftRight2[] =
+{
+  0b00000000,//osm pomlcka
+  0b00000000,
+  0b00100000,//osm
+  0b00000000,
+  0b00001000,//osm
+  0b00000000,
+  0b00000100,//osm
+  0b00000000,
+  0b00000010,//osm
+  0b00000000,
+  0b00000001,//osm
+  0b00000000,
+  0b00000010,//osm
+  0b00000000,
+  0b00001000,//osm
+  0b00000000,
+};
+int kernkraftRight3[]
+{
+  0b00000100,//osm
+  0b00000000,
+  0b00000000,//stv
+  0b00000000,
+  0b00000000,
+  0b00000000,
+  0b00000100,//osm
+  0b00000000,
+  0b00001000,//osm
+  0b00000000,
+  0b00000000,//osm pomlcka
+  0b00000000,
+  0b00000010,//osm
+  0b00000000,
+  0b00100000,//osm
+  0b00000000,
+};
+int kernkraftRight4[]
+{
+  0b00000000,//cel
+  0b00000000,
+  0b00000000,
+  0b00000000,
+  0b00000000,
+  0b00000000,
+  0b00000000,
+  0b00000000,
+  0b00000000,
+  0b00000000,
+  0b00000000,
+  0b00000000,
+  0b00000000,
+  0b00000000,
+  0b00000000,
+  0b00000000,
+};
 int barLeft[16];
 int barRight[16];
 int positionLeft[2];
@@ -323,6 +421,7 @@ void OnDataRecv(const uint8_t * mac, const uint8_t *incomingData, int len) {
 
   if(myData.song == 2)
   { 
+    //demo
     start = millis();
     tempo = 3000;
     sest = tempo / 16;
@@ -340,7 +439,7 @@ void OnDataRecv(const uint8_t * mac, const uint8_t *incomingData, int len) {
     sendData.end = 1;
     esp_now_send(camAddr, (uint8_t *) &sendData, sizeof(sendData));
     Serial.printf("Data sended: %d\n",sendData.end );
-
+    //prvy takt
     start = millis();
     tempo = 2208; 
     sest = tempo / 16; 
@@ -356,7 +455,7 @@ void OnDataRecv(const uint8_t * mac, const uint8_t *incomingData, int len) {
     }
     playBar();
     while(millis() - start <= tempo ){}
-    //prvy takt
+    //druhy takt
     start = millis();
     for(int i=0; i<16; i++)
     {
@@ -365,7 +464,7 @@ void OnDataRecv(const uint8_t * mac, const uint8_t *incomingData, int len) {
     }
     playBar();
     while(millis() - start <= tempo ){}
-    //druhy takt
+    //treti takt
     start = millis();
     for(int i=0; i<16; i++)
     {
@@ -374,7 +473,7 @@ void OnDataRecv(const uint8_t * mac, const uint8_t *incomingData, int len) {
     }
     playBar();
     while(millis() - start <= tempo ){}
-    //treti takt
+    //stvrty takt
     start = millis();
     for(int i=0; i<16; i++)
     {
@@ -383,239 +482,71 @@ void OnDataRecv(const uint8_t * mac, const uint8_t *incomingData, int len) {
     }
     playBar();
     while(millis() - start <= tempo ){}
-    //stvrty takt
+    //odoslanie
     sendData.end = 1;
     esp_now_send(camAddr, (uint8_t *) &sendData, sizeof(sendData));
     Serial.printf("Data sended: %d\n",sendData.end );
   }
-  /*if(myData.song == 3)
+  if(myData.song == 3)
   {
+    //prvy takt
     start = millis();
-    tempo = 3000;
+    tempo = 1950;
     sest = tempo / 16;
     for(int i=0; i<16; i++)
     {
-      barLeft[i] = stupnicaRightAndLeft[i];
-      barRight[i] = stupnicaRightAndLeft[i];
+      barLeft[i] = kernkraftLeft1[i];
+      barRight[i] = kernkraftRight1[i];
     }
     for(int i=0; i<2; i++)
     {
-      positionLeft[i] = stupnicaRightAndLeftPosition[i];
-      positionRight[i] = stupnicaRightAndLeftPosition[i];
+      positionLeft[i] = kernkraftRightPosition1[i];
+      positionRight[i] = kernkraftLeftPosition1[i];
     }
     playBar();
+    while(millis() - start <= tempo){}
+    //druhy takt
+    start = millis();
+    for(int i=0; i<16; i++)
+    {
+      barLeft[i] = kernkraftLeft1[i];
+      barRight[i] = kernkraftRight2[i];
+    }
+    playBar();
+    while(millis() - start <= tempo){}
+    //treti takt
+    start = millis();
+    for(int i=0; i<16; i++)
+    {
+      barLeft[i] = kernkraftLeft1[i];
+      barRight[i] = kernkraftRight3[i];
+    }
+    for(int i=0; i<2; i++)
+    {
+      positionLeft[i] = kernkraftRightPosition1[i];
+      positionRight[i] = kernkraftLeftPosition2[i];
+    }
+    playBar();
+    while(millis() - start <= tempo){}
+    //stvrty takt
+    start = millis();
+    for(int i=0; i<16; i++)
+    {
+      barLeft[i] = kernkraftLeft1[i];
+      barRight[i] = kernkraftRight4[i];
+    }
+    for(int i=0; i<2; i++)
+    {
+      positionLeft[i] = kernkraftRightPosition1[i];
+      positionRight[i] = kernkraftLeftPosition1[i];
+    }
+    playBar();
+    while(millis() - start <= tempo){}
+
     sendData.end = 1;
     esp_now_send(camAddr, (uint8_t *) &sendData, sizeof(sendData));
     Serial.printf("Data sended: %d\n",sendData.end );
   }
-  if(myData.song == 4)
-  {
-    tempo = 2280;
-    sest = tempo/16;
-    if(myData.time == 1)
-    {
-      for(int i=0; i<16; i++)
-      {
-        barLeft[i] = havasiFreedomLeft1[i];
-        barRight[i] = havasiFreedomRight1[i];
-      }
-      for(int i=0; i<2; i++)
-      {
-        positionLeft[i] = havasiFreedomLeftPosition1[i];
-        positionRight[i] = havasiFreedomRightPosition1[i];
-      }
-    }
-    if(myData.time == 5)
-    {
-      for(int i=0; i<16; i++)
-      {
-        barLeft[i] = havasiFreedomLeft5[i];
-        barRight[i] = havasiFreedomRight5[i];
-      }
-    }
-    //piaty takt
-    if(myData.time == 6)
-    {
-      for(int i=0; i<16; i++)
-      {
-        barLeft[i] = havasiFreedomLeft5[i];
-        barRight[i] = havasiFreedomRight6[i];
-      }
-    }
-    // siesty takt
-    if(myData.time == 7)
-    {
-      for(int i=0; i<16; i++)
-      {
-        barLeft[i] = havasiFreedomLeft5[i];
-        barRight[i] = havasiFreedomRight7[i];
-      }
-    }
-    //siedmy takt
-    if(myData.time == 8)
-    {
-      for(int i=0; i<16; i++)
-      {
-        barLeft[i] = havasiFreedomLeft5[i];
-        barRight[i] = havasiFreedomRight8[i];
-      }
-    }
-    //osmy takt
-    if(myData.time == 9)
-    {
-      for(int i=0; i<16; i++)
-      {
-        barLeft[i] = havasiFreedomLeft5[i];
-        barRight[i] = havasiFreedomRight9[i];
-      }
-      for(int i=0; i<2; i++)
-      {
-        positionLeft[i] = havasiFreedomLeftPosition9[i];
-      }
-    }
-    //deviaty takt
-    if(myData.time ==10)
-    {
-      for(int i=0; i<16; i++)
-      {
-        barLeft[i] = havasiFreedomLeft5[i];
-        barRight[i] = havasiFreedomRight10[i];
-      }
-    }
-    //desiaty takt
-    if(myData.time ==11)
-    {
-      for(int i=0; i<16; i++)
-      {
-        barLeft[i] = havasiFreedomLeft5[i];
-        barRight[i] = havasiFreedomRight11[i];
-      }
-    }
-    //jedenasty takt
-    if(myData.time == 12)
-    {
-      for(int i=0; i<16; i++)
-      {
-        barLeft[i] = havasiFreedomLeft12[i];
-        barRight[i] = havasiFreedomRight12[i];
-      }
-      for(int i=0; i<2; i++)
-      {
-        positionLeft[i] = havasiFreedomLeftPosition12[i];
-        positionRight[i] = havasiFreedomRightPosition12[i];
-      }
-    }
-    //dvanasty a posledny takt
-    playBar();
-  }
-  if(myData.song == 5)
-  {
-    if(myData.time == 1)
-    {
-      tempo = 2100; 
-      sest = tempo / 16; 
-      for(int i=0; i<16; i++)
-      {
-        barLeft[i] = fireballLeft1[i];
-        barRight[i] = fireballRight1[i];
-      }
-      for(int i=0; i<2; i++)
-      {
-        positionLeft[i] = fireballLeftPosition1[i];
-        positionRight[i] = fireballRightPosition1[i];
-      }
-    }
-    if(myData.time == 2)
-    {
-      for(int i=0; i<16; i++)
-      {
-        barRight[i] = fireballRight2[i];
-      }
-    }
-    if(myData.time == 3)
-    {
-      for(int i=0; i<16; i++)
-      {
-        barRight[i] = fireballRight1[i];
-      }
-    }
-    if(myData.time == 4)
-    {
-      
-      for(int i=0; i<16; i++)
-      {
-        barRight[i] = fireballRight2[i];
-      } 
-    }
-    if(myData.time == 5)
-    {
-      for(int i=0; i<16; i++)
-      {
-        barRight[i] = fireballRight5[i];
-      }
-      for(int i=0; i<2; i++)
-      {
-        positionRight[i] = fireballRightPosition5[i];
-      }
-    }
-    if(myData.time == 6)
-    {
-      for(int i=0; i<16; i++)
-      {
-        barRight[i] = fireballRight6[i];
-      }
-    }
-    if(myData.time == 7)
-    {
-      for(int i=0; i<16; i++)
-      {
-        barRight[i] = fireballRight5[i];
-      }
-    }
-    if(myData.time == 8)
-    {
-      for(int i=0; i<16; i++)
-      {
-        barRight[i] = fireballRight8[i];
-      }
-    }
-    if(myData.time == 9)
-    {
-      for(int i=0; i<16; i++)
-      {
-        barRight[i] = fireballRight5[i];
-      }
-    }
-    if(myData.time == 10)
-    {
-      for(int i=0; i<16; i++)
-      {
-        barRight[i] = fireballRight6[i];
-      }
-    }
-    if(myData.time == 11)
-    {
-      for(int i=0; i<16; i++) 
-      {
-        barRight[i] = fireballRight5[i];
-      }
-    }
-    if(myData.time == 12)
-    {
-      start = millis();
-      rightHand.stepper->moveTo(stepsPerOctave * 2);
-      while (rightHand.stepper->isRunning()) 
-      {
-      } 
-      leftHand.stepper->moveTo(0);
-      while (leftHand.stepper->isRunning()) 
-      {
-      }
-      while(millis() - start <= tempo){}
-    }
-    playBar();
-  }
-  */
 }
 
 void setup() {
