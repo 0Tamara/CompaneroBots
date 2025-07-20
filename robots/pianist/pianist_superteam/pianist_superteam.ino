@@ -495,8 +495,8 @@ void OnDataRecv(const uint8_t * mac, const uint8_t *incomingData, int len) {
     }
     for(int i=0; i<2; i++)
     {
-      positionLeft[i] = kernkraftLeftPosition1[i];
-      positionRight[i] = kernkrafRightPosition2[i];
+      positionLeft[i] = kernkraftLeftPosition2[i];
+      positionRight[i] = kernkraftRightPosition1[i];
     }
     playBar();
     while(millis() - start <= tempo){}
