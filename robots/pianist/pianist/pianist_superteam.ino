@@ -320,6 +320,7 @@ void OnDataRecv(const uint8_t * mac, const uint8_t *incomingData, int len) {
     while (leftHand .stepper->isRunning()) {
     }
   }
+  
   if(myData.song == 2)
   { 
     start = millis();
@@ -339,7 +340,7 @@ void OnDataRecv(const uint8_t * mac, const uint8_t *incomingData, int len) {
     sendData.end = 1;
     esp_now_send(camAddr, (uint8_t *) &sendData, sizeof(sendData));
     Serial.printf("Data sended: %d\n",sendData.end );
-    
+
     start = millis();
     tempo = 2208; 
     sest = tempo / 16; 
