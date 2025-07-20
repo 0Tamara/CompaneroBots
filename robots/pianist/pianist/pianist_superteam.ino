@@ -89,156 +89,175 @@ Hand rightHand = {
 int finalCountdownRightPosition1[] = {F, 1};
 int finalCountdownRight1[] =
 {
-    0b00001000,//stv pomcka
-    0b00000000,
-    0b00000000,
-    0b00000000,
-    0b00000000,//osm pomlcka
-    0b00000000,
-    0b00000010,//sest 
-    0b00000100,//sest
-    0b00000010,//stv
-    0b00000000,
-    0b00000000,
-    0b00000000,
-    0b00100000,//stv
-    0b00000000,
-    0b00000000,
-    0b00000000,
+  0b00001000,//stv pomcka
+  0b00000000,
+  0b00000000,
+  0b00000000,
+  0b00000000,//osm pomlcka
+  0b00000000,
+  0b00000010,//sest 
+  0b00000100,//sest
+  0b00000010,//stv
+  0b00000000,
+  0b00000000,
+  0b00000000,
+  0b00100000,//stv
+  0b00000000,
+  0b00000000,
+  0b00000000,
 }; 
 int finalCountdownLeftPosition1[] = {A, 2};
 int finalCountdownLeft1[] =
 {
-    0b10000001,//stv pomcka
-    0b00000000,
-    0b00000000,
-    0b00000000,
-    0b00000000,//stv pomlcka
-    0b00000000,
-    0b00000000,
-    0b00000000,
-    0b00000000,//stv pomlcka
-    0b00000000,
-    0b00000000, 
-    0b00000000,
-    0b00000010,//stv
-    0b00000000,
-    0b00000000, 
-    0b00000000,
+  0b10000001,//stv pomcka
+  0b00000000,
+  0b00000000,
+  0b00000000,
+  0b00000000,//stv pomlcka
+  0b00000000,
+  0b00000000,
+  0b00000000,
+  0b00000000,//stv pomlcka
+  0b00000000,
+  0b00000000, 
+  0b00000000,
+  0b00000010,//stv
+  0b00000000,
+  0b00000000, 
+  0b00000000,
 };
 int finalCountdownRight2[] =
 {
-    0b00000000,//stv pomcka
-    0b00000000,
-    0b00000000,
-    0b00000000,
-    0b00000000,//osm pomlcka
-    0b00000000,
-    0b00000001,//sest 
-    0b00000010,//sest
-    0b00000001,//osm
-    0b00000000,
-    0b00000010, //osm
-    0b00000000,
-    0b00000100,//stv
-    0b00000000,
-    0b00000000,
-    0b00000000,
+  0b00000000,//stv pomcka
+  0b00000000,
+  0b00000000,
+  0b00000000,
+  0b00000000,//osm pomlcka
+  0b00000000,
+  0b00000001,//sest 
+  0b00000010,//sest
+  0b00000001,//osm
+  0b00000000,
+  0b00000010, //osm
+  0b00000000,
+  0b00000100,//stv
+  0b00000000,
+  0b00000000,
+  0b00000000,
 };
 int finalCountdownLeft2[] =
 {
-    0b00000100,//stv pomcka
-    0b00000000,
-    0b00000000,
-    0b00000000,
-    0b00000000,//stv pomlcka
-    0b00000000,
-    0b00000000,
-    0b00000000,
-    0b00000000,//stv pomlcka
-    0b00000000,
-    0b00000000, 
-    0b00000000,
-    0b00001000,//stv
-    0b00000000,
-    0b00000000, 
-    0b00000000,
+  0b00000100,//stv pomcka
+  0b00000000,
+  0b00000000,
+  0b00000000,
+  0b00000000,//stv pomlcka
+  0b00000000,
+  0b00000000,
+  0b00000000,
+  0b00000000,//stv pomlcka
+  0b00000000,
+  0b00000000, 
+  0b00000000,
+  0b00001000,//stv
+  0b00000000,
+  0b00000000, 
+  0b00000000,
 };
 int finalCountdownRight3[] =
 {
-    0b00000000,//stv pomcka
-    0b00000000,
-    0b00000000,
-    0b00000000,
-    0b00000000,//osm pomlcka
-    0b00000000,
-    0b00000001,//sest 
-    0b00000010,//sest
-    0b00000001,//stv
-    0b00000000,
-    0b00000000, 
-    0b00000000,
-    0b00100000,//stv
-    0b00000000,
-    0b00000000,
-    0b00000000,
+  0b00000000,//stv pomcka
+  0b00000000,
+  0b00000000,
+  0b00000000,
+  0b00000000,//osm pomlcka
+  0b00000000,
+  0b00000001,//sest 
+  0b00000010,//sest
+  0b00000001,//stv
+  0b00000000,
+  0b00000000, 
+  0b00000000,
+  0b00100000,//stv
+  0b00000000,
+  0b00000000,
+  0b00000000,
 };
 int finalCountdownLeft3[] =
 {
-    0b00010000,//stv pomcka
-    0b00000000,
-    0b00000000,
-    0b00000000,
-    0b00000000,//stv pomlcka
-    0b00000000,
-    0b00000000,
-    0b00000000,
-    0b00000000,//stv pomlcka
-    0b00000000,
-    0b00000000, 
-    0b00000000,
-    0b00000000,//stv
-    0b00000000,
-    0b00000000, 
-    0b00000000,
+  0b00010000,//stv pomcka
+  0b00000000,
+  0b00000000,
+  0b00000000,
+  0b00000000,//stv pomlcka
+  0b00000000,
+  0b00000000,
+  0b00000000,
+  0b00000000,//stv pomlcka
+  0b00000000,
+  0b00000000, 
+  0b00000000,
+  0b00000000,//stv
+  0b00000000,
+  0b00000000, 
+  0b00000000,
 };
 int finalCountdownRight4[] =
 {
-    0b01000000,//stv 
-    0b00000000,
-    0b00000000,
-    0b00000000,
-    0b00000000,//osm pomlcka
-    0b00000000,
-    0b00000100,//sest 
-    0b00001000,//sest
-    0b00000100,//osm
-    0b00000000,
-    0b00001000, //osm
-    0b00000000,
-    0b00010000,//osm
-    0b00000000,
-    0b00000100,//osm
-    0b00000000,
+  0b01000000,//stv 
+  0b00000000,
+  0b00000000,
+  0b00000000,
+  0b00000000,//osm pomlcka
+  0b00000000,
+  0b00000100,//sest 
+  0b00001000,//sest
+  0b00000100,//osm
+  0b00000000,
+  0b00001000, //osm
+  0b00000000,
+  0b00010000,//osm
+  0b00000000,
+  0b00000100,//osm
+  0b00000000,
 };
 int finalCountdownLeft4[] = 
 {
-    0b00000010,//stv pomcka
-    0b00000000,
-    0b00000000,
-    0b00000000,
-    0b00000000,//stv pomlcka
-    0b00000000,
-    0b00000000,
-    0b00000000,
-    0b00000000,//stv pomlcka
-    0b00000000,
-    0b00000000, 
-    0b00000000,
-    0b00000000,//stv
-    0b00000000,
-    0b00000000, 
-    0b00000000,
+  0b00000010,//stv pomcka
+  0b00000000,
+  0b00000000,
+  0b00000000,
+  0b00000000,//stv pomlcka
+  0b00000000,
+  0b00000000,
+  0b00000000,
+  0b00000000,//stv pomlcka
+  0b00000000,
+  0b00000000, 
+  0b00000000,
+  0b00000000,//stv
+  0b00000000,
+  0b00000000, 
+  0b00000000,
+};
+int stupnicaRightAndLeftPosition[]{C, 1};
+int stupnicaRightAndLeft[]{
+  0b10000000,
+  0b01000000,
+  0b00100000,
+  0b00010000,
+  0b00001000,
+  0b00000100,
+  0b00000010,
+  0b00000001,
+  0b00000001,
+  0b00000010,
+  0b00000100,
+  0b00001000,
+  0b00010000,
+  0b00100000,
+  0b01000000,
+  0b10000000,
 };
 
 int barLeft[16];
@@ -302,7 +321,25 @@ void OnDataRecv(const uint8_t * mac, const uint8_t *incomingData, int len) {
     }
   }
   if(myData.song == 2)
-  {
+  { 
+    start = millis();
+    tempo = 3000;
+    sest = tempo / 16;
+    for(int i=0; i<16; i++)
+    {
+      barLeft[i] = stupnicaRightAndLeft[i];
+      barRight[i] = stupnicaRightAndLeft[i];
+    }
+    for(int i=0; i<2; i++)
+    {
+      positionLeft[i] = stupnicaRightAndLeftPosition[i];
+      positionRight[i] = stupnicaRightAndLeftPosition[i];
+    }
+    playBar();
+    sendData.end = 1;
+    esp_now_send(camAddr, (uint8_t *) &sendData, sizeof(sendData));
+    Serial.printf("Data sended: %d\n",sendData.end );
+    
     start = millis();
     tempo = 2208; 
     sest = tempo / 16; 
