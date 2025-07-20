@@ -86,7 +86,7 @@ Hand rightHand = {
   .releaseValue = SERVOMIN,
 };
 
-int finalCountdownRightPosition1[]{F, 1};
+int finalCountdownRightPosition1[]{A, 2};
 int finalCountdownRight1[]
 {
     0b00001000,//stv pomcka
@@ -106,7 +106,7 @@ int finalCountdownRight1[]
     0b00000000,
     0b00000000,
 }; 
-int finalCountdownLeftPosition1[]{A, 2};
+int finalCountdownLeftPosition1[]{F, 1};
 int finalCountdownLeft1[]{
     0b10000001,//stv pomcka
     0b00000000,
@@ -276,7 +276,7 @@ void playBar(){
       pca9685right.setPWM(j+8, 0, rightHand.releaseValue);
       pca9685left.setPWM(j+8, 0, leftHand.releaseValue);
     }
-    while (millis() - start <= wait * i)
+    while (millis() - start <= wait * i) 
     {
     }
   }
