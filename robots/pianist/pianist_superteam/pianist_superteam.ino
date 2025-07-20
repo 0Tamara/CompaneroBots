@@ -424,23 +424,11 @@ void playBar(){
   Serial.println();
 }
 
-void OnDataRecv(const uint8_t * mac, const uint8_t *incomingData, int len) {
+void OnDataRecv(const uint8_t * mac, const uint8_t *incomingData, int len) 
+{
   memcpy(&myData, incomingData, sizeof(myData));
   Serial.printf("song = %d\n", myData.song);
   Serial.printf("time = %d\n", myData.time);
-  start = millis();
-  if(myData.song == 1)
-  {
-    rightHand.stepper->moveTo(0);
-    while (rightHand.stepper->isRunning()) {
-    } 
-    leftHand.stepper->moveTo(0);
-    while (leftHand.stepper->isRunning()) {
-    }
-  }
-
-  if(myData.song == 2)
-  { 
     
   if(myData.song == 3)
   {
@@ -449,7 +437,8 @@ void OnDataRecv(const uint8_t * mac, const uint8_t *incomingData, int len) {
     sest = tempo / 16;
     rightHand.stepper->moveTo(stepsPerNote * kernkraftRightPosition1[0] + stepsPerOctave * (kernkraftRightPosition1[1] - 1));
     leftHand.stepper->moveTo(stepsPerNote * kernkraftLeftPosition1[0] + stepsPerOctave * (kernkraftLeftPosition1[1] - 1));
-    while (leftHand.stepper->isRunning() || rightHand.stepper->isRunning()) {
+    while (leftHand.stepper->isRunning() || rightHand.stepper->isRunning()) 
+    {
     }
     for(int i=0; i<16; i++)
     {
@@ -548,7 +537,8 @@ void setup() {
   
   // Add peer
   memcpy(peerInfo.peer_addr, camAddr, 6);
-  if (esp_now_add_peer(&peerInfo) != ESP_OK){
+  if (esp_now_add_peer(&peerInfo) != ESP_OK)
+  {
     Serial.println("Failed to add peer");
     return;
   }
@@ -574,17 +564,21 @@ void setup() {
 }
  
 void loop() {
-  if(go = 0){
+  if(go = 0)
+  {
     delay(2000);
     rightHand.stepper->moveTo(0);
-    while (rightHand.stepper->isRunning()) {
+    while (rightHand.stepper->isRunning()) 
+    {
     } 
     leftHand.stepper->moveTo(0);
-    while (leftHand.stepper->isRunning()) {
+    while (leftHand.stepper->isRunning()) 
+    {
     }
     rightHand.stepper->moveTo(stepsPerNote * finalCountdownRightPosition1[0] + stepsPerOctave * (finalCountdownRightPosition1[1]  - 1));
     leftHand.stepper->moveTo(stepsPerNote * finalCountdownLeftPosition1[0] + stepsPerOctave * (finalCountdownLeftPosition1[1] - 1));
-    while (leftHand.stepper->isRunning() || rightHand.stepper->isRunning()) {
+    while (leftHand.stepper->isRunning() || rightHand.stepper->isRunning()) 
+    {
     }
     //prvy takt
     tempo = 2208; 
@@ -643,7 +637,6 @@ void loop() {
     sendData.end = 1;
     esp_now_send(camAddr, (uint8_t *) &sendData, sizeof(sendData));
     Serial.printf("Data sended: %d\n",sendData.end );
-    }
     go = 1;
   }
 }
