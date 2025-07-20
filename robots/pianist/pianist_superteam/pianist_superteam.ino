@@ -113,11 +113,11 @@ int finalCountdownLeft1[] =
   0b00000000,
   0b00000000,
   0b00000000,
-  0b00000000,//stv pomlcka
+  0b10000001,//stv pomlcka
   0b00000000,
   0b00000000,
   0b00000000,
-  0b00000000,//stv pomlcka
+  0b10000001,//stv pomlcka
   0b00000000,
   0b00000000, 
   0b00000000,
@@ -151,11 +151,11 @@ int finalCountdownLeft2[] =
   0b00000000,
   0b00000000,
   0b00000000,
-  0b00000000,//stv pomlcka
+  0b00000100,//stv pomlcka
   0b00000000,
   0b00000000,
   0b00000000,
-  0b00000000,//stv pomlcka
+  0b00000100,//stv pomlcka
   0b00000000,
   0b00000000, 
   0b00000000,
@@ -189,14 +189,13 @@ int finalCountdownLeft3[] =
   0b00000000,
   0b00000000,
   0b00000000,
+  0b00010000,//stv
   0b00000000,
   0b00000000,
   0b00000000,
-  0b00000000,
-  0b00000000,
+  0b00000000,//stv
   0b00010000,
   0b00000000,
-  0b00000000, 
   0b00000000,
   0b00010000,//stv
   0b00000000,
@@ -241,6 +240,25 @@ int finalCountdownLeft4[] =
   0b00000000, 
   0b00000000,
 };
+int finalCountdownLeft4[] = 
+{
+  0b10000001,//stv pomcka
+  0b00000000,
+  0b00000000,
+  0b00000000,
+  0b00000000,//stv pomlcka
+  0b00000000,
+  0b00000000,
+  0b00000000,
+  0b00000000,//stv pomlcka
+  0b00000000,
+  0b00000000, 
+  0b00000000,
+  0b00000000,//stv
+  0b00000000,
+  0b00000000, 
+  0b00000000,
+};
 int kernkraftRightPosition1[] = {F, 2};
 int kernkraftRight1[] = 
 {
@@ -262,7 +280,7 @@ int kernkraftRight1[] =
   0b00000000,
 };
 
-int kernkraftLeftPosition1[] = {A, 1};
+int kernkraftLeftPosition1[] = {G, 1};
 int kernkraftLeftPosition2[] = {D, 2};
 int kernkraftLeft1[]
 {
