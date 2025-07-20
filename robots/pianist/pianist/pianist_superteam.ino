@@ -121,9 +121,9 @@ int finalCountdownLeft1[] =
   0b00000000,
   0b00000000, 
   0b00000000,
-  0b00000010,//stv
+  0b00000001,//osm
   0b00000000,
-  0b00000000, 
+  0b00000010, 
   0b00000000,
 };
 int finalCountdownRight2[] =
@@ -159,9 +159,9 @@ int finalCountdownLeft2[] =
   0b00000000,
   0b00000000, 
   0b00000000,
-  0b00001000,//stv
+  0b00000100,//osm
   0b00000000,
-  0b00000000, 
+  0b00001000, //osm
   0b00000000,
 };
 int finalCountdownRight3[] =
@@ -177,27 +177,27 @@ int finalCountdownRight3[] =
   0b00000001,//stv
   0b00000000,
   0b00000000, 
-  0b00000000,
-  0b00100000,//stv
+  0b00100000,
+  0b00000000,//stv
   0b00000000,
   0b00000000,
   0b00000000,
 };
 int finalCountdownLeft3[] =
 {
-  0b00010000,//stv pomcka
+  0b00010000,//stv
   0b00000000,
   0b00000000,
   0b00000000,
-  0b00000000,//stv pomlcka
+  0b00000000
   0b00000000,
   0b00000000,
   0b00000000,
-  0b00000000,//stv pomlcka
+  0b00000000,
   0b00000000,
   0b00000000, 
   0b00000000,
-  0b00000000,//stv
+  0b00010000,//stv
   0b00000000,
   0b00000000, 
   0b00000000,
@@ -320,7 +320,7 @@ void OnDataRecv(const uint8_t * mac, const uint8_t *incomingData, int len) {
     while (leftHand .stepper->isRunning()) {
     }
   }
-  
+
   if(myData.song == 2)
   { 
     start = millis();
