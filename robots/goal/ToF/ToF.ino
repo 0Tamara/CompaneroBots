@@ -4,9 +4,6 @@
 
 VL53L0X distanceSensor;
 float vzdialenost;
-unsigned long cas;
-bool bezi = false;
-bool vypis = false;
 
 void setup() {
   Serial.begin(115200);
@@ -22,7 +19,7 @@ void setup() {
 }
 
 void loop() {
-  vzdialenost = (float)distanceSensor.readRangeSingleMillimeters();
+  vzdialenost = distanceSensor.readRangeSingleMillimeters();
   if(vzdialenost < THR_DISTANCE)
   {
     Serial.println(vzdialenost);
