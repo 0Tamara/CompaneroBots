@@ -343,7 +343,7 @@ int barLeft[16];
 int barRight[16];
 int positionLeft[2];
 int positionRight[2];
-
+//opatrujte niekto tento kod, je to posledny kod ktory napisem na robocup onstage pre klaviristu
 void playBar(){ 
   targetNoteRight = positionRight[0];
   targetOctaveRight = positionRight[1];
