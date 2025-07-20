@@ -86,8 +86,8 @@ Hand rightHand = {
   .releaseValue = SERVOMIN,
 };
 
-int finalCountdownRightPosition1[]{A, 2};
-int finalCountdownRight1[]
+int finalCountdownRightPosition1[] = {F, 1};
+int finalCountdownRight1[] =
 {
     0b00001000,//stv pomcka
     0b00000000,
@@ -106,8 +106,9 @@ int finalCountdownRight1[]
     0b00000000,
     0b00000000,
 }; 
-int finalCountdownLeftPosition1[]{F, 1};
-int finalCountdownLeft1[]{
+int finalCountdownLeftPosition1[] = {A, 2};
+int finalCountdownLeft1[] =
+{
     0b10000001,//stv pomcka
     0b00000000,
     0b00000000,
@@ -125,7 +126,7 @@ int finalCountdownLeft1[]{
     0b00000000, 
     0b00000000,
 };
-int finalCountdownRight2[]
+int finalCountdownRight2[] =
 {
     0b00000000,//stv pomcka
     0b00000000,
@@ -144,7 +145,8 @@ int finalCountdownRight2[]
     0b00000000,
     0b00000000,
 };
-int finalCountdownLeft2[]{
+int finalCountdownLeft2[] =
+{
     0b00000100,//stv pomcka
     0b00000000,
     0b00000000,
@@ -162,7 +164,7 @@ int finalCountdownLeft2[]{
     0b00000000, 
     0b00000000,
 };
-int finalCountdownRight3[]
+int finalCountdownRight3[] =
 {
     0b00000000,//stv pomcka
     0b00000000,
@@ -181,7 +183,8 @@ int finalCountdownRight3[]
     0b00000000,
     0b00000000,
 };
-int finalCountdownLeft3[]{
+int finalCountdownLeft3[] =
+{
     0b00010000,//stv pomcka
     0b00000000,
     0b00000000,
@@ -199,7 +202,7 @@ int finalCountdownLeft3[]{
     0b00000000, 
     0b00000000,
 };
-int finalCountdownRight4[]
+int finalCountdownRight4[] =
 {
     0b01000000,//stv 
     0b00000000,
@@ -218,7 +221,8 @@ int finalCountdownRight4[]
     0b00000100,//osm
     0b00000000,
 };
-int finalCountdownLeft4[]{
+int finalCountdownLeft4[] = 
+{
     0b00000010,//stv pomcka
     0b00000000,
     0b00000000,
