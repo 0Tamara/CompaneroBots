@@ -1,52 +1,33 @@
 #include <WiFi.h>
 #include <esp_wifi.h>
 #include <esp_now.h>
+#include <VL53L0X.h>
 
-int recv_index;
-int progress = 0;  //when in the performance we are
+#define THR_DISTANCE 1000
 
-unsigned long timer_start;
-
-HardwareSerial camSerial(2);
+VL53L0X distanceSensor;
+float vzdialenost;
 
 //MAC addr:
 uint8_t dancer_addr[] = {0xA0, 0xDD, 0x6C, 0x0F, 0x79, 0x38};
 uint8_t drummer_addr[] = {0xA0, 0xA3, 0xB3, 0xFE, 0xD7, 0xC4};
 uint8_t pianist_addr[] = {0x84, 0x0D, 0x8E, 0xE4, 0xB4, 0x58};
 
-typedef struct struct_dancer
+typedef struct struct_com
 {
   byte value;
-  byte r_shoulder;
-  byte r_elbow;
-  byte l_shoulder;
-  byte l_elbow;
-  byte movement;
-} struct_dancer;
+} struct_com;
 
-typedef struct struct_musicians
-{
-  byte song;
-  byte sync;
-} struct_musicians;
-
-struct_dancer dancer_mes;
-struct_musicians drummer_mes;
-struct_musicians pianist_mes;
-
-typedef struct struct_recv
-{
-  byte value;
-} struct_recv;
-
-struct_recv recv_data;
+struct_com message;
 
 esp_now_peer_info_t peerInfo;
 
 
 void setup(){
-  //init serial
+  //debug purpose
   Serial.begin(115200);
+  pinMode(2, OUTPUT);
+  digitalWrite(2, LOW);
   //init WiFi & read MAC address
   WiFi.mode(WIFI_STA);
   uint8_t baseMac[6];
@@ -83,32 +64,26 @@ void setup(){
     return;
   }
 
-  dancer_mes.value = 0;
-  dancer_mes.r_shoulder = 0;
-  dancer_mes.r_elbow = 0;
-  dancer_mes.l_shoulder = 0;
-  dancer_mes.l_elbow = 0;
-  dancer_mes.movement = 0;
-  drummer_mes.song = 0;
-  drummer_mes.sync = 1;
-  pianist_mes.song = 0;
-  pianist_mes.sync = 1;
+  //init ToF sensor
+  Wire.begin();
+  distanceSensor.setTimeout(100);
+  if (!distanceSensor.init())
+    Serial.println("Failed to detect and initialize sensor VL53L0X !");
 
-  pinMode(2, OUTPUT);
-  digitalWrite(2, LOW);
+  message.value = 0;
+
 }
 
 void loop(){
-  pianist_mes.song = 1;
-  esp_now_send(pianist_addr, (uint8_t *) &pianist_mes, sizeof(pianist_mes));
-  digitalWrite(2, LOW);
-  delay(2000);
-  pianist_mes.song = 2;
-  esp_now_send(pianist_addr, (uint8_t *) &pianist_mes, sizeof(pianist_mes));
-  digitalWrite(2, HIGH);
-  delay(20000);
-  pianist_mes.song = 3;
-  esp_now_send(pianist_addr, (uint8_t *) &pianist_mes, sizeof(pianist_mes));
-  digitalWrite(2, HIGH);
-  delay(20000);
+  vzdialenost = distanceSensor.readRangeSingleMillimeters();
+  if(vzdialenost < THR_DISTANCE)
+  {
+    Serial.println(vzdialenost);
+    digitalWrite(2, HIGH);
+    message.value = 10;
+    esp_now_send(NULL, (uint8_t *) &message, sizeof(message));
+    delay(100);
+    digitalWrite(2, LOW);
+    delay(500);
+  }
 }
