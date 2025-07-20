@@ -462,10 +462,8 @@ void OnDataRecv(const uint8_t * mac, const uint8_t *incomingData, int len) {
     tempo = 1950;
     sest = tempo / 16;
     rightHand.stepper->moveTo(stepsPerNote * kernkraftRightPosition1[0] + stepsPerOctave * (kernkraftRightPosition1[1] - 1));
-    while (rightHand.stepper->isRunning()) {
-    } 
     leftHand.stepper->moveTo(stepsPerNote * kernkraftLeftPosition1[0] + stepsPerOctave * (kernkraftLeftPosition1[1] - 1));
-    while (leftHand.stepper->isRunning()) {
+    while (leftHand.stepper->isRunning() || rightHand.stepper->isRunning()) {
     }
     for(int i=0; i<16; i++)
     {
