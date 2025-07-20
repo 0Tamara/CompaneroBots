@@ -261,16 +261,8 @@ int kernkraftRight1[] =
   0b00000000,
 };
 
-<<<<<<< Updated upstream
 int kernkraftLeftPosition1[] = {A, 1};
 int kernkraftLeftPosition2[] = {D, 2};
-=======
-int kernkraftLeftPosition1[] = {H, 1};
-int kernkraftLeftPosition2[] = {F, 1};
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
 int kernkraftLeft1[]
 {
   0b10000000, //osm
@@ -410,16 +402,6 @@ void OnDataRecv(const uint8_t * mac, const uint8_t *incomingData, int len) {
 
   if(myData.song == 2)
   { 
-<<<<<<< Updated upstream
-=======
-    //demo
-    start = millis();
-    tempo = 3000;
-    sest = tempo / 16;
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
     //prvy takt
     start = millis();
     tempo = 2208; 
