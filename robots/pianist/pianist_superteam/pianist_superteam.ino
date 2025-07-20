@@ -189,7 +189,7 @@ int finalCountdownLeft3[] =
   0b00000000,
   0b00000000,
   0b00000000,
-  0b00000000,
+  0b00000000
   0b00000000,
   0b00000000,
   0b00000000,
@@ -239,25 +239,6 @@ int finalCountdownLeft4[] =
   0b00000000,
   0b00000000, 
   0b00000000,
-};
-int stupnicaRightAndLeftPosition[]{C, 1};
-int stupnicaRightAndLeft[]{
-  0b10000000,
-  0b01000000,
-  0b00100000,
-  0b00010000,
-  0b00001000,
-  0b00000100,
-  0b00000010,
-  0b00000001,
-  0b00000001,
-  0b00000010,
-  0b00000100,
-  0b00001000,
-  0b00010000,
-  0b00100000,
-  0b01000000,
-  0b10000000,
 };
 int kernkraftRightPosition1[] = {F, 2};
 int kernkraftRight1[] = 
@@ -415,30 +396,12 @@ void OnDataRecv(const uint8_t * mac, const uint8_t *incomingData, int len) {
     while (rightHand.stepper->isRunning()) {
     } 
     leftHand.stepper->moveTo(0);
-    while (leftHand .stepper->isRunning()) {
+    while (leftHand.stepper->isRunning()) {
     }
   }
 
   if(myData.song == 2)
   { 
-    //demo
-    start = millis();
-    tempo = 3000;
-    sest = tempo / 16;
-    for(int i=0; i<16; i++)
-    {
-      barLeft[i] = stupnicaRightAndLeft[i];
-      barRight[i] = stupnicaRightAndLeft[i];
-    }
-    for(int i=0; i<2; i++)
-    {
-      positionLeft[i] = stupnicaRightAndLeftPosition[i];
-      positionRight[i] = stupnicaRightAndLeftPosition[i];
-    }
-    playBar();
-    sendData.end = 1;
-    esp_now_send(camAddr, (uint8_t *) &sendData, sizeof(sendData));
-    Serial.printf("Data sended: %d\n",sendData.end );
     //prvy takt
     start = millis();
     tempo = 2208; 
@@ -493,6 +456,12 @@ void OnDataRecv(const uint8_t * mac, const uint8_t *incomingData, int len) {
     start = millis();
     tempo = 1950;
     sest = tempo / 16;
+    rightHand.stepper->moveTo(stepsPerNote * kernkraftRightPosition1[0] + stepsPerOctave * kernkraftRightPosition1[1]);
+    while (rightHand.stepper->isRunning()) {
+    } 
+    leftHand.stepper->moveTo(stepsPerNote * kernkraftLeftPosition1[0] + stepsPerOctave * kernkraftLeftPosition1[1]);
+    while (leftHand.stepper->isRunning()) {
+    }
     for(int i=0; i<16; i++)
     {
       barLeft[i] = kernkraftLeft1[i];
