@@ -267,6 +267,9 @@ int kernkraftLeftPosition2[] = {D, 2};
 =======
 int kernkraftLeftPosition1[] = {H, 1};
 int kernkraftLeftPosition2[] = {F, 1};
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 int kernkraftLeft1[]
 {
@@ -413,6 +416,9 @@ void OnDataRecv(const uint8_t * mac, const uint8_t *incomingData, int len) {
     start = millis();
     tempo = 3000;
     sest = tempo / 16;
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     //prvy takt
     start = millis();
