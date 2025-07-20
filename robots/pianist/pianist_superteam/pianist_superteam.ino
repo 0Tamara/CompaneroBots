@@ -403,10 +403,10 @@ void OnDataRecv(const uint8_t * mac, const uint8_t *incomingData, int len) {
 
   if(myData.song == 2)
   { 
-    rightHand.stepper->moveTo(stepsPerNote * finalCountdownRightPosition1[0] + stepsPerOctave * finalCountdownRightPosition1[1]);
+    rightHand.stepper->moveTo(stepsPerNote * finalCountdownRightPosition1[0] + stepsPerOctave * (finalCountdownRightPosition1[1]  - 1));
     while (rightHand.stepper->isRunning()) {
     } 
-    leftHand.stepper->moveTo(stepsPerNote * finalCountdownLeftPosition1[0] + stepsPerOctave * finalCountdownLeftPosition1[1]);
+    leftHand.stepper->moveTo(stepsPerNote * finalCountdownLeftPosition1[0] + stepsPerOctave * (finalCountdownLeftPosition1[1] - 1));
     while (leftHand.stepper->isRunning()) {
     }
     //prvy takt
@@ -463,10 +463,10 @@ void OnDataRecv(const uint8_t * mac, const uint8_t *incomingData, int len) {
     start = millis();
     tempo = 1950;
     sest = tempo / 16;
-    rightHand.stepper->moveTo(stepsPerNote * kernkraftRightPosition1[0] + stepsPerOctave * kernkraftRightPosition1[1]);
+    rightHand.stepper->moveTo(stepsPerNote * kernkraftRightPosition1[0] + stepsPerOctave * (kernkraftRightPosition1[1] - 1));
     while (rightHand.stepper->isRunning()) {
     } 
-    leftHand.stepper->moveTo(stepsPerNote * kernkraftLeftPosition1[0] + stepsPerOctave * kernkraftLeftPosition1[1]);
+    leftHand.stepper->moveTo(stepsPerNote * kernkraftLeftPosition1[0] + stepsPerOctave * (kernkraftLeftPosition1[1] - 1));
     while (leftHand.stepper->isRunning()) {
     }
     for(int i=0; i<16; i++)
