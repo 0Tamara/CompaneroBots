@@ -47,6 +47,7 @@ int tempo = 2280;
 int sest = tempo / 16; 
 unsigned long start = millis();
 const int rezerva = 20;
+int go = 0;
 
 // kniznice
 Adafruit_PWMServoDriver pca9685right(0x41, Wire);
@@ -240,7 +241,26 @@ int finalCountdownLeft4[] =
   0b00000000, 
   0b00000000,
 };
-int finalCountdownLeft4[] = 
+int finalCountdownRight5[] =
+{
+  0b00001000,//stv pomcka
+  0b00000000,
+  0b00000000,
+  0b00000000,
+  0b00000000,//osm pomlcka
+  0b00000000,
+  0b00000000,//sest 
+  0b00000000,//sest
+  0b00000000,//stv
+  0b00000000,
+  0b00000000,
+  0b00000000,
+  0b00000000,//stv
+  0b00000000,
+  0b00000000,
+  0b00000000,
+}; 
+int finalCountdownLeft5[] = 
 {
   0b10000001,//stv pomcka
   0b00000000,
@@ -259,7 +279,7 @@ int finalCountdownLeft4[] =
   0b00000000, 
   0b00000000,
 };
-int kernkraftRightPosition1[] = {F, 2};
+int kernkraftRightPosition1[] = {F, 1};
 int kernkraftRight1[] = 
 {
   0b00000000,//osm pomlcka
@@ -280,7 +300,7 @@ int kernkraftRight1[] =
   0b00000000,
 };
 
-int kernkraftLeftPosition1[] = {G, 1};
+int kernkraftLeftPosition1[] = {A, 1};
 int kernkraftLeftPosition2[] = {D, 2};
 int kernkraftLeft1[]
 {
@@ -405,10 +425,10 @@ void playBar(){
 }
 
 void OnDataRecv(const uint8_t * mac, const uint8_t *incomingData, int len) {
-  start = millis();
   memcpy(&myData, incomingData, sizeof(myData));
   Serial.printf("song = %d\n", myData.song);
   Serial.printf("time = %d\n", myData.time);
+  start = millis();
   if(myData.song == 1)
   {
     rightHand.stepper->moveTo(0);
@@ -421,59 +441,7 @@ void OnDataRecv(const uint8_t * mac, const uint8_t *incomingData, int len) {
 
   if(myData.song == 2)
   { 
-    rightHand.stepper->moveTo(stepsPerNote * finalCountdownRightPosition1[0] + stepsPerOctave * (finalCountdownRightPosition1[1]  - 1));
-    leftHand.stepper->moveTo(stepsPerNote * finalCountdownLeftPosition1[0] + stepsPerOctave * (finalCountdownLeftPosition1[1] - 1));
-    while (leftHand.stepper->isRunning() || rightHand.stepper->isRunning()) {
-    }
-    //prvy takt
-    tempo = 2208; 
-    sest = tempo / 16; 
-    for(int i=0; i<16; i++)
-    {
-      barLeft[i] = finalCountdownLeft1[i];
-      barRight[i] = finalCountdownRight1[i];
-    }
-    for(int i=0; i<2; i++)
-    {
-      positionLeft[i] = finalCountdownLeftPosition1[i];
-      positionRight[i] = finalCountdownRightPosition1[i];
-    }
-    start = millis();
-    playBar();
-    while(millis() - start <= tempo ){}
-    //druhy takt
-    for(int i=0; i<16; i++)
-    {
-      barLeft[i] = finalCountdownLeft2[i];
-      barRight[i] =finalCountdownRight2[i];
-    }
     
-    start = millis();
-    playBar();
-    while(millis() - start <= tempo ){}
-    //treti takt
-    for(int i=0; i<16; i++)
-    {
-      barLeft[i] = finalCountdownLeft3[i];
-      barRight[i] =finalCountdownRight3[i];
-    }
-    start = millis();
-    playBar();
-    while(millis() - start <= tempo ){}
-    //stvrty takt
-    for(int i=0; i<16; i++)
-    {
-      barLeft[i] = finalCountdownLeft4[i];
-      barRight[i] =finalCountdownRight4[i];
-    }
-    start = millis();
-    playBar(); 
-    while(millis() - start <= tempo ){}
-    //odoslanie
-    sendData.end = 1;
-    esp_now_send(camAddr, (uint8_t *) &sendData, sizeof(sendData));
-    Serial.printf("Data sended: %d\n",sendData.end );
-  }
   if(myData.song == 3)
   {
     //prvy takt
@@ -606,4 +574,76 @@ void setup() {
 }
  
 void loop() {
+  if(go = 0){
+    delay(2000);
+    rightHand.stepper->moveTo(0);
+    while (rightHand.stepper->isRunning()) {
+    } 
+    leftHand.stepper->moveTo(0);
+    while (leftHand.stepper->isRunning()) {
+    }
+    rightHand.stepper->moveTo(stepsPerNote * finalCountdownRightPosition1[0] + stepsPerOctave * (finalCountdownRightPosition1[1]  - 1));
+    leftHand.stepper->moveTo(stepsPerNote * finalCountdownLeftPosition1[0] + stepsPerOctave * (finalCountdownLeftPosition1[1] - 1));
+    while (leftHand.stepper->isRunning() || rightHand.stepper->isRunning()) {
+    }
+    //prvy takt
+    tempo = 2208; 
+    sest = tempo / 16; 
+    for(int i=0; i<16; i++)
+    {
+      barLeft[i] = finalCountdownLeft1[i];
+      barRight[i] = finalCountdownRight1[i];
+    }
+    for(int i=0; i<2; i++)
+    {
+      positionLeft[i] = finalCountdownLeftPosition1[i];
+      positionRight[i] = finalCountdownRightPosition1[i];
+    }
+    start = millis();
+    playBar();
+    while(millis() - start <= tempo ){}
+    //druhy takt
+    for(int i=0; i<16; i++)
+    {
+      barLeft[i] = finalCountdownLeft2[i];
+      barRight[i] =finalCountdownRight2[i];
+    }
+    
+    start = millis();
+    playBar();
+    while(millis() - start <= tempo ){}
+    //treti takt
+    for(int i=0; i<16; i++)
+    {
+      barLeft[i] = finalCountdownLeft3[i];
+      barRight[i] =finalCountdownRight3[i];
+    }
+    start = millis();
+    playBar();
+    while(millis() - start <= tempo ){}
+    //stvrty takt
+    for(int i=0; i<16; i++)
+    {
+      barLeft[i] = finalCountdownLeft4[i];
+      barRight[i] =finalCountdownRight4[i];
+    }
+    start = millis();
+    playBar(); 
+    while(millis() - start <= tempo ){}
+    //piaty takt
+    for(int i=0; i<16; i++)
+    {
+      barLeft[i] = finalCountdownLeft5[i];
+      barRight[i] =finalCountdownRight5[i];
+    }
+    start = millis();
+    playBar(); 
+    while(millis() - start <= tempo ){}
+    //odoslanie
+    sendData.end = 1;
+    esp_now_send(camAddr, (uint8_t *) &sendData, sizeof(sendData));
+    Serial.printf("Data sended: %d\n",sendData.end );
+    }
+    go = 1;
+  }
 }
