@@ -299,17 +299,17 @@ void OnDataRecv(const uint8_t * mac, const uint8_t *incomingData, int len) {
   }
   if(myData.song == 2)
   {
-    tempo = 890; 
+    tempo = 2208; 
     sest = tempo / 16; 
     for(int i=0; i<16; i++)
     {
-      barLeft[i] = finalCountdownRight1[i];
-      barRight[i] = finalCountdownLeft1[i];
+      barLeft[i] = finalCountdownLeft1[i];
+      barRight[i] = finalCountdownRight1[i];
     }
     for(int i=0; i<2; i++)
     {
-      positionLeft[i] = finalCountdownRightPosition1[i];
-      positionRight[i] = finalCountdownLeftPosition1[i];
+      positionLeft[i] = finalCountdownLeftPosition1[i];
+      positionRight[i] = finalCountdownRightPosition1[i];
     }
     playBar();
     while(millis() - start <= tempo ){}
@@ -317,8 +317,8 @@ void OnDataRecv(const uint8_t * mac, const uint8_t *incomingData, int len) {
     start = millis();
     for(int i=0; i<16; i++)
     {
-      barLeft[i] = finalCountdownRight2[i];
-      barRight[i] =finalCountdownLeft2[i];
+      barLeft[i] = finalCountdownLeft2[i];
+      barRight[i] =finalCountdownRight2[i];
     }
     playBar();
     while(millis() - start <= tempo ){}
@@ -326,8 +326,8 @@ void OnDataRecv(const uint8_t * mac, const uint8_t *incomingData, int len) {
     start = millis();
     for(int i=0; i<16; i++)
     {
-      barLeft[i] = finalCountdownRight3[i];
-      barRight[i] =finalCountdownLeft3[i];
+      barLeft[i] = finalCountdownLeft3[i];
+      barRight[i] =finalCountdownRight3[i];
     }
     playBar();
     while(millis() - start <= tempo ){}
@@ -335,8 +335,8 @@ void OnDataRecv(const uint8_t * mac, const uint8_t *incomingData, int len) {
     start = millis();
     for(int i=0; i<16; i++)
     {
-      barLeft[i] = finalCountdownRight4[i];
-      barRight[i] =finalCountdownLeft4[i];
+      barLeft[i] = finalCountdownLeft4[i];
+      barRight[i] =finalCountdownRight4[i];
     }
     playBar();
     while(millis() - start <= tempo ){}
