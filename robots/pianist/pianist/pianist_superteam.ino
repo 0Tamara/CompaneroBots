@@ -299,6 +299,7 @@ void OnDataRecv(const uint8_t * mac, const uint8_t *incomingData, int len) {
   }
   if(myData.song == 2)
   {
+    start = millis();
     tempo = 2208; 
     sest = tempo / 16; 
     for(int i=0; i<16; i++)
