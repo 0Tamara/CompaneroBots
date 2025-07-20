@@ -448,7 +448,7 @@ void OnDataRecv(const uint8_t * mac, const uint8_t *incomingData, int len) {
       barLeft[i] = finalCountdownLeft4[i];
       barRight[i] =finalCountdownRight4[i];
     }
-    playBar();
+    playBar(); 
     while(millis() - start <= tempo ){}
     //odoslanie
     sendData.end = 1;
@@ -458,13 +458,13 @@ void OnDataRecv(const uint8_t * mac, const uint8_t *incomingData, int len) {
   if(myData.song == 3)
   {
     //prvy takt
-    start = millis();
-    tempo = 1950;
+    tempo = 2500;
     sest = tempo / 16;
     rightHand.stepper->moveTo(stepsPerNote * kernkraftRightPosition1[0] + stepsPerOctave * (kernkraftRightPosition1[1] - 1));
     leftHand.stepper->moveTo(stepsPerNote * kernkraftLeftPosition1[0] + stepsPerOctave * (kernkraftLeftPosition1[1] - 1));
     while (leftHand.stepper->isRunning() || rightHand.stepper->isRunning()) {
     }
+    start = millis();
     for(int i=0; i<16; i++)
     {
       barLeft[i] = kernkraftLeft1[i];
@@ -472,8 +472,8 @@ void OnDataRecv(const uint8_t * mac, const uint8_t *incomingData, int len) {
     }
     for(int i=0; i<2; i++)
     {
-      positionLeft[i] = kernkraftRightPosition1[i];
-      positionRight[i] = kernkraftLeftPosition1[i];
+      positionLeft[i] = kernkraftLeftPosition1[i];
+      positionRight[i] = kernkraftRightPosition1[i];
     }
     playBar();
     while(millis() - start <= tempo){}
@@ -495,8 +495,8 @@ void OnDataRecv(const uint8_t * mac, const uint8_t *incomingData, int len) {
     }
     for(int i=0; i<2; i++)
     {
-      positionLeft[i] = kernkraftRightPosition1[i];
-      positionRight[i] = kernkraftLeftPosition2[i];
+      positionLeft[i] = kernkraftLeftPosition1[i];
+      positionRight[i] = kernkrafRightPosition2[i];
     }
     playBar();
     while(millis() - start <= tempo){}
@@ -509,8 +509,8 @@ void OnDataRecv(const uint8_t * mac, const uint8_t *incomingData, int len) {
     }
     for(int i=0; i<2; i++)
     {
-      positionLeft[i] = kernkraftRightPosition1[i];
-      positionRight[i] = kernkraftLeftPosition1[i];
+      positionLeft[i] = kernkraftLeftPosition1[i];
+      positionRight[i] = kernkraftRightPosition1[i];
     }
     playBar();
     while(millis() - start <= tempo){}
