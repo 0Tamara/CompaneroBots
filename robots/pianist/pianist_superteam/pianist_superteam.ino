@@ -106,7 +106,7 @@ int finalCountdownRight1[] =
   0b00000000,
   0b00000000,
 }; 
-int finalCountdownLeftPosition1[] = {A, 2};
+int finalCountdownLeftPosition1[] = {A, 1};
 int finalCountdownLeft1[] =
 {
   0b10000001,//stv pomcka
