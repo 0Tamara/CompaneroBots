@@ -426,7 +426,6 @@ void OnDataRecv(const uint8_t * mac, const uint8_t *incomingData, int len) {
     while (leftHand.stepper->isRunning() || rightHand.stepper->isRunning()) {
     }
     //prvy takt
-    start = millis();
     tempo = 2208; 
     sest = tempo / 16; 
     for(int i=0; i<16; i++)
@@ -439,33 +438,35 @@ void OnDataRecv(const uint8_t * mac, const uint8_t *incomingData, int len) {
       positionLeft[i] = finalCountdownLeftPosition1[i];
       positionRight[i] = finalCountdownRightPosition1[i];
     }
+    start = millis();
     playBar();
     while(millis() - start <= tempo ){}
     //druhy takt
-    start = millis();
     for(int i=0; i<16; i++)
     {
       barLeft[i] = finalCountdownLeft2[i];
       barRight[i] =finalCountdownRight2[i];
     }
+    
+    start = millis();
     playBar();
     while(millis() - start <= tempo ){}
     //treti takt
-    start = millis();
     for(int i=0; i<16; i++)
     {
       barLeft[i] = finalCountdownLeft3[i];
       barRight[i] =finalCountdownRight3[i];
     }
+    start = millis();
     playBar();
     while(millis() - start <= tempo ){}
     //stvrty takt
-    start = millis();
     for(int i=0; i<16; i++)
     {
       barLeft[i] = finalCountdownLeft4[i];
       barRight[i] =finalCountdownRight4[i];
     }
+    start = millis();
     playBar(); 
     while(millis() - start <= tempo ){}
     //odoslanie
@@ -476,13 +477,12 @@ void OnDataRecv(const uint8_t * mac, const uint8_t *incomingData, int len) {
   if(myData.song == 3)
   {
     //prvy takt
-    tempo = 2500;
+    tempo = 2000;
     sest = tempo / 16;
     rightHand.stepper->moveTo(stepsPerNote * kernkraftRightPosition1[0] + stepsPerOctave * (kernkraftRightPosition1[1] - 1));
     leftHand.stepper->moveTo(stepsPerNote * kernkraftLeftPosition1[0] + stepsPerOctave * (kernkraftLeftPosition1[1] - 1));
     while (leftHand.stepper->isRunning() || rightHand.stepper->isRunning()) {
     }
-    start = millis();
     for(int i=0; i<16; i++)
     {
       barLeft[i] = kernkraftLeft1[i];
@@ -493,19 +493,19 @@ void OnDataRecv(const uint8_t * mac, const uint8_t *incomingData, int len) {
       positionLeft[i] = kernkraftLeftPosition1[i];
       positionRight[i] = kernkraftRightPosition1[i];
     }
+    start = millis();
     playBar();
     while(millis() - start <= tempo){}
     //druhy takt
-    start = millis();
     for(int i=0; i<16; i++)
     {
       barLeft[i] = kernkraftLeft1[i];
       barRight[i] = kernkraftRight2[i];
     }
+    start = millis();
     playBar();
     while(millis() - start <= tempo){}
     //treti takt
-    start = millis();
     for(int i=0; i<16; i++)
     {
       barLeft[i] = kernkraftLeft1[i];
@@ -516,10 +516,10 @@ void OnDataRecv(const uint8_t * mac, const uint8_t *incomingData, int len) {
       positionLeft[i] = kernkraftLeftPosition2[i];
       positionRight[i] = kernkraftRightPosition1[i];
     }
+    start = millis();
     playBar();
     while(millis() - start <= tempo){}
     //stvrty takt 
-    start = millis();
     for(int i=0; i<16; i++)
     {
       barLeft[i] = kernkraftLeft1[i];
@@ -530,6 +530,7 @@ void OnDataRecv(const uint8_t * mac, const uint8_t *incomingData, int len) {
       positionLeft[i] = kernkraftLeftPosition1[i];
       positionRight[i] = kernkraftRightPosition1[i];
     }
+    start = millis();
     playBar();
     while(millis() - start <= tempo){}
 
