@@ -99,7 +99,7 @@ void OnDataRecv(const uint8_t * mac, const uint8_t *incoming_data, int len) {
   Serial.print("data: ");
   Serial.println(recv_data.value);
 
-  if(recv_data.song == 10)
+  if(recv_data.value == 10)
   {
     openEyes(color_eyes);
     r_arm.write(80);

@@ -47,6 +47,7 @@ int tempo = 2280;
 int sest = tempo / 16; 
 unsigned long start = millis();
 const int rezerva = 20;
+int go = 0;
 
 // kniznice
 Adafruit_PWMServoDriver pca9685right(0x41, Wire);
@@ -240,7 +241,26 @@ int finalCountdownLeft4[] =
   0b00000000, 
   0b00000000,
 };
-int finalCountdownLeft4[] = 
+int finalCountdownRight5[] =
+{
+  0b00001000,//stv pomcka
+  0b00000000,
+  0b00000000,
+  0b00000000,
+  0b00000000,//osm pomlcka
+  0b00000000,
+  0b00000000,//sest 
+  0b00000000,//sest
+  0b00000000,//stv
+  0b00000000,
+  0b00000000,
+  0b00000000,
+  0b00000000,//stv
+  0b00000000,
+  0b00000000,
+  0b00000000,
+}; 
+int finalCountdownLeft5[] = 
 {
   0b10000001,//stv pomcka
   0b00000000,
@@ -259,7 +279,7 @@ int finalCountdownLeft4[] =
   0b00000000, 
   0b00000000,
 };
-int kernkraftRightPosition1[] = {F, 2};
+int kernkraftRightPosition1[] = {F, 1};
 int kernkraftRight1[] = 
 {
   0b00000000,//osm pomlcka
@@ -280,7 +300,7 @@ int kernkraftRight1[] =
   0b00000000,
 };
 
-int kernkraftLeftPosition1[] = {G, 1};
+int kernkraftLeftPosition1[] = {A, 1};
 int kernkraftLeftPosition2[] = {D, 2};
 int kernkraftLeft1[]
 {
@@ -404,26 +424,164 @@ void playBar(){
   Serial.println();
 }
 
-void OnDataRecv(const uint8_t * mac, const uint8_t *incomingData, int len) {
-  start = millis();
+void OnDataRecv(const uint8_t * mac, const uint8_t *incomingData, int len) 
+{
   memcpy(&myData, incomingData, sizeof(myData));
   Serial.printf("song = %d\n", myData.song);
   Serial.printf("time = %d\n", myData.time);
-  if(myData.song == 1)
+    
+  if(myData.song == 10    )
   {
-    rightHand.stepper->moveTo(0);
-    while (rightHand.stepper->isRunning()) {
-    } 
-    leftHand.stepper->moveTo(0);
-    while (leftHand.stepper->isRunning()) {
+    while(1)
+    {
+      //prvy takt
+      tempo = 2000;
+      sest = tempo / 16;
+      rightHand.stepper->moveTo(stepsPerNote * kernkraftRightPosition1[0] + stepsPerOctave * (kernkraftRightPosition1[1] - 1));
+      leftHand.stepper->moveTo(stepsPerNote * kernkraftLeftPosition1[0] + stepsPerOctave * (kernkraftLeftPosition1[1] - 1));
+      while (leftHand.stepper->isRunning() || rightHand.stepper->isRunning()) 
+      {
+      }
+      for(int i=0; i<16; i++)
+      {
+        barLeft[i] = kernkraftLeft1[i];
+        barRight[i] = kernkraftRight1[i];
+      }
+      for(int i=0; i<2; i++)
+      {
+        positionLeft[i] = kernkraftLeftPosition1[i];
+        positionRight[i] = kernkraftRightPosition1[i];
+      }
+      start = millis();
+      playBar();
+      while(millis() - start <= tempo){}
+      //druhy takt
+      for(int i=0; i<16; i++)
+      {
+        barLeft[i] = kernkraftLeft1[i];
+        barRight[i] = kernkraftRight2[i];
+      }
+      start = millis();
+      playBar();
+      while(millis() - start <= tempo){}
+      //treti takt
+      for(int i=0; i<16; i++)
+      {
+        barLeft[i] = kernkraftLeft1[i];
+        barRight[i] = kernkraftRight3[i];
+      }
+      for(int i=0; i<2; i++)
+      {
+        positionLeft[i] = kernkraftLeftPosition2[i];
+        positionRight[i] = kernkraftRightPosition1[i];
+      }
+      start = millis();
+      playBar();
+      while(millis() - start <= tempo){}
+      //stvrty takt 
+      for(int i=0; i<16; i++)
+      {
+        barLeft[i] = kernkraftLeft1[i];
+        barRight[i] = kernkraftRight4[i];
+      }
+      for(int i=0; i<2; i++)
+      {
+        positionLeft[i] = kernkraftLeftPosition1[i];
+        positionRight[i] = kernkraftRightPosition1[i];
+      }
+      start = millis();
+      playBar();
+      while(millis() - start <= tempo){}
+
+      sendData.end = 1;
+      esp_now_send(camAddr, (uint8_t *) &sendData, sizeof(sendData));
+      Serial.printf("Data sended: %d\n",sendData.end );
     }
   }
+}
 
-  if(myData.song == 2)
-  { 
+void setup() {
+  Serial.begin(115200);
+  esp_log_level_set("i2c.master", ESP_LOG_NONE);
+  Wire.begin(21, 22);
+  pca9685right.begin();
+  pca9685left.begin();
+  pca9685right.setPWMFreq(50);
+  pca9685left.setPWMFreq(50); 
+  for (int i = 8; i <= numServos; i++){
+    pca9685right.setPWM(i, 0, rightHand.releaseValue);
+    pca9685left.setPWM(i, 0, leftHand.releaseValue); // 0 stupnov
+  }
+  engine.init();
+  leftHand.stepper = engine.stepperConnectToPin(leftHandStepPin);
+  rightHand.stepper = engine.stepperConnectToPin(rightHandStepPin);
+  if (rightHand.stepper == NULL || leftHand.stepper == NULL) {
+    Serial.println("Chyba pri pripojeni krokovych motorov.");
+    while (1);
+  }
+
+  //init WiFi & read MAC address
+  WiFi.mode(WIFI_STA);
+  uint8_t baseMac[6];
+  esp_err_t ret = esp_wifi_get_mac(WIFI_IF_STA, baseMac);
+  Serial.printf("My MAC address: {0x%02X, 0x%02X, 0x%02X, 0x%02X, 0x%02X, 0x%02X}\n",
+                baseMac[0], baseMac[1], baseMac[2],
+                baseMac[3], baseMac[4], baseMac[5]);
+
+  // Init ESP-NOW
+  if (esp_now_init() != ESP_OK) {
+    Serial.println("Error initializing ESP-NOW");
+    return;
+  }
+  
+  // Register peer
+  peerInfo.channel = 0;
+  peerInfo.encrypt = false;
+  
+  // Add peer
+  memcpy(peerInfo.peer_addr, camAddr, 6);
+  if (esp_now_add_peer(&peerInfo) != ESP_OK)
+  {
+    Serial.println("Failed to add peer");
+    return;
+  }
+  
+  // register recv callback
+  esp_now_register_recv_cb(esp_now_recv_cb_t(OnDataRecv));
+  
+  leftHand.stepper->setDirectionPin(leftHandDirPin);
+  leftHand.stepper->setEnablePin(leftHandEnPin);
+  leftHand.stepper->setAutoEnable(true); 
+
+  leftHand.stepper->setSpeedInHz(speedInHz);
+  leftHand.stepper->setAcceleration(acceleration);
+  leftHand.stepper->setCurrentPosition(0);
+  
+  rightHand.stepper->setDirectionPin(rightHandDirPin);
+  rightHand.stepper->setEnablePin(rightHandEnPin);
+  rightHand.stepper->setAutoEnable(true);
+
+  rightHand.stepper->setSpeedInHz(speedInHz);
+  rightHand.stepper->setAcceleration(acceleration);
+  rightHand.stepper->setCurrentPosition((stepsPerOctave * 2));  
+}
+ 
+void loop() {
+  if(go == 0)
+  {
+    delay(2000);
+    rightHand.stepper->moveTo(0);
+    while (rightHand.stepper->isRunning()) 
+    {
+    } 
+    leftHand.stepper->moveTo(0);
+    while (leftHand.stepper->isRunning()) 
+    {
+    }
     rightHand.stepper->moveTo(stepsPerNote * finalCountdownRightPosition1[0] + stepsPerOctave * (finalCountdownRightPosition1[1]  - 1));
     leftHand.stepper->moveTo(stepsPerNote * finalCountdownLeftPosition1[0] + stepsPerOctave * (finalCountdownLeftPosition1[1] - 1));
-    while (leftHand.stepper->isRunning() || rightHand.stepper->isRunning()) {
+    while (leftHand.stepper->isRunning() || rightHand.stepper->isRunning()) 
+    {
     }
     //prvy takt
     tempo = 2208; 
@@ -469,141 +627,19 @@ void OnDataRecv(const uint8_t * mac, const uint8_t *incomingData, int len) {
     start = millis();
     playBar(); 
     while(millis() - start <= tempo ){}
+    //piaty takt
+    for(int i=0; i<16; i++)
+    {
+      barLeft[i] = finalCountdownLeft5[i];
+      barRight[i] =finalCountdownRight5[i];
+    }
+    start = millis();
+    playBar();  
+    while(millis() - start <= tempo ){}
     //odoslanie
     sendData.end = 1;
     esp_now_send(camAddr, (uint8_t *) &sendData, sizeof(sendData));
     Serial.printf("Data sended: %d\n",sendData.end );
+    go = 1;
   }
-  if(myData.song == 3)
-  {
-    //prvy takt
-    tempo = 2000;
-    sest = tempo / 16;
-    rightHand.stepper->moveTo(stepsPerNote * kernkraftRightPosition1[0] + stepsPerOctave * (kernkraftRightPosition1[1] - 1));
-    leftHand.stepper->moveTo(stepsPerNote * kernkraftLeftPosition1[0] + stepsPerOctave * (kernkraftLeftPosition1[1] - 1));
-    while (leftHand.stepper->isRunning() || rightHand.stepper->isRunning()) {
-    }
-    for(int i=0; i<16; i++)
-    {
-      barLeft[i] = kernkraftLeft1[i];
-      barRight[i] = kernkraftRight1[i];
-    }
-    for(int i=0; i<2; i++)
-    {
-      positionLeft[i] = kernkraftLeftPosition1[i];
-      positionRight[i] = kernkraftRightPosition1[i];
-    }
-    start = millis();
-    playBar();
-    while(millis() - start <= tempo){}
-    //druhy takt
-    for(int i=0; i<16; i++)
-    {
-      barLeft[i] = kernkraftLeft1[i];
-      barRight[i] = kernkraftRight2[i];
-    }
-    start = millis();
-    playBar();
-    while(millis() - start <= tempo){}
-    //treti takt
-    for(int i=0; i<16; i++)
-    {
-      barLeft[i] = kernkraftLeft1[i];
-      barRight[i] = kernkraftRight3[i];
-    }
-    for(int i=0; i<2; i++)
-    {
-      positionLeft[i] = kernkraftLeftPosition2[i];
-      positionRight[i] = kernkraftRightPosition1[i];
-    }
-    start = millis();
-    playBar();
-    while(millis() - start <= tempo){}
-    //stvrty takt 
-    for(int i=0; i<16; i++)
-    {
-      barLeft[i] = kernkraftLeft1[i];
-      barRight[i] = kernkraftRight4[i];
-    }
-    for(int i=0; i<2; i++)
-    {
-      positionLeft[i] = kernkraftLeftPosition1[i];
-      positionRight[i] = kernkraftRightPosition1[i];
-    }
-    start = millis();
-    playBar();
-    while(millis() - start <= tempo){}
-
-    sendData.end = 1;
-    esp_now_send(camAddr, (uint8_t *) &sendData, sizeof(sendData));
-    Serial.printf("Data sended: %d\n",sendData.end );
-  }
-}
-
-void setup() {
-  Serial.begin(115200);
-  esp_log_level_set("i2c.master", ESP_LOG_NONE);
-  Wire.begin(21, 22);
-  pca9685right.begin();
-  pca9685left.begin();
-  pca9685right.setPWMFreq(50);
-  pca9685left.setPWMFreq(50); 
-  for (int i = 8; i <= numServos; i++){
-    pca9685right.setPWM(i, 0, rightHand.releaseValue);
-    pca9685left.setPWM(i, 0, leftHand.releaseValue); // 0 stupnov
-  }
-  engine.init();
-  leftHand.stepper = engine.stepperConnectToPin(leftHandStepPin);
-  rightHand.stepper = engine.stepperConnectToPin(rightHandStepPin);
-  if (rightHand.stepper == NULL || leftHand.stepper == NULL) {
-    Serial.println("Chyba pri pripojeni krokovych motorov.");
-    while (1);
-  }
-
-  //init WiFi & read MAC address
-  WiFi.mode(WIFI_STA);
-  uint8_t baseMac[6];
-  esp_err_t ret = esp_wifi_get_mac(WIFI_IF_STA, baseMac);
-  Serial.printf("My MAC address: {0x%02X, 0x%02X, 0x%02X, 0x%02X, 0x%02X, 0x%02X}\n",
-                baseMac[0], baseMac[1], baseMac[2],
-                baseMac[3], baseMac[4], baseMac[5]);
-
-  // Init ESP-NOW
-  if (esp_now_init() != ESP_OK) {
-    Serial.println("Error initializing ESP-NOW");
-    return;
-  }
-  
-  // Register peer
-  peerInfo.channel = 0;
-  peerInfo.encrypt = false;
-  
-  // Add peer
-  memcpy(peerInfo.peer_addr, camAddr, 6);
-  if (esp_now_add_peer(&peerInfo) != ESP_OK){
-    Serial.println("Failed to add peer");
-    return;
-  }
-  
-  // register recv callback
-  esp_now_register_recv_cb(esp_now_recv_cb_t(OnDataRecv));
-  
-  leftHand.stepper->setDirectionPin(leftHandDirPin);
-  leftHand.stepper->setEnablePin(leftHandEnPin);
-  leftHand.stepper->setAutoEnable(true); 
-
-  leftHand.stepper->setSpeedInHz(speedInHz);
-  leftHand.stepper->setAcceleration(acceleration);
-  leftHand.stepper->setCurrentPosition(0);
-  
-  rightHand.stepper->setDirectionPin(rightHandDirPin);
-  rightHand.stepper->setEnablePin(rightHandEnPin);
-  rightHand.stepper->setAutoEnable(true);
-
-  rightHand.stepper->setSpeedInHz(speedInHz);
-  rightHand.stepper->setAcceleration(acceleration);
-  rightHand.stepper->setCurrentPosition((stepsPerOctave * 2));  
-}
- 
-void loop() {
 }

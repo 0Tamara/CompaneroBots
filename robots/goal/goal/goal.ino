@@ -6,7 +6,7 @@
 #define THR_DISTANCE 1000
 
 VL53L0X distanceSensor;
-float vzdialenost;
+int vzdialenost;
 
 //MAC addr:
 uint8_t dancer_addr[] = {0xA0, 0xDD, 0x6C, 0x0F, 0x79, 0x38};
@@ -84,6 +84,6 @@ void loop(){
     esp_now_send(NULL, (uint8_t *) &message, sizeof(message));
     delay(100);
     digitalWrite(2, LOW);
-    delay(500);
+    delay(100);
   }
 }
