@@ -48,6 +48,7 @@ int sest = tempo / 16;
 unsigned long start = millis();
 const int rezerva = 20;
 int go = 0;
+int go = 0;
 
 // kniznice
 Adafruit_PWMServoDriver pca9685right(0x41, Wire);
@@ -261,6 +262,26 @@ int finalCountdownRight5[] =
   0b00000000,
 }; 
 int finalCountdownLeft5[] = 
+int finalCountdownRight5[] =
+{
+  0b00001000,//stv pomcka
+  0b00000000,
+  0b00000000,
+  0b00000000,
+  0b00000000,//osm pomlcka
+  0b00000000,
+  0b00000000,//sest 
+  0b00000000,//sest
+  0b00000000,//stv
+  0b00000000,
+  0b00000000,
+  0b00000000,
+  0b00000000,//stv
+  0b00000000,
+  0b00000000,
+  0b00000000,
+}; 
+int finalCountdownLeft5[] = 
 {
   0b10000001,//stv pomcka
   0b00000000,
@@ -279,6 +300,7 @@ int finalCountdownLeft5[] =
   0b00000000, 
   0b00000000,
 };
+int kernkraftRightPosition1[] = {F, 1};
 int kernkraftRightPosition1[] = {F, 1};
 int kernkraftRight1[] = 
 {
@@ -300,6 +322,7 @@ int kernkraftRight1[] =
   0b00000000,
 };
 
+int kernkraftLeftPosition1[] = {A, 1};
 int kernkraftLeftPosition1[] = {A, 1};
 int kernkraftLeftPosition2[] = {D, 2};
 int kernkraftLeft1[]
@@ -491,9 +514,10 @@ void OnDataRecv(const uint8_t * mac, const uint8_t *incomingData, int len)
     playBar();
     while(millis() - start <= tempo){}
 
-    sendData.end = 1;
-    esp_now_send(camAddr, (uint8_t *) &sendData, sizeof(sendData));
-    Serial.printf("Data sended: %d\n",sendData.end );
+      sendData.end = 1;
+      esp_now_send(camAddr, (uint8_t *) &sendData, sizeof(sendData));
+      Serial.printf("Data sended: %d\n",sendData.end );
+    }
   }
 }
 
@@ -537,6 +561,8 @@ void setup() {
   
   // Add peer
   memcpy(peerInfo.peer_addr, camAddr, 6);
+  if (esp_now_add_peer(&peerInfo) != ESP_OK)
+  {
   if (esp_now_add_peer(&peerInfo) != ESP_OK)
   {
     Serial.println("Failed to add peer");

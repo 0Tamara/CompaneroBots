@@ -181,10 +181,7 @@ unsigned long timer_reset;
 void OnDataRecv(const uint8_t* mac, const uint8_t* incomingData, int len) {
   
   memcpy(&recv_data, incomingData, sizeof(recv_data));
-  if (recv_data.value == 12) {
-
-  }
-  if (recv_data.value == 13) {
+  if (recv_data.value == 1) {
     //startujeme chlopi
     forward(255);
     delay(30000); // zastavi kedy sa stretnu
@@ -208,7 +205,7 @@ void OnDataRecv(const uint8_t* mac, const uint8_t* incomingData, int len) {
 
 
   }
-  if (recv_data.value == 14)
+  if (recv_data.value == 10)
   {
     rightShoulder.write(40);
     rightElbow.write(70);
@@ -287,6 +284,10 @@ void setup() {
 
 
 void loop() {
+  to_left_side(255);
+    delay(5000);
+    to_right_side(255);
+    delay(5000);
 }
 
 //motor movement
