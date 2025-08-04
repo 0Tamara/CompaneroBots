@@ -1,8 +1,7 @@
 #include <ESP32Servo.h>
 #include <FastLED.h>
-#include <WiFi.h>
-#include <esp_wifi.h>
 #include <esp_now.h>
+#include <WiFi.h>
 
 #define R_ARM_PIN 13
 #define L_ARM_PIN 12
@@ -39,7 +38,7 @@ unsigned long timer_music;
 int kicks;
 int snares;
 
-uint color_eyes = 0x400040;
+uint color_eyes = 0x200102; //pink
 uint color_palette[6] = {0xFF0000,  //colors cycling over
                         0x808000,
                         0x00FF00,
@@ -57,31 +56,25 @@ int LEDs_pos[3] = {0, 0, LED_COUNT_R-1};  //position on the LED ring
 bool rising[3] = {1, 1, 1};  //rising / lowering
 bool miss_out[3] = {0, 0, 0};  //missing out every other step to go slower
 
-int current_song = 0;
-
-uint8_t pianist_addr[] = {0x84, 0x0D, 0x8E, 0xE4, 0xB4, 0x58};  //pianist MAC addr
-uint8_t cam_addr[] = {0xC0, 0x49, 0xEF, 0xD0, 0x8C, 0xC0};  //camera esp MAC addr
+uint8_t pianist_addr[] = {0xA8, 0x42, 0xE3, 0xA8, 0x73, 0x44};  //pianist MAC addr
 esp_now_peer_info_t peer_info;
+byte song_progress = 0;
+byte recv_data;
 
-typedef struct struct_mes
-{
-  byte song;
-  byte sync;
-} struct_mes;
-typedef struct struct_cam
-{
-  byte feedback;
-} struct_cam;
-
-struct_mes pianist_mes;
-struct_mes recv_data;
-struct_cam cam_mes;
+void OnDataRecv(const uint8_t * mac, const uint8_t *incoming_data, int len) {
+  memcpy(&recv_data, incoming_data, sizeof(recv_data));
+  Serial.print("Bytes received: ");
+  Serial.println(len);
+  Serial.print("Value: ");
+  Serial.println(recv_data);
+  Serial.println();
+}
 
 // Zapína LED na všetkých pásikoch naraz
-void ledky_vedlajsie(uint color) {
+void ledky_vedlajsie() {
   for (int i = 0; i < LED_COUNT_R; i++) {
-    left_ring[i] = color;
-    right_ring[i] = color;
+    left_ring[i] = 0xFF0000;
+    right_ring[i] = 0xFF0000;
 
     FastLED.show();
     delay(50);
@@ -95,14 +88,17 @@ void ledky_vedlajsie(uint color) {
     delay(50);
   }
 }
-void kick_ring_bubon(uint color) {
-  for (int i = 0; i < LED_COUNT_K/2; i++) {
-    kick_ring[i] = color;
-    kick_ring[(LED_COUNT_K-1)-i] = color;
+void kick_ring_bubon() {
+  for (int i = 0; i < LED_COUNT_K; i++) {
+    kick_ring[i] = 0xFF0000;
     FastLED.show();
     delay(50);
   }
-  
+  for (int i = LED_COUNT_K - 1; i >= 0; i--) {
+    kick_ring[i] = 0x000000;
+    FastLED.show();
+    delay(50);
+  }
 }
 
 void changeColorsLeft()
@@ -302,7 +298,6 @@ void fireball_bass()
   }
 }
 
-
 void fireball_chill()
 {
   timer_kick = millis();
@@ -416,83 +411,6 @@ void openEyes(uint color)  //cca 300ms
   delay(50);
 }
 
-void OnDataRecv(const uint8_t * mac, const uint8_t *incoming_data, int len) {
-  memcpy(&recv_data, incoming_data, sizeof(recv_data));
-  Serial.print("Bytes received: ");
-  Serial.println(len);
-  Serial.print("song: ");
-  Serial.println(recv_data.song);
-  Serial.print("sync: ");
-  Serial.println(recv_data.sync);
-  Serial.println();
-
-  if(recv_data.song == 1)
-  {
-    openEyes(color_eyes);
-  }
-  if(recv_data.song == 2)
-  {
-    for (int i = 0; i < LED_COUNT_R; i++)
-    {
-      left_ring[i] = 0x00FF00;
-      right_ring[i] = 0x0000FF;
-
-      FastLED.show();
-      delay(50);
-    }
-    r_arm.write(R_DOWN);
-    l_arm.write(L_DOWN);
-    delay(100);
-    r_arm.write(R_UP);
-    l_arm.write(L_UP);
-    for (int i = LED_COUNT_R - 1; i >= 0; i--)
-    {
-      left_ring[i] = 0x000000;
-      right_ring[i] = 0x000000;
-
-      FastLED.show();
-      delay(25);
-    }
-
-    cam_mes.feedback = 1;
-    esp_now_send(cam_addr, (uint8_t *) &cam_mes, sizeof(cam_mes));
-  }
-  if(recv_data.song == 3)
-  {
-    kick_ring_bubon(0x00FF00);
-    for (int i = 0; i < LED_COUNT_K/2; i++)
-    {
-      kick_ring[i] = 0xFF0000;
-      kick_ring[(LED_COUNT_K-1)-i] = 0xFF0000;
-      FastLED.show();
-      delay(50);
-    }
-    kick.write(K_DOWN);
-    delay(100);
-    kick.write(K_UP);
-    for (int i = (LED_COUNT_K/2) - 1; i >= 0; i--)
-    {
-      kick_ring[i] = 0x000000;
-      kick_ring[(LED_COUNT_K-1)-i] = 0x000000;
-      FastLED.show();
-      delay(25);
-    }
-
-    cam_mes.feedback = 1;
-    esp_now_send(cam_addr, (uint8_t *) &cam_mes, sizeof(cam_mes));
-  }
-  if(recv_data.song == 4)
-  {
-    current_song = 1;
-    pianist_mes.song = 4;
-    pianist_mes.sync = 1;
-    for (int i = 0; i < LED_COUNT_R; i++)
-      right_ring[i] = 0xFF0000;
-    FastLED.show();
-  }
-}
-
-//---main code---
 //---loop for rising effects (during music)---
 void loop_2(void* parameter)
 {
@@ -592,39 +510,30 @@ void loop_2(void* parameter)
   }
 }
 
+//---main code---
 void setup()
 {
   Serial.begin(115200);
 
-  //-init WiFi & read MAC address-
-  WiFi.mode(WIFI_STA);
-  uint8_t baseMac[6];
-  esp_err_t ret = esp_wifi_get_mac(WIFI_IF_STA, baseMac);
-  Serial.printf("My MAC address: {0x%02X, 0x%02X, 0x%02X, 0x%02X, 0x%02X, 0x%02X}\n",
-                baseMac[0], baseMac[1], baseMac[2],
-                baseMac[3], baseMac[4], baseMac[5]);
+  WiFi.mode(WIFI_STA);  //set wifi to station
   //-init esp-now-
   if (esp_now_init() != ESP_OK)
   {
     Serial.println("Error initializing ESP-NOW");
     return;
   }
-  //-register peers-
+  //-register peer-
+  memcpy(peer_info.peer_addr, pianist_addr, 6);
   peer_info.channel = 0;  
   peer_info.encrypt = false;
-  //-add peers-
-  memcpy(peer_info.peer_addr, pianist_addr, 6);
+
+  //-add peer-
   if (esp_now_add_peer(&peer_info) != ESP_OK)
   {
     Serial.println("Failed to add peer");
     return;
   }
-  memcpy(peer_info.peer_addr, cam_addr, 6);
-  if (esp_now_add_peer(&peer_info) != ESP_OK)
-  {
-    Serial.println("Failed to add peer");
-    return;
-  }
+
   //-register recieve callback-
   esp_now_register_recv_cb(esp_now_recv_cb_t(OnDataRecv));
 
@@ -653,71 +562,40 @@ void setup()
   FastLED.addLeds<WS2811, LED_PIN_R, GRB>(right_ring, LED_COUNT_R);
   FastLED.addLeds<WS2811, LED_PIN_EYES, GRB>(eyes, LED_COUNT_EYES);
 
+  FastLED.setBrightness(32);  //---temporary!!!
+
   for (int i = 0; i < 54; i++) {
     if (i < LED_COUNT_R) right_ring[i] = 0x808080;
     if (i < LED_COUNT_L) left_ring[i] = 0x808080;
     if (i < LED_COUNT_K) kick_ring[i] = 0x808080;
-    if (i < LED_COUNT_EYES) eyes[i] = 0x808080;
   }
-  FastLED.show();
 
-  delay(100);
+  FastLED.show();
+  delay(1000);
   for (int i = 0; i < 54; i++) {
     if (i < LED_COUNT_R) right_ring[i] = 0x000000;
     if (i < LED_COUNT_L) left_ring[i] = 0x000000;
     if (i < LED_COUNT_K) kick_ring[i] = 0x000000;
-    if (i < LED_COUNT_EYES) eyes[i] = 0x000000;
   }
   FastLED.show();
+  delay(2000);
 }
 
 void loop()
 {
-  if(current_song == 1)
-  {
+  /*if(recv_data == 2)
+    ledky_vedlajsie();
+  if(recv_data == 3)
+    kick_ring_bubon();
+  if(recv_data >= 5)
+  {*/
     if((millis()-timer_music) >= 2280)
     {
       timer_music = millis();
-      esp_now_send(pianist_addr, (uint8_t *) &pianist_mes, sizeof(pianist_mes));
-      if(5 <= pianist_mes.sync && pianist_mes.sync <= 12);
-        freedom();
-
-      pianist_mes.sync ++;
-      if(pianist_mes.sync > 12)
-      {
-        current_song ++;
-        pianist_mes.song = 5;
-        pianist_mes.sync = 1;
-
-        cam_mes.feedback = 2;
-        esp_now_send(cam_addr, (uint8_t *) &cam_mes, sizeof(cam_mes));
-        while(millis() - timer_music < 2280 + 9500);  //between songs
-      }
+      Serial.println(song_progress);
+      esp_now_send(pianist_addr, (uint8_t *) &song_progress, sizeof(song_progress));
+      freedom();
+      song_progress ++;
     }
-  }
-  if(current_song == 2)
-  {
-    if((millis()-timer_music) >= 2100)
-    {
-      timer_music = millis();
-      esp_now_send(pianist_addr, (uint8_t *) &pianist_mes, sizeof(pianist_mes));
-      if(1 <= pianist_mes.sync && pianist_mes.sync <= 14)
-        fireball_clapping();
-      if(17 <= pianist_mes.sync && pianist_mes.sync <= 23)
-        fireball_drop();
-      if(25 <= pianist_mes.sync && pianist_mes.sync <= 27)
-        fireball_bass();
-      if(29 <= pianist_mes.sync && pianist_mes.sync <= 31)
-        fireball_bass();
-      if(33 <= pianist_mes.sync && pianist_mes.sync <= 46)
-        fireball_chill();
-      pianist_mes.sync ++;
-      if(pianist_mes.sync > 46)
-      {
-        current_song ++;
-        cam_mes.feedback = 3;
-        esp_now_send(cam_addr, (uint8_t *) &cam_mes, sizeof(cam_mes));
-      }
-    }
-  }
+  //}
 }

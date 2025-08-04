@@ -18,7 +18,7 @@ const int LF_DIR[] = { 5, 17 };    // Left front direction pins
 #define LED_COUNT_EYES 50
 CRGB eyes[LED_COUNT_EYES];
 TaskHandle_t Task1;
-uint color_eyes = 0x400040;
+uint color_eyes = 0xFF00FF;
 
 //communication
 uint8_t cam_addr[] = { 0xC0, 0x49, 0xEF, 0xD0, 0x8C, 0xC0 };  //camera esp MAC addr
@@ -178,38 +178,13 @@ unsigned long timer_reset;
 void OnDataRecv(const uint8_t* mac, const uint8_t* incomingData, int len) {
   
   memcpy(&recv_data, incomingData, sizeof(recv_data));
-  if (recv_data.value == 12) {
-    Serial.printf("Prijala sa: %d, spustam natvrdo pohyb\n", recv_data.value);
-    //natvrdo tancuje
-    forward(255);
-    delay(12000);
-    right(255);
-    delay(1500);
-    stop();
-    arms_up();
-    delay(1000);
-    arms_horizontally();
-    delay(1000);
-    arms_down();
-    delay(1000);
-    wave();
-    delay(1000);
-    wave2();
-    delay(1000);
-    askew();
-    delay(1000);
-    askew2();
-    delay(1000);
-    right_hip();
-    delay(1000);
-    left_hip();
-    delay(1000);
-    head();
-    delay(1000);
-    waving();
-    delay(1000);
+  if (recv_data.value == 1) {
+   
   }
-  if (recv_data.value == 13) {
+  if (recv_data.value == 2) {
+    Serial.printf("Prijala sa: %d, spustam natvrdo pohyb\n", recv_data.value);
+  }
+  if (recv_data.value == 3) {
     Serial.printf("Daco sa prijalo, left elbow: %d, left shoulder: %d, right elbow: %d, right shoulder: %d, movement: %d \n",
                   recv_data.l_elbow, recv_data.l_shoulder, recv_data.r_elbow,
                   recv_data.r_shoulder, recv_data.movement);
@@ -230,14 +205,7 @@ void OnDataRecv(const uint8_t* mac, const uint8_t* incomingData, int len) {
                   
     moveAll(180 - recv_data.r_shoulder, rightShoulder, /*180 - recv_data.r_elbow*/70, rightElbow, /*180 - recv_data.l_elbow*/70, leftElbow, recv_data.l_shoulder, leftShoulder);
   }
-  if (recv_data.value == 14)
-  {
-    rightShoulder.write(40);
-    rightElbow.write(70);
-    leftShoulder.write(120);
-    leftElbow.write(70);
-    closeEyes();
-  }
+  
 }
 
 void loop_2(void* parameter)
@@ -272,10 +240,7 @@ void setup() {
   }
   //-register recieve callback-
   esp_now_register_recv_cb(esp_now_recv_cb_t(OnDataRecv));
-<<<<<<< HEAD
-=======
   
->>>>>>> c839f5f981ca207fe90631694b103f639ebc06ec
 
   //-create loop 2-
   xTaskCreatePinnedToCore(
@@ -295,10 +260,7 @@ void setup() {
   rightShoulder.attach(13);
   rightElbow.attach(14);
   leftShoulder.attach(12);
-<<<<<<< HEAD
-=======
   leftElbow.attach(27);
->>>>>>> c839f5f981ca207fe90631694b103f639ebc06ec
   leftElbow.attach(33);
 
   for (int i = 0; i < 2; i++) {
@@ -315,10 +277,6 @@ void setup() {
 
 
 void loop() {
-<<<<<<< HEAD
-  
-=======
->>>>>>> c839f5f981ca207fe90631694b103f639ebc06ec
 }
 
 //motor movement
