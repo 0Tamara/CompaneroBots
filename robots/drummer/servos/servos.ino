@@ -2,7 +2,14 @@
 
 #define R_ARM_PIN 13
 #define L_ARM_PIN 12
-#define KICK_PIN 33
+#define KICK_PIN 32
+
+#define R_UP 80
+#define R_DOWN 70
+#define L_UP 0
+#define L_DOWN 10
+#define K_UP 85
+#define K_DOWN 90
 
 Servo r_arm;  //0-80 = down-front
 Servo l_arm;  //80-0 = down-front
@@ -19,6 +26,12 @@ void setup()
 
 void loop()
 {
-  r_arm.write(80);
-  l_arm.write(0);
+  kick.write(K_DOWN);
+  r_arm.write(R_DOWN);
+  l_arm.write(L_DOWN);
+  delay(100);
+  kick.write(K_UP);
+  r_arm.write(R_UP);
+  l_arm.write(L_UP);
+  delay(1000);
 }

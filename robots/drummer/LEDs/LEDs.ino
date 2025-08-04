@@ -3,7 +3,7 @@
 #define LED_PIN_4   23
 #define LED_COUNT_4 50
 #define LED_PIN_1   27
-#define LED_PIN_2   32
+#define LED_PIN_2   33
 #define LED_PIN_3   14
 
 #define LED_COUNT_1 36
