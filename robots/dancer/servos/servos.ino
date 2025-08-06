@@ -9,7 +9,7 @@ const int min_delay = 5;
 const int max_delay = 20;
 Servo r_arm, l_arm, r_elbow, l_elbow;
 
-void servoRamp(byte end, )
+void servoRamp(byte end)
 {
   int t;
   byte start = r_elbow.read()+1;
