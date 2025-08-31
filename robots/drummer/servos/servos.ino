@@ -4,10 +4,10 @@
 #define L_ARM_PIN 12
 #define KICK_PIN 32
 
-#define R_UP 80
-#define R_DOWN 70
-#define L_UP 0
-#define L_DOWN 10
+#define R_UP 60
+#define R_DOWN 50
+#define L_UP 20
+#define L_DOWN 30
 #define K_UP 85
 #define K_DOWN 90
 

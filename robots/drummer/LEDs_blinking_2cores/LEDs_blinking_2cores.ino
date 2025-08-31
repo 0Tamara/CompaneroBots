@@ -3,7 +3,7 @@
 
 #define R_ARM_PIN 13
 #define L_ARM_PIN 12
-#define KICK_PIN 33
+#define KICK_PIN 32
 
 #define R_UP 80
 #define R_DOWN 70
@@ -17,7 +17,7 @@ Servo kick;   //85-90-85 = kick
 #define LED_PIN_L 27     //left drum
 #define LED_COUNT_L 36
 CRGB left_ring[LED_COUNT_L];
-#define LED_PIN_K 32    //kick drum
+#define LED_PIN_K 33    //kick drum
 #define LED_COUNT_K 54
 CRGB kick_ring[LED_COUNT_K];
 #define LED_PIN_R 14    //right drum
