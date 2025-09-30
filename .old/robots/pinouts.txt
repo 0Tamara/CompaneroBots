@@ -1,0 +1,69 @@
+dancer
+  ESP32 MAC addr: {0xA0, 0xDD, 0x6C, 0x0F, 0x79, 0x38}
+  pins:
+    13 right arm (green)
+    12 left arm (yellow)
+    14 right elbow (green)
+    33 left elbow (yellow)
+    32 eyes
+    motors:
+      front right:
+        2  en
+        4  dir
+        16 dir
+      front left:
+        17 dir
+        5  dir
+        18 en
+      rear right:
+        19 en
+        21 dir
+        25 dir
+      rear left:
+        26 dir
+        22 dir
+        23 en
+
+drummer
+  ESP32 MAC addr: {0xA0, 0xA3, 0xB3, 0xFE, 0xD7, 0xC4}
+  pins:
+    13 servo right arm (green)
+    12 servo left arm (yellow)
+    14 LEDs right drum (green)
+    27 LEDS left drum (yellow)
+    33 servo kick drum
+    32 LEDs kick drum
+    23 eyes
+
+pianist
+  ESP32 MAC addr: {0x84, 0x0D, 0x8E, 0xE4, 0xB4, 0x58}
+  pins:
+    left stepper motor:
+      5 step
+      16 dir
+      18 en
+    right stepper motor:
+      4 step
+      17 dir
+      15 en
+    I2C:
+      22 SCL
+      21 SDA
+      addr:
+        0x40 left
+        0x41 right
+
+camera_ESP
+  ESP32 MAC addr: {0xC0, 0x49, 0xEF, 0xD0, 0x8C, 0xC0}
+  pins:
+    16 RX2
+    17 TX2
+
+camera_Raspberry
+  pins:
+
+curtains
+  ESP32 MAC addr: {0x10, 0x06, 0x1C, 0x68, 0x42, 0x7C}
+  pins:
+    12 motor en1
+    13 motor en2
