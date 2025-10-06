@@ -6,14 +6,14 @@
 #include <esp_wifi.h>
 #include <esp_now.h>
 
+//-speed/position values-
+#define numServos 16
 #define SERVOMIN  125
 #define SERVOMAX  575
-#define numServos 16
 #define stepsPerNote 929
 #define stepsPerOctave 6498
 #define speedInHz 15000
 #define acceleration 40000
-
 //-pins-
 #define leftHandStepPin   5 
 #define leftHandDirPin    16 
@@ -21,73 +21,52 @@
 #define rightHandStepPin  4
 #define rightHandDirPin   17
 #define rightHandEnPin    15
-// casy
-typedef struct struct_message {
-  byte song; //time during being on/off
-  byte time; //ms
-} struct_message;
 
-typedef struct send_message {
-  byte end;
-} send_message;
+enum moveNotes {C=0, D=1, E=2, F=3, G=4, A=5, H=6};  //number of notes to the right from C
 
-esp_now_peer_info_t peerInfo;
+//-esp-now mess structures-
+typedef struct recieve_struct {
+  byte song;
+  byte time;
+} recieve_struct;
+recieve_struct recieved_data;
 
-// Create a struct_message called myData
-uint8_t camAddr[] = {0xC0, 0x49, 0xEF, 0xD0, 0x8C, 0xC0};
-struct_message myData;
-send_message sendData;
-int targetNoteRight = 0;
-int targetOctaveRight = 0;
-int targetNoteLeft = 0;
-int targetOctaveLeft = 0;
-int stepsRight = 0;
-int stepsLeft = 0;
-int timeFromMoving = 0;
-int tempo = 2280;
-int note_lenght = tempo / 16; 
-unsigned long start = millis();
-const int rezerva = 20;
+//-timing-
+int tempo = 105;  //bpm
+int note_lenght = 15000/tempo;  //4/4: ((60,000/bpm)*4)/16
+unsigned long bar_timer = millis();
 
-// kniznice
+//-servo drivers-
 Adafruit_PWMServoDriver pca9685right(0x41, Wire);
 Adafruit_PWMServoDriver pca9685left(0x40, Wire);
 
-FastAccelStepperEngine engine = FastAccelStepperEngine();
+FastAccelStepperEngine stepper_driver = FastAccelStepperEngine();  //stepper driver
 
-enum moveNotes { C=0, D=1, E=2, F=3, G=4, A=5, H=6 };
-
+//-hands structures-
 struct Hand
 {
-  int currentOctave;
-  int currentNote;
   FastAccelStepper* stepper;
-  unsigned long timeFromMoving;
-  unsigned long lastTime;
-  int pressValue;
-  int releaseValue;
+  byte bar[16];  //16 sets of 8 notes
+  byte pos[2];  //position on the keyboard [note, octave]
+  int pressValue;  //value to set servos
+  int releaseValue;  //value to set servos
 };
-
 Hand leftHand = {
-  .currentOctave = 0,
-  .currentNote = 0,
   .stepper = NULL,
-  .timeFromMoving = 0,
-  .lastTime = 0,
-  .pressValue = SERVOMAX - 75,
-  .releaseValue = SERVOMAX,
+  .bar = {0},
+  .pos = {C, 0},
+  .pressValue = SERVOMAX - 100,
+  .releaseValue = SERVOMAX
 };
 Hand rightHand = {
-  .currentOctave = 0,
-  .currentNote = 0,
   .stepper = NULL,
-  .timeFromMoving = 0,
-  .lastTime = 0,
-  .pressValue = SERVOMIN + 75,
-  .releaseValue = SERVOMIN,
+  .bar = {0},
+  .pos = {C, 4},
+  .pressValue = SERVOMIN + 100,
+  .releaseValue = SERVOMIN
 };
 
-int havasiFreedomRightPosition1[]{A, 2};
+/*int havasiFreedomRightPosition1[]{A, 2};
 int havasiFreedomLeftPosition1[]{A, 0};
 int havasiFreedomRight1[]{
   0b00000000, //cel pomlcka
@@ -444,7 +423,7 @@ int stupnicaRightAndLeft[]{
   0b00100000,
   0b01000000,
   0b10000000,
-};
+};*/
 int osudovaLeftPosition[]{C, 0};
 int osudovaRightPosition[]{C, 2};
 int osudovaRightAndLeft1[]{
@@ -520,34 +499,24 @@ int osudovaRightAndLeft4[]{
   0b00000000,
   0b00000000,
 };
-int barLeft[16];
-int barRight[16];
-int positionLeft[2];
-int positionRight[2];
 
-void playBar()
+void moveToPos()  //move hands into position
 {
-  //-set hands position-
-  targetNoteRight = positionRight[0];
-  targetOctaveRight = positionRight[1];
-  targetNoteLeft = positionLeft[0];
-  targetOctaveLeft = positionLeft[1];
-  stepsRight = stepsPerNote * targetNoteRight + stepsPerOctave * targetOctaveRight;
-  stepsLeft = stepsPerNote * targetNoteLeft + stepsPerOctave * targetOctaveLeft;
-  rightHand.stepper->moveTo(stepsRight);
-  leftHand.stepper->moveTo(stepsLeft);
+  rightHand.stepper->moveTo(stepsPerNote * rightHand.pos[0] + stepsPerOctave * rightHand.pos[1]);
+  leftHand.stepper->moveTo(stepsPerNote * leftHand.pos[0] + stepsPerOctave * leftHand.pos[1]);
+}
+
+void playBar()  //play 1 bar of a song
+{
+  moveToPos();
   //-play 16 notes (1 bar)-
   for (int i = 0; i < 16; i++)
-  {
-    byte notesRight = barRight[i];
-    byte notesLeft = barLeft[i];
-    Serial.printf("notes number %d\n", i);
-    
+  {    
     for (int j = 0; j < 8; j++)
     {
-      if ((notesRight & 1<<j) && !(rightHand.stepper->isRunning()))
+      if ((rightHand.bar[i] & 1<<j) && !(rightHand.stepper->isRunning()))
         pca9685right.setPWM(j+8, 0, rightHand.pressValue);
-      if ((notesLeft & 1<<j) && !(leftHand.stepper->isRunning()))
+      if ((leftHand.bar[i] & 1<<j) && !(leftHand.stepper->isRunning()))
         pca9685left.setPWM(j+8, 0, leftHand.pressValue);
     }
     
@@ -558,16 +527,59 @@ void playBar()
       pca9685right.setPWM(j, 0, rightHand.releaseValue);
       pca9685left.setPWM(j, 0, leftHand.releaseValue);
     }
-    while (millis() - start <= note_lenght * i);
+    while (millis() - bar_timer <= note_lenght * i);
+  }
+}
+
+void playNote(byte note, byte octave)
+{
+  int pos_steps = stepsPerOctave*octave;
+  byte servo_addr;
+  if(octave < 2)
+    servo_addr = 15-note;
+  else if(note == C && octave == 2)  //last left hand note
+  {
+    pos_steps = stepsPerOctave;
+    servo_addr = 8;
+  }
+  else if(note == C && octave == 5)  //last right hand note
+  {
+    pos_steps = stepsPerOctave*4;
+    servo_addr = 9;
+  }
+  else  //right hand is shifted by 1 to the right
+  {
+    pos_steps += stepsPerNote;
+    servo_addr = 16-note;
+  }
+  if(note + octave*7 <= 14)  //if note is on the left from C2, play with left hand
+  {
+    //-move hand into position-
+    leftHand.stepper->moveTo(pos_steps);
+    while(leftHand.stepper->isRunning());
+    //-play 1 note-
+    pca9685left.setPWM(servo_addr, 0, leftHand.pressValue);
+    delay(75);
+    pca9685left.setPWM(servo_addr, 0, leftHand.releaseValue);
+  }
+  else
+  {
+    //-move hand into position-
+    rightHand.stepper->moveTo(pos_steps);
+    while(rightHand.stepper->isRunning());
+    //-play 1 note-
+    pca9685right.setPWM(servo_addr, 0, rightHand.pressValue);
+    delay(75);
+    pca9685right.setPWM(servo_addr, 0, rightHand.releaseValue);
   }
 }
 
 void OnDataRecv(const uint8_t * mac, const uint8_t *incomingData, int len) {/*
-  start = millis();
-  memcpy(&myData, incomingData, sizeof(myData));
-  Serial.printf("song = %d\n", myData.song);
-  Serial.printf("time = %d\n", myData.time);
-  if(myData.song == 1)
+  bar_timer = millis();
+  memcpy(&recieved_data, incomingData, sizeof(recieved_data));
+  Serial.printf("song = %d\n", recieved_data.song);
+  Serial.printf("time = %d\n", recieved_data.time);
+  if(recieved_data.song == 1)
   {
     rightHand.stepper->moveTo(0);
     while (rightHand.stepper->isRunning()) {
@@ -576,269 +588,269 @@ void OnDataRecv(const uint8_t * mac, const uint8_t *incomingData, int len) {/*
     while (leftHand .stepper->isRunning()) {
     }
   }
-  if(myData.song == 2)
+  if(recieved_data.song == 2)
   {
-    tempo = 890; 
-    note_lenght = tempo / 16; 
+    tempo = 270; 
+    note_lenght = 15000/tempo; 
     for(int i=0; i<16; i++)
     {
-      barLeft[i] = osudovaRightAndLeft1[i];
-      barRight[i] = osudovaRightAndLeft1[i];
+      leftHand.bar[i] = osudovaRightAndLeft1[i];
+      rightHand.bar[i] = osudovaRightAndLeft1[i];
     }
     for(int i=0; i<2; i++)
     {
-      positionLeft[i] = osudovaLeftPosition[i];
-      positionRight[i] = osudovaRightPosition[i];
+      leftHand.pos[i] = osudovaLeftPosition[i];
+      rightHand.pos[i] = osudovaRightPosition[i];
     }
     playBar();
-    while(millis() - start <= tempo ){}
+    while(millis() - bar_timer <= note_lenght*16 ){}
     //prvy takt
-    start = millis();
+    bar_timer = millis();
     for(int i=0; i<16; i++)
     {
-      barLeft[i] = osudovaRightAndLeft2[i];
-      barRight[i] =osudovaRightAndLeft2[i];
+      leftHand.bar[i] = osudovaRightAndLeft2[i];
+      rightHand.bar[i] =osudovaRightAndLeft2[i];
     }
     playBar();
-    while(millis() - start <= tempo ){}
+    while(millis() - bar_timer <= note_lenght*16 ){}
     //druhy takt
-    start = millis();
+    bar_timer = millis();
     for(int i=0; i<16; i++)
     {
-      barLeft[i] = osudovaRightAndLeft3[i];
-      barRight[i] =osudovaRightAndLeft3[i];
+      leftHand.bar[i] = osudovaRightAndLeft3[i];
+      rightHand.bar[i] =osudovaRightAndLeft3[i];
     }
     playBar();
-    while(millis() - start <= tempo ){}
+    while(millis() - bar_timer <= note_lenght*16 ){}
     //treti takt
-    start = millis();
+    bar_timer = millis();
     for(int i=0; i<16; i++)
     {
-      barLeft[i] = osudovaRightAndLeft4[i];
-      barRight[i] =osudovaRightAndLeft4[i];
+      leftHand.bar[i] = osudovaRightAndLeft4[i];
+      rightHand.bar[i] =osudovaRightAndLeft4[i];
     }
     playBar();
-    while(millis() - start <= tempo ){}
+    while(millis() - bar_timer <= note_lenght*16 ){}
     //stvrty takt
-    sendData.end = 1;
-    esp_now_send(camAddr, (uint8_t *) &sendData, sizeof(sendData));
-    Serial.printf("Data sended: %d\n",sendData.end );
+    data_to_send.end = 1;
+    esp_now_send(camAddr, (uint8_t *) &data_to_send, sizeof(data_to_send));
+    Serial.printf("Data sended: %d\n",data_to_send.end );
   }
-  if(myData.song == 3)
+  if(recieved_data.song == 3)
   {
-    start = millis();
-    tempo = 3000;
-    note_lenght = tempo / 16;
+    bar_timer = millis();
+    tempo = 80;
+    note_lenght = 15000/tempo;
     for(int i=0; i<16; i++)
     {
-      barLeft[i] = stupnicaRightAndLeft[i];
-      barRight[i] = stupnicaRightAndLeft[i];
+      leftHand.bar[i] = stupnicaRightAndLeft[i];
+      rightHand.bar[i] = stupnicaRightAndLeft[i];
     }
     for(int i=0; i<2; i++)
     {
-      positionLeft[i] = stupnicaLeftPosition[i];
-      positionRight[i] = stupnicaRightPosition[i];
+      leftHand.pos[i] = stupnicaLeftPosition[i];
+      rightHand.pos[i] = stupnicaRightPosition[i];
     }
     playBar();
-    sendData.end = 1;
-    esp_now_send(camAddr, (uint8_t *) &sendData, sizeof(sendData));
-    Serial.printf("Data sended: %d\n",sendData.end );
+    data_to_send.end = 1;
+    esp_now_send(camAddr, (uint8_t *) &data_to_send, sizeof(data_to_send));
+    Serial.printf("Data sended: %d\n",data_to_send.end );
   }
-  if(myData.song == 4)
+  if(recieved_data.song == 4)
   {
-    tempo = 2280;
+    tempo = 105;
     note_lenght = tempo/16;
-    if(myData.time == 1)
+    if(recieved_data.time == 1)
     {
       for(int i=0; i<16; i++)
       {
-        barLeft[i] = havasiFreedomLeft1[i];
-        barRight[i] = havasiFreedomRight1[i];
+        leftHand.bar[i] = havasiFreedomLeft1[i];
+        rightHand.bar[i] = havasiFreedomRight1[i];
       }
       for(int i=0; i<2; i++)
       {
-        positionLeft[i] = havasiFreedomLeftPosition1[i];
-        positionRight[i] = havasiFreedomRightPosition1[i];
+        leftHand.pos[i] = havasiFreedomLeftPosition1[i];
+        rightHand.pos[i] = havasiFreedomRightPosition1[i];
       }
     }
-    if(myData.time == 5)
+    if(recieved_data.time == 5)
     {
       for(int i=0; i<16; i++)
       {
-        barLeft[i] = havasiFreedomLeft5[i];
-        barRight[i] = havasiFreedomRight5[i];
+        leftHand.bar[i] = havasiFreedomLeft5[i];
+        rightHand.bar[i] = havasiFreedomRight5[i];
       }
     }
     //piaty takt
-    if(myData.time == 6)
+    if(recieved_data.time == 6)
     {
       for(int i=0; i<16; i++)
       {
-        barLeft[i] = havasiFreedomLeft5[i];
-        barRight[i] = havasiFreedomRight6[i];
+        leftHand.bar[i] = havasiFreedomLeft5[i];
+        rightHand.bar[i] = havasiFreedomRight6[i];
       }
     }
     // siesty takt
-    if(myData.time == 7)
+    if(recieved_data.time == 7)
     {
       for(int i=0; i<16; i++)
       {
-        barLeft[i] = havasiFreedomLeft5[i];
-        barRight[i] = havasiFreedomRight7[i];
+        leftHand.bar[i] = havasiFreedomLeft5[i];
+        rightHand.bar[i] = havasiFreedomRight7[i];
       }
     }
     //siedmy takt
-    if(myData.time == 8)
+    if(recieved_data.time == 8)
     {
       for(int i=0; i<16; i++)
       {
-        barLeft[i] = havasiFreedomLeft5[i];
-        barRight[i] = havasiFreedomRight8[i];
+        leftHand.bar[i] = havasiFreedomLeft5[i];
+        rightHand.bar[i] = havasiFreedomRight8[i];
       }
     }
     //osmy takt
-    if(myData.time == 9)
+    if(recieved_data.time == 9)
     {
       for(int i=0; i<16; i++)
       {
-        barLeft[i] = havasiFreedomLeft5[i];
-        barRight[i] = havasiFreedomRight9[i];
+        leftHand.bar[i] = havasiFreedomLeft5[i];
+        rightHand.bar[i] = havasiFreedomRight9[i];
       }
       for(int i=0; i<2; i++)
       {
-        positionLeft[i] = havasiFreedomLeftPosition9[i];
+        leftHand.pos[i] = havasiFreedomLeftPosition9[i];
       }
     }
     //deviaty takt
-    if(myData.time ==10)
+    if(recieved_data.time ==10)
     {
       for(int i=0; i<16; i++)
       {
-        barLeft[i] = havasiFreedomLeft5[i];
-        barRight[i] = havasiFreedomRight10[i];
+        leftHand.bar[i] = havasiFreedomLeft5[i];
+        rightHand.bar[i] = havasiFreedomRight10[i];
       }
     }
     //desiaty takt
-    if(myData.time ==11)
+    if(recieved_data.time ==11)
     {
       for(int i=0; i<16; i++)
       {
-        barLeft[i] = havasiFreedomLeft5[i];
-        barRight[i] = havasiFreedomRight11[i];
+        leftHand.bar[i] = havasiFreedomLeft5[i];
+        rightHand.bar[i] = havasiFreedomRight11[i];
       }
     }
     //jedenasty takt
-    if(myData.time == 12)
+    if(recieved_data.time == 12)
     {
       for(int i=0; i<16; i++)
       {
-        barLeft[i] = havasiFreedomLeft12[i];
-        barRight[i] = havasiFreedomRight12[i];
+        leftHand.bar[i] = havasiFreedomLeft12[i];
+        rightHand.bar[i] = havasiFreedomRight12[i];
       }
       for(int i=0; i<2; i++)
       {
-        positionLeft[i] = havasiFreedomLeftPosition12[i];
-        positionRight[i] = havasiFreedomRightPosition12[i];
+        leftHand.pos[i] = havasiFreedomLeftPosition12[i];
+        rightHand.pos[i] = havasiFreedomRightPosition12[i];
       }
     }
     //dvanasty a posledny takt
     playBar();
   }
-  if(myData.song == 5)
+  if(recieved_data.song == 5)
   {
-    if(myData.time == 1)
+    if(recieved_data.time == 1)
     {
-      tempo = 2100; 
-      note_lenght = tempo / 16; 
+      tempo = 115; 
+      note_lenght = 15000/tempo; 
       for(int i=0; i<16; i++)
       {
-        barLeft[i] = fireballLeft1[i];
-        barRight[i] = fireballRight1[i];
+        leftHand.bar[i] = fireballLeft1[i];
+        rightHand.bar[i] = fireballRight1[i];
       }
       for(int i=0; i<2; i++)
       {
-        positionLeft[i] = fireballLeftPosition1[i];
-        positionRight[i] = fireballRightPosition1[i];
+        leftHand.pos[i] = fireballLeftPosition1[i];
+        rightHand.pos[i] = fireballRightPosition1[i];
       }
     }
-    if(myData.time == 2)
+    if(recieved_data.time == 2)
     {
       for(int i=0; i<16; i++)
       {
-        barRight[i] = fireballRight2[i];
+        rightHand.bar[i] = fireballRight2[i];
       }
     }
-    if(myData.time == 3)
+    if(recieved_data.time == 3)
     {
       for(int i=0; i<16; i++)
       {
-        barRight[i] = fireballRight1[i];
+        rightHand.bar[i] = fireballRight1[i];
       }
     }
-    if(myData.time == 4)
+    if(recieved_data.time == 4)
     {
       
       for(int i=0; i<16; i++)
       {
-        barRight[i] = fireballRight2[i];
+        rightHand.bar[i] = fireballRight2[i];
       } 
     }
-    if(myData.time == 5)
+    if(recieved_data.time == 5)
     {
       for(int i=0; i<16; i++)
       {
-        barRight[i] = fireballRight5[i];
+        rightHand.bar[i] = fireballRight5[i];
       }
       for(int i=0; i<2; i++)
       {
-        positionRight[i] = fireballRightPosition5[i];
+        rightHand.pos[i] = fireballRightPosition5[i];
       }
     }
-    if(myData.time == 6)
+    if(recieved_data.time == 6)
     {
       for(int i=0; i<16; i++)
       {
-        barRight[i] = fireballRight6[i];
+        rightHand.bar[i] = fireballRight6[i];
       }
     }
-    if(myData.time == 7)
+    if(recieved_data.time == 7)
     {
       for(int i=0; i<16; i++)
       {
-        barRight[i] = fireballRight5[i];
+        rightHand.bar[i] = fireballRight5[i];
       }
     }
-    if(myData.time == 8)
+    if(recieved_data.time == 8)
     {
       for(int i=0; i<16; i++)
       {
-        barRight[i] = fireballRight8[i];
+        rightHand.bar[i] = fireballRight8[i];
       }
     }
-    if(myData.time == 9)
+    if(recieved_data.time == 9)
     {
       for(int i=0; i<16; i++)
       {
-        barRight[i] = fireballRight5[i];
+        rightHand.bar[i] = fireballRight5[i];
       }
     }
-    if(myData.time == 10)
+    if(recieved_data.time == 10)
     {
       for(int i=0; i<16; i++)
       {
-        barRight[i] = fireballRight6[i];
+        rightHand.bar[i] = fireballRight6[i];
       }
     }
-    if(myData.time == 11)
+    if(recieved_data.time == 11)
     {
       for(int i=0; i<16; i++) 
       {
-        barRight[i] = fireballRight5[i];
+        rightHand.bar[i] = fireballRight5[i];
       }
     }
-    if(myData.time == 12)
+    if(recieved_data.time == 12)
     {
-      start = millis();
+      bar_timer = millis();
       rightHand.stepper->moveTo(stepsPerOctave * 2);
       while (rightHand.stepper->isRunning()) 
       {
@@ -847,7 +859,7 @@ void OnDataRecv(const uint8_t * mac, const uint8_t *incomingData, int len) {/*
       while (leftHand.stepper->isRunning()) 
       {
       }
-      while(millis() - start <= tempo){}
+      while(millis() - bar_timer <= note_lenght*16){}
     }
     playBar();
   }*/
@@ -869,9 +881,9 @@ void setup()
     pca9685left.setPWM(i, 0, leftHand.releaseValue); // 0 stupnov
   }
   //-init steppers-
-  engine.init();
-  leftHand.stepper = engine.stepperConnectToPin(leftHandStepPin);
-  rightHand.stepper = engine.stepperConnectToPin(rightHandStepPin);
+  stepper_driver.init();
+  leftHand.stepper = stepper_driver.stepperConnectToPin(leftHandStepPin);
+  rightHand.stepper = stepper_driver.stepperConnectToPin(rightHandStepPin);
   if (rightHand.stepper == NULL || leftHand.stepper == NULL)
     Serial.println("Chyba pri pripojeni krokovych motorov.");
 
@@ -898,17 +910,9 @@ void setup()
   Serial.printf("My MAC address: {0x%02X, 0x%02X, 0x%02X, 0x%02X, 0x%02X, 0x%02X}\n",
                 baseMac[0], baseMac[1], baseMac[2], baseMac[3], baseMac[4], baseMac[5]);
   //-init ESP-NOW-
-  if (esp_now_init() != ESP_OK) {
+  if (esp_now_init() != ESP_OK)
+  {
     Serial.println("Error initializing ESP-NOW");
-    return;
-  }
-  //-register peer-
-  peerInfo.channel = 0;
-  peerInfo.encrypt = false;
-  //-add peer-
-  memcpy(peerInfo.peer_addr, camAddr, 6);
-  if (esp_now_add_peer(&peerInfo) != ESP_OK){
-    Serial.println("Failed to add peer");
     return;
   }
   //-register recv callback-
@@ -917,65 +921,66 @@ void setup()
 
 void loop()
 {
-  for(int j = 0; j<3; j++)
-  {/*
-    start = millis();
-    tempo = 3000;
-    note_lenght = tempo / 16;
-    for(int i=0; i<16; i++)
-    {
-      barLeft[i] = 0;
-      barRight[i] = 0;
-    }
-    barLeft[14] = 0b10000000;
-    barRight[15] = 0b10000000;
-    positionLeft[0] = C;
-    positionLeft[1] = j;
-    positionRight[0] = C;
-    positionRight[1] = j+2;
-    playBar();*/
+  /*bar_timer = millis();
+  tempo = 270; 
+  note_lenght = 15000/tempo; 
+  for(int i=0; i<16; i++)
+  {
+    leftHand.bar[i] = osudovaRightAndLeft1[i];
+    rightHand.bar[i] = osudovaRightAndLeft1[i];
+  }
+  for(int i=0; i<2; i++)
+  {
+    leftHand.pos[i] = osudovaLeftPosition[i];
+    rightHand.pos[i] = osudovaRightPosition[i];
+  }
+  moveToPos();
+  bar_timer = millis();
+  playBar();
+  while(millis() - bar_timer <= note_lenght*16 ){}
+  //prvy takt
+  bar_timer = millis();
+  for(int i=0; i<16; i++)
+  {
+    leftHand.bar[i] = osudovaRightAndLeft2[i];
+    rightHand.bar[i] =osudovaRightAndLeft2[i];
+  }
+  playBar();
+  while(millis() - bar_timer <= note_lenght*16 ){}
+  //druhy takt
+  bar_timer = millis();
+  for(int i=0; i<16; i++)
+  {
+    leftHand.bar[i] = osudovaRightAndLeft3[i];
+    rightHand.bar[i] =osudovaRightAndLeft3[i];
+  }
+  playBar();
+  while(millis() - bar_timer <= note_lenght*16 ){}
+  //treti takt
+  bar_timer = millis();
+  for(int i=0; i<16; i++)
+  {
+    leftHand.bar[i] = osudovaRightAndLeft4[i];
+    rightHand.bar[i] =osudovaRightAndLeft4[i];
+  }
+  playBar();
+  while(millis() - bar_timer <= note_lenght*16 ){}*/
 
-    start = millis();
-    tempo = 890; 
-    note_lenght = tempo / 16; 
-    for(int i=0; i<16; i++)
-    {
-      barLeft[i] = osudovaRightAndLeft1[i];
-      barRight[i] = osudovaRightAndLeft1[i];
-    }
-    for(int i=0; i<2; i++)
-    {
-      positionLeft[i] = osudovaLeftPosition[i];
-      positionRight[i] = osudovaRightPosition[i];
-    }
-    playBar();
-    while(millis() - start <= tempo ){}
-    //prvy takt
-    start = millis();
-    for(int i=0; i<16; i++)
-    {
-      barLeft[i] = osudovaRightAndLeft2[i];
-      barRight[i] =osudovaRightAndLeft2[i];
-    }
-    playBar();
-    while(millis() - start <= tempo ){}
-    //druhy takt
-    start = millis();
-    for(int i=0; i<16; i++)
-    {
-      barLeft[i] = osudovaRightAndLeft3[i];
-      barRight[i] =osudovaRightAndLeft3[i];
-    }
-    playBar();
-    while(millis() - start <= tempo ){}
-    //treti takt
-    start = millis();
-    for(int i=0; i<16; i++)
-    {
-      barLeft[i] = osudovaRightAndLeft4[i];
-      barRight[i] =osudovaRightAndLeft4[i];
-    }
-    playBar();
-    while(millis() - start <= tempo ){}
+  for(int i=0; i<5; i++)
+  {
+    playNote(C, i);
+    delay(100);
+    playNote(D, i);
+    delay(100);
+    playNote(E, i);
+    delay(100);
+    playNote(F, i);
+    delay(100);
+    playNote(G, i);
+    delay(100);
+    playNote(A, i);
+    delay(100);
+    playNote(H, i);
+    delay(100);
   }
 }
