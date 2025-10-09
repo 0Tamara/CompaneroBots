@@ -500,10 +500,17 @@ int osudovaRightAndLeft4[]{
   0b00000000,
 };
 
-void moveToPos()  //move hands into position
+void moveToPos()  //move hands into position from structure
 {
-  rightHand.stepper->moveTo(stepsPerNote * rightHand.pos[0] + stepsPerOctave * rightHand.pos[1]);
   leftHand.stepper->moveTo(stepsPerNote * leftHand.pos[0] + stepsPerOctave * leftHand.pos[1]);
+  rightHand.stepper->moveTo(stepsPerNote * rightHand.pos[0] + stepsPerOctave * rightHand.pos[1]);
+}
+
+void moveHome()  //move to the sides
+{
+  leftHand.stepper->moveTo(0);
+  rightHand.stepper->moveTo(stepsPerOctave * 4);
+  while(leftHand.stepper->isRunning() || rightHand.stepper->isRunning());
 }
 
 void playBar()  //play 1 bar of a song
@@ -535,23 +542,20 @@ void playNote(byte note, byte octave)
 {
   int pos_steps = stepsPerOctave*octave;
   byte servo_addr;
-  if(octave < 2)
-    servo_addr = 15-note;
-  else if(note == C && octave == 2)  //last left hand note
+  if(note == C && (octave == 2 || octave == 5))  //last note on hands
   {
-    pos_steps = stepsPerOctave;
+    pos_steps -= stepsPerOctave;
     servo_addr = 8;
   }
-  else if(note == C && octave == 5)  //last right hand note
+  else if(octave == 2)  //right hand is shifted by 1 to the right
   {
-    pos_steps = stepsPerOctave*4;
-    servo_addr = 9;
-  }
-  else  //right hand is shifted by 1 to the right
-  {
+    
     pos_steps += stepsPerNote;
     servo_addr = 16-note;
   }
+  else
+    servo_addr = 15-note;
+
   if(note + octave*7 <= 14)  //if note is on the left from C2, play with left hand
   {
     //-move hand into position-
@@ -561,6 +565,7 @@ void playNote(byte note, byte octave)
     pca9685left.setPWM(servo_addr, 0, leftHand.pressValue);
     delay(75);
     pca9685left.setPWM(servo_addr, 0, leftHand.releaseValue);
+    Serial.printf("Left hand pos %d; servo %d\n", pos_steps/stepsPerNote, servo_addr);
   }
   else
   {
@@ -571,6 +576,7 @@ void playNote(byte note, byte octave)
     pca9685right.setPWM(servo_addr, 0, rightHand.pressValue);
     delay(75);
     pca9685right.setPWM(servo_addr, 0, rightHand.releaseValue);
+    Serial.printf("Right hand pos %d; servo %d\n", pos_steps/stepsPerNote, servo_addr);
   }
 }
 
@@ -917,70 +923,25 @@ void setup()
   }
   //-register recv callback-
   esp_now_register_recv_cb(esp_now_recv_cb_t(OnDataRecv));
+
+  //-try press all-
+  for (int i=8; i<16; i++)
+  {
+    pca9685right.setPWM(i, 0, rightHand.pressValue);
+    delay(75);
+    pca9685right.setPWM(i, 0, rightHand.releaseValue);
+    delay(75);
+  }
+  for (int i=8; i<16; i++)
+  {
+    pca9685left.setPWM(i, 0, leftHand.pressValue);
+    delay(75);
+    pca9685left.setPWM(i, 0, leftHand.releaseValue);
+    delay(75);
+  }
 }
 
 void loop()
 {
-  /*bar_timer = millis();
-  tempo = 270; 
-  note_lenght = 15000/tempo; 
-  for(int i=0; i<16; i++)
-  {
-    leftHand.bar[i] = osudovaRightAndLeft1[i];
-    rightHand.bar[i] = osudovaRightAndLeft1[i];
-  }
-  for(int i=0; i<2; i++)
-  {
-    leftHand.pos[i] = osudovaLeftPosition[i];
-    rightHand.pos[i] = osudovaRightPosition[i];
-  }
-  moveToPos();
-  bar_timer = millis();
-  playBar();
-  while(millis() - bar_timer <= note_lenght*16 ){}
-  //prvy takt
-  bar_timer = millis();
-  for(int i=0; i<16; i++)
-  {
-    leftHand.bar[i] = osudovaRightAndLeft2[i];
-    rightHand.bar[i] =osudovaRightAndLeft2[i];
-  }
-  playBar();
-  while(millis() - bar_timer <= note_lenght*16 ){}
-  //druhy takt
-  bar_timer = millis();
-  for(int i=0; i<16; i++)
-  {
-    leftHand.bar[i] = osudovaRightAndLeft3[i];
-    rightHand.bar[i] =osudovaRightAndLeft3[i];
-  }
-  playBar();
-  while(millis() - bar_timer <= note_lenght*16 ){}
-  //treti takt
-  bar_timer = millis();
-  for(int i=0; i<16; i++)
-  {
-    leftHand.bar[i] = osudovaRightAndLeft4[i];
-    rightHand.bar[i] =osudovaRightAndLeft4[i];
-  }
-  playBar();
-  while(millis() - bar_timer <= note_lenght*16 ){}*/
-
-  for(int i=0; i<5; i++)
-  {
-    playNote(C, i);
-    delay(100);
-    playNote(D, i);
-    delay(100);
-    playNote(E, i);
-    delay(100);
-    playNote(F, i);
-    delay(100);
-    playNote(G, i);
-    delay(100);
-    playNote(A, i);
-    delay(100);
-    playNote(H, i);
-    delay(100);
-  }
+  
 }
