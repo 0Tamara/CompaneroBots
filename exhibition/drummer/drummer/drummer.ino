@@ -4,33 +4,32 @@
 #include <WiFi.h>
 #include <esp_wifi.h>
 
-#define R_ARM_PIN 13
-#define L_ARM_PIN 12
-#define KICK_PIN 32
-
-#define R_UP 60
-#define R_DOWN 50
-#define L_UP 20
-#define L_DOWN 30
-#define K_UP 85
-#define K_DOWN 90
-
-Servo r_arm;  //0-80 = down-front
-Servo l_arm;  //80-0 = down-front
-Servo kick;   //85-90-85 = kick
-
-#define LED_PIN_L 27     //left drum
-#define LED_COUNT_L 36
-CRGB left_ring[LED_COUNT_L];
-#define LED_PIN_K 33    //kick drum
-#define LED_COUNT_K 54
-CRGB kick_ring[LED_COUNT_K];
-#define LED_PIN_R 14    //right drum
-#define LED_COUNT_R 36
-CRGB right_ring[LED_COUNT_R];
-#define LED_PIN_EYES 23  //eyes
-#define LED_COUNT_EYES 50
-CRGB eyes[LED_COUNT_EYES];
+//-pins-
+#define L_SERVO_PIN 12
+#define R_SERVO_PIN 13
+#define KICK_SERVO_PIN 32
+#define LED_PIN_L 27
+#define LED_PIN_R 14
+#define LED_PIN_K 33
+#define LED_PIN_EYES 23
+//-values-
+#define L_SERVO_RELEASE 20
+#define L_SERVO_HIT 30
+#define R_SERVO_RELEASE 60
+#define R_SERVO_HIT 50
+#define KICK_SERVO_RELEASE 85
+#define KICK_SERVO_HIT 90
+#define SIDES_LED_COUNT 36  //count of leds on both side drums
+#define KICK_LED_COUNT 54
+#define EYES_LED_COUNT 50
+//-drivers-
+Servo left_servo;  //80-0 = down-front
+Servo right_servo;  //0-80 = down-front
+Servo kick_servo;   //85-90-85 = kick
+CRGB left_LEDs[SIDES_LED_COUNT];
+CRGB right_LEDs[SIDES_LED_COUNT];
+CRGB kick_LEDs[KICK_LED_COUNT];
+CRGB eyes_LEDs[EYES_LED_COUNT];
 
 unsigned long timer_kick;
 unsigned long timer_right;
@@ -53,7 +52,7 @@ int color_index_right = 0;
 TaskHandle_t Task1;
 int rising_color[3] = {0, 0, 0};  //color used for rising effects (during music)
 bool blink_drums[3] = {0, 0, 0};  //rising effects active
-int LEDs_pos[3] = {0, 0, LED_COUNT_R-1};  //position on the LED ring
+int LEDs_pos[3] = {0, 0, SIDES_LED_COUNT-1};  //position on the LED ring
 bool rising[3] = {1, 1, 1};  //rising / lowering
 bool miss_out[3] = {0, 0, 0};  //missing out every other step to go slower
 
@@ -68,43 +67,37 @@ typedef struct struct_mes
   byte song;
   byte sync;
 } struct_mes;
-typedef struct struct_cam
-{
-  byte feedback;
-} struct_cam;
 
 struct_mes pianist_mes;
 struct_mes recv_data;
-struct_cam cam_mes;
 
-// Zapína LED na všetkých pásikoch naraz
-void ledky_vedlajsie(uint color) {
-  for (int i = 0; i < LED_COUNT_R; i++) {
-    left_ring[i] = color;
-    right_ring[i] = color;
+void sideLEDsRise(uint color) {
+  for (int i = 0; i < SIDES_LED_COUNT; i++) {
+    left_LEDs[i] = color;
+    right_LEDs[i] = color;
 
     FastLED.show();
     delay(50);
   }
 
-  for (int i = LED_COUNT_R - 1; i >= 0; i--) {
-    left_ring[i] = 0x000000;
-    right_ring[i] = 0x000000;
+  for (int i = SIDES_LED_COUNT - 1; i >= 0; i--) {
+    left_LEDs[i] = 0x000000;
+    right_LEDs[i] = 0x000000;
 
     FastLED.show();
     delay(50);
   }
 }
-void kick_ring_bubon(uint color) {
-  for (int i = 0; i < LED_COUNT_K/2; i++) {
-    kick_ring[i] = color;
-    kick_ring[(LED_COUNT_K-1)-i] = color;
+void kickLEDsRise(uint color) {
+  for (int i = 0; i < KICK_LED_COUNT/2; i++) {
+    kick_LEDs[i] = color;
+    kick_LEDs[(KICK_LED_COUNT-1)-i] = color;
     FastLED.show();
     delay(50);
   }
-  for (int i = LED_COUNT_K - 1; i >= 0; i--) {
-    kick_ring[i] = 0x000000;
-    kick_ring[(LED_COUNT_K-1)-i] = 0x000000;
+  for (int i = KICK_LED_COUNT - 1; i >= 0; i--) {
+    kick_LEDs[i] = 0x000000;
+    kick_LEDs[(KICK_LED_COUNT-1)-i] = 0x000000;
     FastLED.show();
     delay(50);
   }
@@ -154,10 +147,10 @@ void freedom()
     if((millis()-timer_kick) >= 570)
     {
       timer_kick = millis();
-      kick.write(K_DOWN);
+      kick_servo.write(KICK_SERVO_HIT);
       changeColorsKick();
       delay(100);
-      kick.write(K_UP);
+      kick_servo.write(KICK_SERVO_RELEASE);
       num_kicks ++;
     }
     if(num_snares < 3)
@@ -165,13 +158,13 @@ void freedom()
       if((millis()-timer_right) >= 430)
       {
         timer_right = millis();
-        r_arm.write(R_DOWN);
-        l_arm.write(L_DOWN);
+        right_servo.write(R_SERVO_HIT);
+        left_servo.write(L_SERVO_HIT);
         changeColorsLeft();
         changeColorsRight();
         delay(100);
-        r_arm.write(R_UP);
-        l_arm.write(L_UP);
+        right_servo.write(R_SERVO_RELEASE);
+        left_servo.write(L_SERVO_RELEASE);
         num_snares ++;
       }
     }
@@ -180,18 +173,18 @@ void freedom()
       if(num_kicks == 3)
       {
         delay(300);
-        r_arm.write(R_DOWN);
+        right_servo.write(R_SERVO_HIT);
         changeColorsRight();
         delay(100);
-        r_arm.write(R_UP);
-        l_arm.write(L_DOWN);
+        right_servo.write(R_SERVO_RELEASE);
+        left_servo.write(L_SERVO_HIT);
         changeColorsLeft();
         delay(100);
-        l_arm.write(L_UP);
-        r_arm.write(R_DOWN);
+        left_servo.write(L_SERVO_RELEASE);
+        right_servo.write(R_SERVO_HIT);
         changeColorsRight();
         delay(100);
-        r_arm.write(R_UP);
+        right_servo.write(R_SERVO_RELEASE);
       }
     }
   }
@@ -208,10 +201,10 @@ void fireball_clapping()
       if((millis()-timer_right) >= 480)
       {
         timer_right = millis();
-        r_arm.write(R_DOWN);
+        right_servo.write(R_SERVO_HIT);
         changeColorsRight();
         delay(100);
-        r_arm.write(R_UP);
+        right_servo.write(R_SERVO_RELEASE);
         num_snares ++;
       }
     }
@@ -220,10 +213,10 @@ void fireball_clapping()
       if((millis()-timer_right) >= 480)
       {
         timer_right = millis();
-        l_arm.write(L_DOWN);
+        left_servo.write(L_SERVO_HIT);
         changeColorsLeft();
         delay(100);
-        l_arm.write(L_UP);
+        left_servo.write(L_SERVO_RELEASE);
         num_snares ++;
       }
     }
@@ -241,48 +234,48 @@ void fireball_drop()
       timer_kick = millis();
       if(!(num_kicks%2))
       {
-        kick.write(K_DOWN);
-        r_arm.write(R_DOWN);
-        l_arm.write(L_DOWN);
+        kick_servo.write(KICK_SERVO_HIT);
+        right_servo.write(R_SERVO_HIT);
+        left_servo.write(L_SERVO_HIT);
         changeColorsKick();
         changeColorsRight();
         changeColorsLeft();
         delay(100);
-        kick.write(K_UP);
-        r_arm.write(R_UP);
-        l_arm.write(L_UP);
+        kick_servo.write(KICK_SERVO_RELEASE);
+        right_servo.write(R_SERVO_RELEASE);
+        left_servo.write(L_SERVO_RELEASE);
       }
       else
       {
         if(num_kicks == 1)
         {
-          kick.write(K_DOWN);
-          r_arm.write(R_DOWN);
+          kick_servo.write(KICK_SERVO_HIT);
+          right_servo.write(R_SERVO_HIT);
           changeColorsKick();
           changeColorsRight();
           delay(100);
-          kick.write(K_UP);
-          r_arm.write(R_UP);
+          kick_servo.write(KICK_SERVO_RELEASE);
+          right_servo.write(R_SERVO_RELEASE);
           while((millis()-timer_kick) < 240) delay(10);
-          l_arm.write(L_DOWN);
+          left_servo.write(L_SERVO_HIT);
           changeColorsLeft();
           delay(100);
-          l_arm.write(L_UP);
+          left_servo.write(L_SERVO_RELEASE);
         }
         else
         {
-          kick.write(K_DOWN);
-          l_arm.write(L_DOWN);
+          kick_servo.write(KICK_SERVO_HIT);
+          left_servo.write(L_SERVO_HIT);
           changeColorsKick();
           changeColorsLeft();
           delay(100);
-          kick.write(K_UP);
-          l_arm.write(L_UP);
+          kick_servo.write(KICK_SERVO_RELEASE);
+          left_servo.write(L_SERVO_RELEASE);
           while((millis()-timer_kick) < 240) delay(10);
-          r_arm.write(R_DOWN);
+          right_servo.write(R_SERVO_HIT);
           changeColorsRight();
           delay(100);
-          r_arm.write(R_UP);
+          right_servo.write(R_SERVO_RELEASE);
         }
       }
       num_kicks ++;
@@ -299,10 +292,10 @@ void fireball_bass()
     if((millis()-timer_kick) >= 480)
     {
       timer_kick = millis();
-      kick.write(K_DOWN);
+      kick_servo.write(KICK_SERVO_HIT);
       changeColorsKick();
       delay(100);
-      kick.write(K_UP);
+      kick_servo.write(KICK_SERVO_RELEASE);
       num_kicks ++;
     }
   }
@@ -312,16 +305,16 @@ void fireball_bass()
 void fireball_chill()
 {
   timer_kick = millis();
-  kick.write(K_DOWN);
-  r_arm.write(R_DOWN);
-  l_arm.write(L_DOWN);
+  kick_servo.write(KICK_SERVO_HIT);
+  right_servo.write(R_SERVO_HIT);
+  left_servo.write(L_SERVO_HIT);
   changeColorsKick();
   changeColorsRight();
   changeColorsLeft();
   delay(100);
-  kick.write(K_UP);
-  r_arm.write(R_UP);
-  l_arm.write(L_UP);
+  kick_servo.write(KICK_SERVO_RELEASE);
+  right_servo.write(R_SERVO_RELEASE);
+  left_servo.write(L_SERVO_RELEASE);
   num_snares = 0;
   while(num_snares < 3)
   {
@@ -330,10 +323,10 @@ void fireball_chill()
       if((millis()-timer_right) >= 480)
       {
         timer_right = millis();
-        r_arm.write(R_DOWN);
+        right_servo.write(R_SERVO_HIT);
         changeColorsRight();
         delay(100);
-        r_arm.write(R_UP);
+        right_servo.write(R_SERVO_RELEASE);
         num_snares ++;
       }
     }
@@ -342,10 +335,10 @@ void fireball_chill()
       if((millis()-timer_right) >= 480)
       {
         timer_right = millis();
-        l_arm.write(L_DOWN);
+        left_servo.write(L_SERVO_HIT);
         changeColorsLeft();
         delay(100);
-        l_arm.write(L_UP);
+        left_servo.write(L_SERVO_RELEASE);
         num_snares ++;
       }
     }
@@ -353,36 +346,43 @@ void fireball_chill()
 }
 
 //---eyes functions---
-void closeEyes()  //cca 300ms
+void closeEyes()  //~300ms
 {
+  for(int i=0; i<5; i++)
+  {
+    for (int j = 20; j < 25; j++) eyes_LEDs[j] = 0x000000; // Left eye
+    for (int j = 45; j < 50; j++) eyes_LEDs[j] = 0x000000; // Right eye
+    FastLED.show();
+    delay(50);
+  }
   // Blink LEDs in reverse order (off in sections)
-  for (int i = 20; i < 25; i++) eyes[i] = 0x000000; // Left eye
-  for (int i = 45; i < 50; i++) eyes[i] = 0x000000; // Right eye
+  for (int i = 20; i < 25; i++) eyes_LEDs[i] = 0x000000; // Left eye
+  for (int i = 45; i < 50; i++) eyes_LEDs[i] = 0x000000; // Right eye
   FastLED.show();
 
   delay(50);
 
   // Now let's go down the LED sections
-  for (int i = 15; i < 20; i++) eyes[i] = 0x000000;
-  for (int i = 40; i < 45; i++) eyes[i] = 0x000000;
+  for (int i = 15; i < 20; i++) eyes_LEDs[i] = 0x000000;
+  for (int i = 40; i < 45; i++) eyes_LEDs[i] = 0x000000;
   FastLED.show();
 
   delay(50);
 
-  for (int i = 10; i < 15; i++) eyes[i] = 0x000000;
-  for (int i = 35; i < 40; i++) eyes[i] = 0x000000;
+  for (int i = 10; i < 15; i++) eyes_LEDs[i] = 0x000000;
+  for (int i = 35; i < 40; i++) eyes_LEDs[i] = 0x000000;
   FastLED.show();
 
   delay(50);
 
-  for (int i = 5; i < 10; i++) eyes[i] = 0x000000;
-  for (int i = 30; i < 35; i++) eyes[i] = 0x000000;
+  for (int i = 5; i < 10; i++) eyes_LEDs[i] = 0x000000;
+  for (int i = 30; i < 35; i++) eyes_LEDs[i] = 0x000000;
   FastLED.show();
 
   delay(50);
 
-  for (int i = 0; i < 5; i++) eyes[i] = 0x000000;
-  for (int i = 25; i < 30; i++) eyes[i] = 0x000000;
+  for (int i = 0; i < 5; i++) eyes_LEDs[i] = 0x000000;
+  for (int i = 25; i < 30; i++) eyes_LEDs[i] = 0x000000;
   FastLED.show();
 
   delay(50);
@@ -391,32 +391,32 @@ void closeEyes()  //cca 300ms
 void openEyes(uint color)  //cca 300ms
 {
   // Blink LEDs in reverse order (turning LEDs back on)
-  for (int i = 0; i < 5; i++) eyes[i] = color; // Left eye
-  for (int i = 25; i < 30; i++) eyes[i] = color; // Right eye
+  for (int i = 0; i < 5; i++) eyes_LEDs[i] = color; // Left eye
+  for (int i = 25; i < 30; i++) eyes_LEDs[i] = color; // Right eye
   FastLED.show();
 
   delay(50);
 
-  for (int i = 5; i < 10; i++) eyes[i] = color;
-  for (int i = 30; i < 35; i++) eyes[i] = color;
+  for (int i = 5; i < 10; i++) eyes_LEDs[i] = color;
+  for (int i = 30; i < 35; i++) eyes_LEDs[i] = color;
   FastLED.show();
 
   delay(50);
 
-  for (int i = 10; i < 15; i++) eyes[i] = color;
-  for (int i = 35; i < 40; i++) eyes[i] = color;
+  for (int i = 10; i < 15; i++) eyes_LEDs[i] = color;
+  for (int i = 35; i < 40; i++) eyes_LEDs[i] = color;
   FastLED.show();
 
   delay(50);
 
-  for (int i = 15; i < 20; i++) eyes[i] = color;
-  for (int i = 40; i < 45; i++) eyes[i] = color;
+  for (int i = 15; i < 20; i++) eyes_LEDs[i] = color;
+  for (int i = 40; i < 45; i++) eyes_LEDs[i] = color;
   FastLED.show();
 
   delay(50);
 
-  for (int i = 20; i < 25; i++) eyes[i] = color;
-  for (int i = 45; i < 50; i++) eyes[i] = color;
+  for (int i = 20; i < 25; i++) eyes_LEDs[i] = color;
+  for (int i = 45; i < 50; i++) eyes_LEDs[i] = color;
   FastLED.show();
 
   delay(50);
@@ -438,13 +438,13 @@ void OnDataRecv(const uint8_t * mac, const uint8_t *incoming_data, int len) {
   }
   if(recv_data.song == 2)
   {
-    ledky_vedlajsie(0xFF0000);
+    sideLEDsRise(0xFF0000);
     cam_mes.feedback = 1;
     esp_now_send(cam_addr, (uint8_t *) &cam_mes, sizeof(cam_mes));
   }
   if(recv_data.song == 3)
   {
-    kick_ring_bubon(0x00FF00);
+    kickLEDsRise(0x00FF00);
     cam_mes.feedback = 1;
     esp_now_send(cam_addr, (uint8_t *) &cam_mes, sizeof(cam_mes));
   }
@@ -453,8 +453,8 @@ void OnDataRecv(const uint8_t * mac, const uint8_t *incoming_data, int len) {
     current_song = 1;
     pianist_mes.song = 4;
     pianist_mes.sync = 1;
-    for (int i = 0; i < LED_COUNT_R; i++)
-      right_ring[i] = 0xFF0000;
+    for (int i = 0; i < SIDES_LED_COUNT; i++)
+      right_LEDs[i] = 0xFF0000;
     FastLED.show();
   }
 }
@@ -469,18 +469,18 @@ void loop_2(void* parameter)
     {
       if(rising[0])  //lighting up
       {
-        left_ring[LEDs_pos[0]] = rising_color[0];
+        left_LEDs[LEDs_pos[0]] = rising_color[0];
         LEDs_pos[0] ++;
 
-        if(LEDs_pos[0] == LED_COUNT_L)  //prepare values for turn off stage
+        if(LEDs_pos[0] == SIDES_LED_COUNT)  //prepare values for turn off stage
         {
           rising[0] = 0;
-          LEDs_pos[0] = LED_COUNT_L-1;
+          LEDs_pos[0] = SIDES_LED_COUNT-1;
         }
       }
       else  //turning off
       {
-        left_ring[LEDs_pos[0]] = 0;
+        left_LEDs[LEDs_pos[0]] = 0;
         LEDs_pos[0] --;
 
         if(LEDs_pos[0] < 0)  //revert values
@@ -497,22 +497,22 @@ void loop_2(void* parameter)
     {
       if(rising[1])  //lighting up
       {
-        kick_ring[LEDs_pos[1]] = rising_color[1];
-        kick_ring[LEDs_pos[1]+1] = rising_color[1];
-        kick_ring[(LED_COUNT_K-1)-LEDs_pos[1]] = rising_color[1];  //going from both sides to middle
-        kick_ring[(LED_COUNT_K-1)-LEDs_pos[1]-1] = rising_color[1];
+        kick_LEDs[LEDs_pos[1]] = rising_color[1];
+        kick_LEDs[LEDs_pos[1]+1] = rising_color[1];
+        kick_LEDs[(KICK_LED_COUNT-1)-LEDs_pos[1]] = rising_color[1];  //going from both sides to middle
+        kick_LEDs[(KICK_LED_COUNT-1)-LEDs_pos[1]-1] = rising_color[1];
         LEDs_pos[1] +=2;
 
-        if(LEDs_pos[1] > LED_COUNT_K/2-1)  //prepare values for turn off stage
+        if(LEDs_pos[1] > KICK_LED_COUNT/2-1)  //prepare values for turn off stage
         {
           rising[1] = 0;
-          LEDs_pos[1] = LED_COUNT_K/2-1;
+          LEDs_pos[1] = KICK_LED_COUNT/2-1;
         }
       }
       else  //turning off
       {
-        kick_ring[LEDs_pos[1]] = 0;
-        kick_ring[(LED_COUNT_K-1)-LEDs_pos[1]] = 0;
+        kick_LEDs[LEDs_pos[1]] = 0;
+        kick_LEDs[(KICK_LED_COUNT-1)-LEDs_pos[1]] = 0;
         LEDs_pos[1] --;
 
         if(LEDs_pos[1] < 0)  //revert values
@@ -529,7 +529,7 @@ void loop_2(void* parameter)
     {
       if(rising[2])
       {
-        right_ring[LEDs_pos[2]] = rising_color[2];
+        right_LEDs[LEDs_pos[2]] = rising_color[2];
         LEDs_pos[2] --;
 
         if(LEDs_pos[2] < 0)  //prepare values for turn off stage
@@ -540,14 +540,14 @@ void loop_2(void* parameter)
       }
       else
       {
-        right_ring[LEDs_pos[2]] = 0;
+        right_LEDs[LEDs_pos[2]] = 0;
         LEDs_pos[2] ++;
 
-        if(LEDs_pos[2] == LED_COUNT_R)  //revert values
+        if(LEDs_pos[2] == SIDES_LED_COUNT)  //revert values
         {
           rising[2] = 1;
           blink_drums[2] = 0;
-          LEDs_pos[2] = LED_COUNT_R-1;
+          LEDs_pos[2] = SIDES_LED_COUNT-1;
           miss_out[2] = 0;
         }
       }
@@ -595,13 +595,13 @@ void setup()
   esp_now_register_recv_cb(esp_now_recv_cb_t(OnDataRecv));
 
   //-init servos-
-  r_arm.attach(R_ARM_PIN);
-  l_arm.attach(L_ARM_PIN);
-  kick.attach(KICK_PIN);
+  right_servo.attach(R_SERVO_PIN);
+  left_servo.attach(L_SERVO_PIN);
+  kick_servo.attach(KICK_SERVO_PIN);
   
-  kick.write(K_UP);
-  r_arm.write(R_UP);
-  l_arm.write(L_UP);
+  kick_servo.write(KICK_SERVO_RELEASE);
+  right_servo.write(R_SERVO_RELEASE);
+  left_servo.write(L_SERVO_RELEASE);
 
   //-create loop 2-
   xTaskCreatePinnedToCore(
@@ -614,23 +614,23 @@ void setup()
       0); /* Core where the task should run */
 
   //-init LEDs and blink white-
-  FastLED.addLeds<WS2811, LED_PIN_L, GRB>(left_ring, LED_COUNT_L);
-  FastLED.addLeds<WS2811, LED_PIN_K, GRB>(kick_ring, LED_COUNT_K);
-  FastLED.addLeds<WS2811, LED_PIN_R, GRB>(right_ring, LED_COUNT_R);
-  FastLED.addLeds<WS2811, LED_PIN_EYES, GRB>(eyes, LED_COUNT_EYES);
+  FastLED.addLeds<WS2811, LED_PIN_L, GRB>(left_LEDs, SIDES_LED_COUNT);
+  FastLED.addLeds<WS2811, LED_PIN_K, GRB>(kick_LEDs, KICK_LED_COUNT);
+  FastLED.addLeds<WS2811, LED_PIN_R, GRB>(right_LEDs, SIDES_LED_COUNT);
+  FastLED.addLeds<WS2811, LED_PIN_EYES, GRB>(eyes, EYES_LED_COUNT);
 
   for (int i = 0; i < 54; i++) {
-    if (i < LED_COUNT_R) right_ring[i] = 0x808080;
-    if (i < LED_COUNT_L) left_ring[i] = 0x808080;
-    if (i < LED_COUNT_K) kick_ring[i] = 0x808080;
+    if (i < SIDES_LED_COUNT) right_LEDs[i] = 0x808080;
+    if (i < SIDES_LED_COUNT) left_LEDs[i] = 0x808080;
+    if (i < KICK_LED_COUNT) kick_LEDs[i] = 0x808080;
   }
   FastLED.show();
 
   delay(100);
   for (int i = 0; i < 54; i++) {
-    if (i < LED_COUNT_R) right_ring[i] = 0x000000;
-    if (i < LED_COUNT_L) left_ring[i] = 0x000000;
-    if (i < LED_COUNT_K) kick_ring[i] = 0x000000;
+    if (i < SIDES_LED_COUNT) right_LEDs[i] = 0x000000;
+    if (i < SIDES_LED_COUNT) left_LEDs[i] = 0x000000;
+    if (i < KICK_LED_COUNT) kick_LEDs[i] = 0x000000;
   }
   FastLED.show();
 
