@@ -70,9 +70,19 @@ struct song
   String name;
   int length;  //in bars
   int note_length;  //in ms
-  int bar_notes;  //number of notes in a bar
+  int notes_per_bar;  //number of notes in a bar
 };
 song current_song;
+
+struct bar_type
+{
+  int start;  //number of bars from start of the song
+  byte pos_left[2];  //[note, octave]
+  byte pos_right[2];
+  byte fingers_left[16];  //byte(8 fingers) of every 16th note
+  byte fingers_right[16];
+};
+bar_type current_bar;
 
 //---functions---
 void loadDatabase()  //read the file and save song starting lines
@@ -100,7 +110,7 @@ void loadDatabase()  //read the file and save song starting lines
   }
   database.close();
 }
-void loadSongHeader(int which)  //read the file and save song starting line
+void loadSongHeader(int which)
 {
   if(song_lines[which] == 0)
     return;
@@ -128,15 +138,73 @@ void loadSongHeader(int which)  //read the file and save song starting line
       case 3:
         if(csv_element == "4/4")
         {
-          current_song.bar_notes = 16;
+          current_song.notes_per_bar = 16;
           current_song.note_length = 15000/tempo;  //((60,000/bpm)*4)/16
         }
         else if(csv_element == "6/8")
         {
-          current_song.bar_notes = 12;
+          current_song.notes_per_bar = 12;
           current_song.note_length = 30000/tempo;  //((60,000/bpm)*6)/12
         }
         break;
+    }
+
+    if(database.peek() == 13)  //if the next char is '\n'
+      break;
+    line_data_index++;
+  }
+  database.read();  //cross the new line
+  csv_pointer = database.position();
+  database.close();
+}
+void loadBar()  //read from pointer
+{
+  String csv_element;
+  int line_data_index = 0;  //which element on the line
+  byte csv_element_decoded = 0;
+
+  database = SPIFFS.open("/songs.csv", "r");
+  database.seek(csv_pointer);
+  while (database.available())  //read the line
+  {
+    csv_element = database.readStringUntil(',');
+
+    if(line_data_index == 0)  //starting index
+      current_bar.start = csv_element.toInt();
+    else if(1 <= line_data_index && line_data_index <= 4)  //hand positions
+    {
+      switch(csv_element[0])
+      {
+        case 'C': csv_element_decoded = C; break;
+        case 'D': csv_element_decoded = D; break;
+        case 'E': csv_element_decoded = E; break;
+        case 'F': csv_element_decoded = F; break;
+        case 'G': csv_element_decoded = H; break;
+        case 'A': csv_element_decoded = A; break;
+        case 'H': csv_element_decoded = H; break;
+        default: csv_element_decoded = csv_element.toInt(); break;
+      }
+      if(line_data_index <= 2)
+        current_bar.pos_left[line_data_index-1] = csv_element_decoded;
+      else
+        current_bar.pos_right[line_data_index-3] = csv_element_decoded;
+    }
+    else  //finger presses
+    {
+      csv_element_decoded = 0;
+      for(int i=0; i<csv_element.length(); i++)  //decode HEX to byte
+      {
+        csv_element_decoded *= 16;
+        if(csv_element[i] <= '9')
+          csv_element_decoded += csv_element[i] - 0x30;
+        else
+          csv_element_decoded += csv_element[i] - 55;
+      }
+
+      if(line_data_index <= 20)
+        current_bar.fingers_left[line_data_index-5] = csv_element_decoded;
+      else
+        current_bar.fingers_right[line_data_index-21] = csv_element_decoded;
     }
 
     if(database.peek() == 13)  //if the next char is '\n'
@@ -285,11 +353,28 @@ void loop()
   Serial.print("Song ");
   Serial.print(current_song.name);
   Serial.print(" long ");
-  Serial.print((current_song.length * current_song.bar_notes * current_song.note_length)/1000);
+  Serial.print((current_song.length * current_song.notes_per_bar * current_song.note_length)/1000);
   Serial.print("s, with ");
   Serial.print(current_song.length);
   Serial.print(" bars and ");
-  Serial.print(current_song.bar_notes);
+  Serial.print(current_song.notes_per_bar);
   Serial.println(" notes inside 1 bar");
+
+  loadBar();
+  Serial.print("Bar starting at ");
+  Serial.print(current_bar.start);
+  Serial.print("; Left hand on ");
+  Serial.print(current_bar.pos_left[0]);
+  Serial.print(current_bar.pos_left[1]);
+  Serial.print(", right hand on ");
+  Serial.print(current_bar.pos_right[0]);
+  Serial.println(current_bar.pos_right[1]);
+  Serial.println("Left hand:    Right hand:");
+  for(int i=0; i<current_song.notes_per_bar; i++)
+  {
+    Serial.printf("0x%2X", current_bar.fingers_left[i]);
+    Serial.print("    ");
+    Serial.printf("0x%2X\n", current_bar.fingers_right[i]);
+  }
   delay(10000);
 }
