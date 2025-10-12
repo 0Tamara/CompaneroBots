@@ -28,10 +28,7 @@
 enum moveNotes {C=0, D=1, E=2, F=3, G=4, A=5, H=6};  //number of notes to the right from C
 
 //-timing-
-int tempo = 105;  //bpm
-int note_lenght = 15000/tempo;  //4/4: ((60,000/bpm)*4)/16
-unsigned long bar_timer = millis();
-unsigned long timer;  //!!!TEMP!!!
+unsigned long bar_timer;
 
 //-servo drivers-
 Adafruit_PWMServoDriver pca9685right(0x41, Wire);
@@ -65,8 +62,17 @@ Hand rightHand = {
 
 //--csv reading--
 size_t song_lines[MAX_SONGS];  //the first line of each song
-int csv_pointer = 0;
+size_t csv_pointer = 0;
 File database;
+
+struct song
+{
+  String name;
+  int length;  //in bars
+  int note_length;  //in ms
+  int bar_notes;  //number of notes in a bar
+};
+song current_song;
 
 //---functions---
 void loadDatabase()  //read the file and save song starting lines
@@ -87,12 +93,58 @@ void loadDatabase()  //read the file and save song starting lines
     if(line.length() < 2)
     {
       song_lines[song_index] = (database.position());  //save where the empty line is
-      Serial.println("** line pos saved");
       song_index ++;
       if(song_index >= MAX_SONGS)
         break;
     }
   }
+  database.close();
+}
+void loadSongHeader(int which)  //read the file and save song starting line
+{
+  if(song_lines[which] == 0)
+    return;
+  String csv_element;
+  int line_data_index = 0;  //which element on the line
+  int tempo;
+
+  database = SPIFFS.open("/songs.csv", "r");
+  database.seek(song_lines[which]);
+  while (database.available())  //read the line
+  {
+    csv_element = database.readStringUntil(',');
+
+    switch(line_data_index)  //decode song header data
+    {
+      case 0:
+        current_song.name = csv_element;
+        break;
+      case 1:
+        tempo = csv_element.toInt();
+        break;
+      case 2:
+        current_song.length = csv_element.toInt();
+        break;
+      case 3:
+        if(csv_element == "4/4")
+        {
+          current_song.bar_notes = 16;
+          current_song.note_length = 15000/tempo;  //((60,000/bpm)*4)/16
+        }
+        else if(csv_element == "6/8")
+        {
+          current_song.bar_notes = 12;
+          current_song.note_length = 30000/tempo;  //((60,000/bpm)*6)/12
+        }
+        break;
+    }
+
+    if(database.peek() == 13)  //if the next char is '\n'
+      break;
+    line_data_index++;
+  }
+  database.read();  //cross the new line
+  csv_pointer = database.position();
   database.close();
 }
 
@@ -129,7 +181,7 @@ void playBar()  //play 1 bar of a song
       pca9685right.setPWM(j, 0, rightHand.releaseValue);
       pca9685left.setPWM(j, 0, leftHand.releaseValue);
     }
-    while (millis() - bar_timer <= note_lenght * i);
+    while (millis() - bar_timer <= current_song.note_length * i);
   }
 }
 void playNote(byte note, byte octave)
@@ -229,20 +281,15 @@ void setup()
 
 void loop()
 {
-  timer = millis();
-  File database = SPIFFS.open("/songs.csv", "r");
-  for(int i=0; i<MAX_SONGS; i++)
-  {
-    if(song_lines[i] < 1)
-      continue;
-    database.seek(song_lines[i]);  //read the first song
-
-    String line;
-    line = database.readStringUntil('\n');
-    Serial.print("Starting line: ");
-    Serial.println(line);
-  }
-  database.close();
-  Serial.println();
-  delay(1000);
+  loadSongHeader(0);
+  Serial.print("Song ");
+  Serial.print(current_song.name);
+  Serial.print(" long ");
+  Serial.print((current_song.length * current_song.bar_notes * current_song.note_length)/1000);
+  Serial.print("s, with ");
+  Serial.print(current_song.length);
+  Serial.print(" bars and ");
+  Serial.print(current_song.bar_notes);
+  Serial.println(" notes inside 1 bar");
+  delay(10000);
 }
