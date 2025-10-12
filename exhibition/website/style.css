@@ -94,6 +94,7 @@ body {
     top: 0;
     z-index: 2;
     border: 1px solid #222;
+    pointer-events: none; 
 }
 
 .black-key:active {
@@ -142,7 +143,6 @@ body {
     color: #fff;
     transform: translateX(0);
 }
-
 
 .hidden {
     display: none;
