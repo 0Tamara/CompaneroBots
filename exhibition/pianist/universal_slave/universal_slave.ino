@@ -66,8 +66,8 @@ Hand rightHand = {
   .releaseValue = SERVOMIN
 };
 
-/*int havasiFreedomRightPosition1[]{A, 2};
-int havasiFreedomLeftPosition1[]{A, 0};
+/*int havasiFreedomRightPosition1[]{A, 4};
+int havasiFreedomLeftPosition1[]{A, 2};
 int havasiFreedomRight1[]{
   0b00000000, //cel pomlcka
   0b00000000,
@@ -349,7 +349,7 @@ int fireballRight2[] = {
   0b00000000, 
   0b00000000, 
 };
-int fireballRightPosition5[]{D, 4};
+int fireballRightPosition5[]{D, 6};
 int fireballRight5[] = {
   0b00010000, //stv
   0b00000000, 
@@ -404,8 +404,8 @@ int fireballRight8[] = {
   0b00000000, 
   0b00000000, 
 };
-int stupnicaLeftPosition[]{C, 0};
-int stupnicaRightPosition[]{C, 2};
+int stupnicaLeftPosition[]{C, 2};
+int stupnicaRightPosition[]{C, 4};
 int stupnicaRightAndLeft[]{
   0b10000000,
   0b01000000,
@@ -424,8 +424,8 @@ int stupnicaRightAndLeft[]{
   0b01000000,
   0b10000000,
 };*/
-int osudovaLeftPosition[]{C, 0};
-int osudovaRightPosition[]{C, 2};
+int osudovaLeftPosition[]{C, 2};
+int osudovaRightPosition[]{C, 4};
 int osudovaRightAndLeft1[]{
   0b00000000,
   0b00000000,
@@ -542,12 +542,12 @@ void playNote(byte note, byte octave)
 {
   int pos_steps = stepsPerOctave*octave;
   byte servo_addr;
-  if(note == C && (octave == 2 || octave == 5))  //last note on hands
+  if(note == C && (octave == 4 || octave == 7))  //last note on hands
   {
     pos_steps -= stepsPerOctave;
     servo_addr = 8;
   }
-  else if(octave == 2)  //right hand is shifted by 1 to the right
+  else if(octave == 4)  //right hand is shifted by 1 to the right
   {
     
     pos_steps += stepsPerNote;
@@ -556,7 +556,7 @@ void playNote(byte note, byte octave)
   else
     servo_addr = 15-note;
 
-  if(note + octave*7 <= 14)  //if note is on the left from C2, play with left hand
+  if(note + octave*7 <= 28)  //if note is on the left from C4, play with left hand
   {
     //-move hand into position-
     leftHand.stepper->moveTo(pos_steps);
@@ -899,7 +899,7 @@ void setup()
 
   leftHand.stepper->setSpeedInHz(speedInHz);
   leftHand.stepper->setAcceleration(acceleration);
-  leftHand.stepper->setCurrentPosition(0);  //starting on the left end (C0)
+  leftHand.stepper->setCurrentPosition(stepsPerOctave * 2);  //starting on the left end (C2)
   
   rightHand.stepper->setDirectionPin(rightHandDirPin);
   rightHand.stepper->setEnablePin(rightHandEnPin);
@@ -907,7 +907,7 @@ void setup()
 
   rightHand.stepper->setSpeedInHz(speedInHz);
   rightHand.stepper->setAcceleration(acceleration);
-  rightHand.stepper->setCurrentPosition(stepsPerOctave * 4);  //starting on the right end (C4)
+  rightHand.stepper->setCurrentPosition(stepsPerOctave * 6);  //starting on the right end (C6)
 
   //-init WiFi & read MAC address-
   WiFi.mode(WIFI_STA);
