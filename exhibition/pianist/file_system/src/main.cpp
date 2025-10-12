@@ -27,8 +27,9 @@
 
 enum moveNotes {C=0, D=1, E=2, F=3, G=4, A=5, H=6};  //number of notes to the right from C
 
-//-timing-
-unsigned long bar_timer;
+//-timers-
+unsigned long timer_general;
+unsigned long timer_bar;
 
 //-servo drivers-
 Adafruit_PWMServoDriver pca9685right(0x41, Wire);
@@ -40,28 +41,24 @@ FastAccelStepperEngine stepper_driver = FastAccelStepperEngine();  //stepper dri
 struct Hand
 {
   FastAccelStepper* stepper;
-  byte bar[16];  //16 sets of 8 notes
-  byte pos[2];  //position on the keyboard [note, octave]
+  //byte bar[16];  //16 sets of 8 notes
+  //byte pos[2];  //position on the keyboard [note, octave]
   int pressValue;  //value to set servos
   int releaseValue;  //value to set servos
 };
 Hand leftHand = {
   .stepper = NULL,
-  .bar = {0},
-  .pos = {C, 0},
-  .pressValue = SERVOMAX - 100,
+  .pressValue = SERVOMAX - 70,
   .releaseValue = SERVOMAX
 };
 Hand rightHand = {
   .stepper = NULL,
-  .bar = {0},
-  .pos = {C, 4},
-  .pressValue = SERVOMIN + 100,
+  .pressValue = SERVOMIN + 60,
   .releaseValue = SERVOMIN
 };
 
 //--csv reading--
-size_t song_lines[MAX_SONGS];  //the first line of each song
+size_t song_lines[MAX_SONGS] = {0};  //the first line of each song
 size_t csv_pointer = 0;
 File database;
 
@@ -76,11 +73,11 @@ song current_song;
 
 struct bar_type
 {
-  int start;  //number of bars from start of the song
+  int end;  // till when this bar loops
   byte pos_left[2];  //[note, octave]
-  byte pos_right[2];
+  byte pos_right[2];  //[note, octave]
   byte fingers_left[16];  //byte(8 fingers) of every 16th note
-  byte fingers_right[16];
+  byte fingers_right[16];  //byte(8 fingers) of every 16th note
 };
 bar_type current_bar;
 
@@ -170,7 +167,7 @@ void loadBar()  //read from pointer
     csv_element = database.readStringUntil(',');
 
     if(line_data_index == 0)  //starting index
-      current_bar.start = csv_element.toInt();
+      current_bar.end = csv_element.toInt();
     else if(1 <= line_data_index && line_data_index <= 4)  //hand positions
     {
       switch(csv_element[0])
@@ -218,38 +215,38 @@ void loadBar()  //read from pointer
 
 void moveToPos()  //move hands into position from structure
 {
-  leftHand.stepper->moveTo(stepsPerNote * leftHand.pos[0] + stepsPerOctave * leftHand.pos[1]);
-  rightHand.stepper->moveTo(stepsPerNote * rightHand.pos[0] + stepsPerOctave * rightHand.pos[1]);
+  leftHand.stepper->moveTo(stepsPerNote * current_bar.pos_left[0] + stepsPerOctave * current_bar.pos_left[1]);
+  rightHand.stepper->moveTo(stepsPerNote * current_bar.pos_right[0] + stepsPerOctave * current_bar.pos_right[1]);
 }
 void moveHome()  //move to the sides
 {
-  leftHand.stepper->moveTo(0);
-  rightHand.stepper->moveTo(stepsPerOctave * 4);
+  leftHand.stepper->moveTo(stepsPerOctave * 2);
+  rightHand.stepper->moveTo(stepsPerOctave * 6);
   while(leftHand.stepper->isRunning() || rightHand.stepper->isRunning());
 }
 
 void playBar()  //play 1 bar of a song
 {
+  timer_bar = millis();
   moveToPos();
-  //-play 16 notes (1 bar)-
-  for (int i = 0; i < 16; i++)
+  for (int i = 0; i < current_song.notes_per_bar; i++)
   {    
     for (int j = 0; j < 8; j++)
     {
-      if ((rightHand.bar[i] & 1<<j) && !(rightHand.stepper->isRunning()))
-        pca9685right.setPWM(j+8, 0, rightHand.pressValue);
-      if ((leftHand.bar[i] & 1<<j) && !(leftHand.stepper->isRunning()))
+      if ((current_bar.fingers_left[i] & 1<<j) && !(leftHand.stepper->isRunning()))
         pca9685left.setPWM(j+8, 0, leftHand.pressValue);
+      if ((current_bar.fingers_right[i] & 1<<j) && !(rightHand.stepper->isRunning()))
+        pca9685right.setPWM(j+8, 0, rightHand.pressValue);
     }
     
     delay(75);
     //-release keys-
-    for (int j=8; j<16; j++)
+    for (int j=0; j<8; j++)
     {
-      pca9685right.setPWM(j, 0, rightHand.releaseValue);
-      pca9685left.setPWM(j, 0, leftHand.releaseValue);
+      pca9685right.setPWM(j+8, 0, rightHand.releaseValue);
+      pca9685left.setPWM(j+8, 0, leftHand.releaseValue);
     }
-    while (millis() - bar_timer <= current_song.note_length * i);
+    while (millis() - timer_bar <= current_song.note_length * i);
   }
 }
 void playNote(byte note, byte octave)
@@ -313,7 +310,6 @@ void setup()
   else
     Serial.println("** SPIFFS started");
   loadDatabase();
-  Serial.println("** database loaded");
   //--init pca9685 (hand servos driver)--
   pca9685right.begin();
   pca9685left.begin();
@@ -350,31 +346,17 @@ void setup()
 void loop()
 {
   loadSongHeader(0);
-  Serial.print("Song ");
-  Serial.print(current_song.name);
-  Serial.print(" long ");
-  Serial.print((current_song.length * current_song.notes_per_bar * current_song.note_length)/1000);
-  Serial.print("s, with ");
-  Serial.print(current_song.length);
-  Serial.print(" bars and ");
-  Serial.print(current_song.notes_per_bar);
-  Serial.println(" notes inside 1 bar");
-
-  loadBar();
-  Serial.print("Bar starting at ");
-  Serial.print(current_bar.start);
-  Serial.print("; Left hand on ");
-  Serial.print(current_bar.pos_left[0]);
-  Serial.print(current_bar.pos_left[1]);
-  Serial.print(", right hand on ");
-  Serial.print(current_bar.pos_right[0]);
-  Serial.println(current_bar.pos_right[1]);
-  Serial.println("Left hand:    Right hand:");
-  for(int i=0; i<current_song.notes_per_bar; i++)
+  current_bar.end = 0;
+  timer_general = millis();
+  for(int i=0; i<current_song.length; i++)
   {
-    Serial.printf("0x%2X", current_bar.fingers_left[i]);
-    Serial.print("    ");
-    Serial.printf("0x%2X\n", current_bar.fingers_right[i]);
+    if(i == current_bar.end)
+      loadBar();
+    playBar();
+    Serial.printf("Played bar ending at %d; t= %d bars\n", current_bar.end, i);
+    while(millis() - timer_general < current_song.note_length * current_song.notes_per_bar);
+    timer_general = millis();
   }
-  delay(10000);
+  moveHome();
+  delay(1000);
 }
