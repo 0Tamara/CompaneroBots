@@ -61,15 +61,19 @@ body {
     box-shadow: 0 8px 25px rgba(0,0,0,0.1);
     background: #fff;
     padding: 10px;
-    margin: 0 auto;
+    margin: 10px auto;
+    justify-content: center;
+}
+
+.piano.lower {
+    width: fit-content;
+    padding: 5px;
+    margin: 20px auto;
 }
 
 .white-key, .black-key {
-    cursor: pointer;
-    user-select: none;
     border-radius: 8px;
     box-sizing: border-box;
-    transition: transform 0.1s, background 0.2s;
     position: relative;
 }
 
@@ -79,6 +83,7 @@ body {
     background: #fff;
     border: 1px solid #ddd;
     z-index: 1;
+    cursor: pointer;
 }
 
 .white-key:active {
@@ -95,11 +100,6 @@ body {
     z-index: 2;
     border: 1px solid #222;
     pointer-events: none; 
-}
-
-.black-key:active {
-    background: #555;
-    transform: translateY(2px);
 }
 
 .key-label {

@@ -1,87 +1,115 @@
 <!DOCTYPE html>
 <html lang="sk">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Companerobots</title>
-    <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Companerobots</title>
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="container">
+<div class="container">
 
-        
-        <header>
-            <h1 class="main-title">Companerobots</h1>
-        </header>
 
-        
-        <nav class="menu">
-            <button id="keyboardBtn" class="menu-btn active">Keyboard</button>
-            <button id="songsBtn" class="menu-btn">Songs</button>
-        </nav>
+    <header>
+        <h1 class="main-title">Companerobots</h1>
+    </header>
 
-        
-        <div id="pianoContainer">
-            <div class="piano">
-                
-                <div class="white-key"><span class="key-label">C</span></div>
-                <div class="white-key"><span class="key-label">D</span></div>
-                <div class="white-key"><span class="key-label">E</span></div>
-                <div class="white-key"><span class="key-label">F</span></div>
-                <div class="white-key"><span class="key-label">G</span></div>
-                <div class="white-key"><span class="key-label">A</span></div>
-                <div class="white-key"><span class="key-label">B</span></div>
+  
+    <nav class="menu">
+        <button id="keyboardBtn" class="menu-btn active">Keyboard</button>
+        <button id="songsBtn" class="menu-btn">Songs</button>
+    </nav>
 
-                <div class="white-key"><span class="key-label">C</span></div>
-                <div class="white-key"><span class="key-label">D</span></div>
-                <div class="white-key"><span class="key-label">E</span></div>
-                <div class="white-key"><span class="key-label">F</span></div>
-                <div class="white-key"><span class="key-label">G</span></div>
-                <div class="white-key"><span class="key-label">A</span></div>
-                <div class="white-key"><span class="key-label">B</span></div>
 
-                <div class="white-key"><span class="key-label">C</span></div>
-                <div class="white-key"><span class="key-label">D</span></div>
-                <div class="white-key"><span class="key-label">E</span></div>
-                <div class="white-key"><span class="key-label">F</span></div>
-                <div class="white-key"><span class="key-label">G</span></div>
-                <div class="white-key"><span class="key-label">A</span></div>
-                <div class="white-key"><span class="key-label">B</span></div>
+    <div id="pianoContainer">
 
-                <div class="white-key"><span class="key-label">C</span></div>
+        <div id="upperPiano" class="piano">
+     
+            <div class="white-key"><span class="key-label">C</span></div>
+            <div class="white-key"><span class="key-label">D</span></div>
+            <div class="white-key"><span class="key-label">E</span></div>
+            <div class="white-key"><span class="key-label">F</span></div>
+            <div class="white-key"><span class="key-label">G</span></div>
+            <div class="white-key"><span class="key-label">A</span></div>
+            <div class="white-key"><span class="key-label">B</span></div>
+            
+            <div class="white-key"><span class="key-label">C</span></div>
+            <div class="white-key"><span class="key-label">D</span></div>
+            <div class="white-key"><span class="key-label">E</span></div>
+            <div class="white-key"><span class="key-label">F</span></div>
+            <div class="white-key"><span class="key-label">G</span></div>
+            <div class="white-key"><span class="key-label">A</span></div>
+            <div class="white-key"><span class="key-label">B</span></div>
 
-                <div class="black-key" style="left: 45px;"><span class="key-label">C#</span></div>
-                <div class="black-key" style="left: 105px;"><span class="key-label">D#</span></div>
-                <div class="black-key" style="left: 225px;"><span class="key-label">F#</span></div>
-                <div class="black-key" style="left: 285px;"><span class="key-label">G#</span></div>
-                <div class="black-key" style="left: 345px;"><span class="key-label">A#</span></div>
+            <div class="white-key"><span class="key-label">C</span></div>
+            <div class="white-key"><span class="key-label">D</span></div>
+            <div class="white-key"><span class="key-label">E</span></div>
+            <div class="white-key"><span class="key-label">F</span></div>
+            <div class="white-key"><span class="key-label">G</span></div>
+            <div class="white-key"><span class="key-label">A</span></div>
+            <div class="white-key"><span class="key-label">B</span></div>
 
-                <div class="black-key" style="left: 465px;"><span class="key-label">C#</span></div>
-                <div class="black-key" style="left: 525px;"><span class="key-label">D#</span></div>
-                <div class="black-key" style="left: 645px;"><span class="key-label">F#</span></div>
-                <div class="black-key" style="left: 705px;"><span class="key-label">G#</span></div>
-                <div class="black-key" style="left: 765px;"><span class="key-label">A#</span></div>
-
-                <div class="black-key" style="left: 885px;"><span class="key-label">C#</span></div>
-                <div class="black-key" style="left: 945px;"><span class="key-label">D#</span></div>
-                <div class="black-key" style="left: 1065px;"><span class="key-label">F#</span></div>
-                <div class="black-key" style="left: 1125px;"><span class="key-label">G#</span></div>
-                <div class="black-key" style="left: 1185px;"><span class="key-label">A#</span></div>
-            </div>
+            <div class="black-key" style="left: 45px;"></div>
+            <div class="black-key" style="left: 105px;"></div>
+            <div class="black-key" style="left: 225px;"></div>
+            <div class="black-key" style="left: 285px;"></div>
+            <div class="black-key" style="left: 345px;"></div>
+            
+            <div class="black-key" style="left: 465px;"></div>
+            <div class="black-key" style="left: 525px;"></div>
+            <div class="black-key" style="left: 645px;"></div>
+            <div class="black-key" style="left: 705px;"></div>
+            <div class="black-key" style="left: 765px;"></div>
+    
+            <div class="black-key" style="left: 885px;"></div>
+            <div class="black-key" style="left: 945px;"></div>
+            <div class="black-key" style="left: 1065px;"></div>
+            <div class="black-key" style="left: 1125px;"></div>
+            <div class="black-key" style="left: 1185px;"></div>
         </div>
 
-        <div id="songsContainer" class="hidden">
-            <ul class="songs-list">
-                <li>Song 1</li>
-                <li>Song 2</li>
-                <li>Song 3</li>
-                <li>Song 4</li>
-                <li>Song 5</li>
-            </ul>
+        <div id="lowerPiano" class="piano lower">
+            <div class="white-key"><span class="key-label">C</span></div>
+            <div class="white-key"><span class="key-label">D</span></div>
+            <div class="white-key"><span class="key-label">E</span></div>
+            <div class="white-key"><span class="key-label">F</span></div>
+            <div class="white-key"><span class="key-label">G</span></div>
+            <div class="white-key"><span class="key-label">A</span></div>
+            <div class="white-key"><span class="key-label">B</span></div>
+            <div class="white-key"><span class="key-label">C</span></div>
+            <div class="white-key"><span class="key-label">D</span></div>
+            <div class="white-key"><span class="key-label">E</span></div>
+            <div class="white-key"><span class="key-label">F</span></div>
+            <div class="white-key"><span class="key-label">G</span></div>
+            <div class="white-key"><span class="key-label">A</span></div>
+            <div class="white-key"><span class="key-label">B</span></div>
+            <div class="white-key"><span class="key-label">C7</span></div>
+
+            <div class="black-key" style="left: 42px;"></div>
+            <div class="black-key" style="left: 102px;"></div>
+            <div class="black-key" style="left: 222px;"></div>
+            <div class="black-key" style="left: 282px;"></div>
+            <div class="black-key" style="left: 342px;"></div>
+            <div class="black-key" style="left: 462px;"></div>
+            <div class="black-key" style="left: 522px;"></div>
+            <div class="black-key" style="left: 642px;"></div>
+            <div class="black-key" style="left: 702px;"></div>
+            <div class="black-key" style="left: 762px;"></div>
         </div>
 
     </div>
 
-    <script src="script.js"></script>
+    <div id="songsContainer" class="hidden">
+        <ul class="songs-list">
+            <li>Song 1</li>
+            <li>Song 2</li>
+            <li>Song 3</li>
+            <li>Song 4</li>
+            <li>Song 5</li>
+        </ul>
+    </div>
+
+</div>
+<script src="script.js"></script>
 </body>
 </html>
