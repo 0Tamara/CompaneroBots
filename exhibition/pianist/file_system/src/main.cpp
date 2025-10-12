@@ -7,6 +7,13 @@
 #include <esp_wifi.h>
 #include <SPIFFS.h>
 
+//-pins-
+#define leftHandStepPin   5 
+#define leftHandDirPin    16 
+#define leftHandEnPin     18
+#define rightHandStepPin  4
+#define rightHandDirPin   17
+#define rightHandEnPin    15
 //-speed/position values-
 #define numServos 16
 #define SERVOMIN  125
@@ -15,13 +22,8 @@
 #define stepsPerOctave 6498
 #define speedInHz 15000
 #define acceleration 40000
-//-pins-
-#define leftHandStepPin   5 
-#define leftHandDirPin    16 
-#define leftHandEnPin     18
-#define rightHandStepPin  4
-#define rightHandDirPin   17
-#define rightHandEnPin    15
+
+#define MAX_SONGS 10  //max number of songs you can load
 
 enum moveNotes {C=0, D=1, E=2, F=3, G=4, A=5, H=6};  //number of notes to the right from C
 
@@ -61,7 +63,39 @@ Hand rightHand = {
   .releaseValue = SERVOMIN
 };
 
+//--csv reading--
+size_t song_lines[MAX_SONGS];  //the first line of each song
+int csv_pointer = 0;
+File database;
+
 //---functions---
+void loadDatabase()  //read the file and save song starting lines
+{
+  database = SPIFFS.open("/songs.csv", "r");
+  if(!database)
+  {
+    Serial.println("!! failed to load database");
+    return;
+  }
+  Serial.println("** database open");
+
+  String line;
+  int song_index = 0;
+  while (database.available())  //read the whole document
+  {
+    line = database.readStringUntil('\n');
+    if(line.length() < 2)
+    {
+      song_lines[song_index] = (database.position());  //save where the empty line is
+      Serial.println("** line pos saved");
+      song_index ++;
+      if(song_index >= MAX_SONGS)
+        break;
+    }
+  }
+  database.close();
+}
+
 void moveToPos()  //move hands into position from structure
 {
   leftHand.stepper->moveTo(stepsPerNote * leftHand.pos[0] + stepsPerOctave * leftHand.pos[1]);
@@ -149,16 +183,17 @@ void setup()
   //--init I2C--
   esp_log_level_set("i2c.master", ESP_LOG_NONE);
   if (!Wire.begin(21, 22))
-    Serial.println("!! SPIFFS init error");
+    Serial.println("!! I2C init error");
   else
-    Serial.println("** SPIFFS started");
+    Serial.println("** I2C started");
 
   //--init SPIFFS--
   if (!SPIFFS.begin(true))
     Serial.println("!! SPIFFS init error");
   else
     Serial.println("** SPIFFS started");
-
+  loadDatabase();
+  Serial.println("** database loaded");
   //--init pca9685 (hand servos driver)--
   pca9685right.begin();
   pca9685left.begin();
@@ -196,19 +231,18 @@ void loop()
 {
   timer = millis();
   File database = SPIFFS.open("/songs.csv", "r");
-  //if (!database) return;
+  for(int i=0; i<MAX_SONGS; i++)
+  {
+    if(song_lines[i] < 1)
+      continue;
+    database.seek(song_lines[i]);  //read the first song
 
-  int lines = 0;
-  String line;
-
-  database.seek(3988);
-  while (database.available()) {
+    String line;
     line = database.readStringUntil('\n');
-    //Serial.print("Line:  ");
-    //Serial.println(line);
-    lines ++;
+    Serial.print("Starting line: ");
+    Serial.println(line);
   }
   database.close();
-  Serial.printf(">>%d lines read in %dms\n", lines, millis()-timer);
+  Serial.println();
   delay(1000);
 }
