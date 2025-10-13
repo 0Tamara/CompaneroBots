@@ -28,7 +28,7 @@
 
 //---WiFi values---
 const char* ssid     = "SPSE_ESP32_main";
-const char* password = "sikanaNaStudentov2025";
+const char* password = "gondek2025";
 WebServer server(80);
 IPAddress local_IP(192, 168, 0, 1);
 IPAddress gateway(192, 168, 0, 1);
@@ -88,29 +88,19 @@ struct bar_type
 };
 bar_type current_bar;
 
-//---Web server functions---
-void loadWebSite()  //load html website for client
-{
-  File html_file = SPIFFS.open("/index.html", "r");
-  if(!html_file)
+int decodeNote(char note_coded)  //decode letter to int  C->0; H->6
+{  //if not a note letter ->8
+  switch(note_coded)
   {
-    server.send(404, "text/plain", "File not found");
-    Serial.println("!! html not found");
-    return;
+    case 'C': return C; break;
+    case 'D': return D; break;
+    case 'E': return E; break;
+    case 'F': return F; break;
+    case 'G': return H; break;
+    case 'A': return A; break;
+    case 'H': return H; break;
+    default: return 8; break;
   }
-  server.streamFile(html_file, "text/html");
-  html_file.close();
-  Serial.println("** html file loaded");
-}
-//--http requests--
-void readHttpButton()
-{
-  int pressed_button = server.arg("button").toInt();  //read the value of parameter "button"
-  Serial.printf(">> button number %d was pressed\n", pressed_button);
-  digitalWrite(2, HIGH);
-  delay(50);
-  digitalWrite(2, LOW);
-  server.send(200, "text/plain", "recieved");
 }
 
 //---load from FFS functions---
@@ -202,17 +192,10 @@ void loadBar()  //read 1 line from pointer
       current_bar.end = csv_element.toInt();
     else if(1 <= line_data_index && line_data_index <= 4)  //hand positions
     {
-      switch(csv_element[0])
-      {
-        case 'C': csv_element_decoded = C; break;
-        case 'D': csv_element_decoded = D; break;
-        case 'E': csv_element_decoded = E; break;
-        case 'F': csv_element_decoded = F; break;
-        case 'G': csv_element_decoded = H; break;
-        case 'A': csv_element_decoded = A; break;
-        case 'H': csv_element_decoded = H; break;
-        default: csv_element_decoded = csv_element.toInt(); break;
-      }
+      csv_element_decoded = decodeNote(csv_element[0]);
+      if(csv_element_decoded == 8)
+        csv_element_decoded = csv_element.toInt();
+
       if(line_data_index <= 2)
         current_bar.pos_left[line_data_index-1] = csv_element_decoded;
       else
@@ -324,6 +307,30 @@ void playNote(byte note, byte octave)  //play 1 note
   }
 }
 
+//---Web server functions---
+void loadWebSite()  //load html website for client
+{
+  File html_file = SPIFFS.open("/index.html", "r");
+  if(!html_file)
+  {
+    server.send(404, "text/plain", "File not found");
+    Serial.println("!! html not found");
+    return;
+  }
+  server.streamFile(html_file, "text/html");
+  html_file.close();
+  Serial.println("** html file loaded");
+}
+//--http requests--
+void readHttpKey()
+{
+  int note = decodeNote(server.arg("note")[0]);
+  int octave = server.arg("octave").toInt();
+  playNote(note, octave);
+  server.send(200, "text/plain", "1");
+  Serial.printf("Played note %d %d", note, octave);
+}
+
 void setup()
 {
   //--debugging--
@@ -387,7 +394,7 @@ void setup()
   }
   //--handling http requests--
   server.on("/", loadWebSite);  //load html website on "/" request (loading website)
-  server.on("/pressed", readHttpButton);
+  server.on("/key-press", readHttpKey);  //read from website piano
   server.serveStatic("/", SPIFFS, "/");  //load any other not identified files (csss, js)
   server.onNotFound([]()  //if no request matches
   {
@@ -402,7 +409,9 @@ void setup()
       return;
     }
     server.send(404, "text/plain", "Not found");
-    Serial.println("!! request (file) missing");
+    Serial.print("!! Couldn't load ");
+    Serial.print(server.uri());
+    Serial.println(server.args());
   });
 
   server.begin();  //init web server

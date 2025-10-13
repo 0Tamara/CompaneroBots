@@ -1,3 +1,7 @@
+let note;
+let octave;
+let server_busy;
+
 const keyboardBtn = document.getElementById('keyboardBtn');
 const songsBtn = document.getElementById('songsBtn');
 const pianoContainer = document.getElementById('pianoContainer');
@@ -31,3 +35,28 @@ songs.forEach(song => {
         }
     });
 });
+
+
+function pressKey(key)
+{
+    if(!busy)
+    { 
+        busy = 1;
+        note = key.id.slice(4, 5)
+        octave = key.id.slice(5)
+        console.log(note + octave);
+        fetch("/key-press?note=" + note + "&octave=" + octave)
+            .then(response => response.text)
+            .then(data =>
+            {
+                console.log(data);
+                if(data == "1")
+                    busy = 0;
+            })
+            .catch(error => 
+            {
+                console.log("!! ", error);
+                busy = 0;
+            });
+    }
+}
