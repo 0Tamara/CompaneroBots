@@ -26,7 +26,9 @@
 
 #define MAX_SONGS 10  //max number of songs you can load
 
-//---WiFi values---
+enum moveNotes {C=0, D=1, E=2, F=3, G=4, A=5, H=6};  //number of notes to the right from C
+
+//---WiFi---
 const char* ssid     = "SPSE_ESP32_main";
 const char* password = "gondek2025";
 WebServer server(80);
@@ -34,7 +36,7 @@ IPAddress local_IP(192, 168, 0, 1);
 IPAddress gateway(192, 168, 0, 1);
 IPAddress subnet(255, 255, 255, 0);
 
-enum moveNotes {C=0, D=1, E=2, F=3, G=4, A=5, H=6};  //number of notes to the right from C
+bool busy_playing = 0;
 
 //---timers---
 unsigned long timer_general;
@@ -238,7 +240,7 @@ void moveHome()  //move to the sides
 {
   leftHand.stepper->moveTo(stepsPerOctave * 2);
   rightHand.stepper->moveTo(stepsPerOctave * 6);
-  while(leftHand.stepper->isRunning() || rightHand.stepper->isRunning());
+  while(leftHand.stepper->isRunning() || rightHand.stepper->isRunning()) server.handleClient();
 }
 
 //---playing functions---
@@ -262,7 +264,7 @@ void playBar()  //play 1 bar of a song  from current_bar
       pca9685right.setPWM(j+8, 0, rightHand.releaseValue);
       pca9685left.setPWM(j+8, 0, leftHand.releaseValue);
     }
-    while (millis() - timer_bar <= current_song.note_length * i);
+    while (millis() - timer_bar <= current_song.note_length * i) server.handleClient();
   }
 }
 void playNote(byte note, byte octave)  //play 1 note
@@ -287,7 +289,7 @@ void playNote(byte note, byte octave)  //play 1 note
   {
     //-move hand into position-
     leftHand.stepper->moveTo(pos_steps);
-    while(leftHand.stepper->isRunning());
+    while(leftHand.stepper->isRunning()) server.handleClient();
     //-play 1 note-
     pca9685left.setPWM(servo_addr, 0, leftHand.pressValue);
     delay(75);
@@ -298,13 +300,29 @@ void playNote(byte note, byte octave)  //play 1 note
   {
     //-move hand into position-
     rightHand.stepper->moveTo(pos_steps);
-    while(rightHand.stepper->isRunning());
+    while(rightHand.stepper->isRunning()) server.handleClient();
     //-play 1 note-
     pca9685right.setPWM(servo_addr, 0, rightHand.pressValue);
     delay(75);
     pca9685right.setPWM(servo_addr, 0, rightHand.releaseValue);
     Serial.printf("Right hand pos %d; servo %d\n", pos_steps/stepsPerNote, servo_addr);
   }
+}
+void playSong(int song_index)
+{
+  loadSongHeader(song_index);
+  loadBar();
+  timer_general = millis();
+  for(int i=0; i<current_song.length; i++)
+  {
+    if(i == current_bar.end)
+      loadBar();
+    playBar();
+    Serial.printf("Played bar ending at %d; t= %d bars\n", current_bar.end, i);
+    while(millis() - timer_general < current_song.note_length * current_song.notes_per_bar);
+    timer_general = millis();
+  }
+  moveHome();
 }
 
 //---Web server functions---
@@ -327,8 +345,25 @@ void readHttpKey()
   int note = decodeNote(server.arg("note")[0]);
   int octave = server.arg("octave").toInt();
   playNote(note, octave);
-  server.send(200, "text/plain", "1");
+  moveHome();
+  server.send(200, "text/plain", "done");
   Serial.printf("Played note %d %d", note, octave);
+}
+void readHttpSong()
+{
+  int song_number = server.arg("song").toInt()-1;
+  server.send(202, "text/plain", "processing");
+  busy_playing = 1;
+  playSong(song_number);
+  busy_playing = 0;
+  Serial.printf("Played song %d", song_number);
+}
+void updateStatus()
+{
+  if(busy_playing)
+    server.send(202, "text/plain", "processing");
+  else
+    server.send(200, "text/plain", "done");
 }
 
 void setup()
@@ -395,6 +430,8 @@ void setup()
   //--handling http requests--
   server.on("/", loadWebSite);  //load html website on "/" request (loading website)
   server.on("/key-press", readHttpKey);  //read from website piano
+  server.on("/play-song", readHttpSong);  //read from website song selection
+  server.on("/status", updateStatus);  //check for busy status
   server.serveStatic("/", SPIFFS, "/");  //load any other not identified files (csss, js)
   server.onNotFound([]()  //if no request matches
   {

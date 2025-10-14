@@ -1,6 +1,7 @@
 let note;
 let octave;
 let server_busy;
+let song;
 
 const keyboardBtn = document.getElementById('keyboardBtn');
 const songsBtn = document.getElementById('songsBtn');
@@ -39,24 +40,65 @@ songs.forEach(song => {
 
 function pressKey(key)
 {
-    if(!busy)
+    if(!server_busy)
     { 
-        busy = 1;
+        server_busy = 1;
         note = key.id.slice(4, 5)
         octave = key.id.slice(5)
-        console.log(note + octave);
+        console.log("play note " + note + octave);
+        // zakliknutie tlacitka
         fetch("/key-press?note=" + note + "&octave=" + octave)
-            .then(response => response.text)
+            .then(response => response.text())
             .then(data =>
             {
-                console.log(data);
-                if(data == "1")
-                    busy = 0;
+                console.log("Repply: " + data);
+                if(data === "done")
+                {
+                    // odkliknutie tlacitka
+                    server_busy = 0;
+                }
             })
-            .catch(error => 
+            .catch(error => console.log("!! ", error));
+    }
+}
+
+function pressSong(key)
+{
+    if(!server_busy)
+    { 
+        server_busy = 1;
+        song = key.id.slice(5)
+        console.log("play song " + song);
+        // zakliknutie tlacitka
+        fetch("/play-song?song=" + song)
+            .then(response => response.text())
+            .then(data =>
             {
-                console.log("!! ", error);
-                busy = 0;
-            });
+                console.log("Repply: " + data);
+                if(data === "done")
+                {
+                    // odkliknutie tlacitka
+                    server_busy = 0;
+                }
+            })
+            .catch(error => console.log("!! ", error));
+        
+        // Start polling for status 2x a second
+        const statusInterval = setInterval(() =>
+        {
+            fetch("/status")
+                .then(response => response.text())
+                .then(status =>
+                {
+                    console.log("Status:", status);
+                    if (status === "done")
+                    {
+                        // odkliknutie tlacitka
+                        clearInterval(statusInterval);
+                        server_busy = 0;
+                    }
+                })
+                .catch(error => console.log("!! ", error));
+        }, 500);
     }
 }
