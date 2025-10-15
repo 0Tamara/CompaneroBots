@@ -381,7 +381,7 @@ void loadSongsInfo()
       break;
 
     loadSongHeader(i);
-    http_message += i + " " + current_song.name + " ";
+    http_message += i + "," + current_song.name + ",";
   }
 }
 void readHttpKey()

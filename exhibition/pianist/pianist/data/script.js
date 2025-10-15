@@ -109,12 +109,17 @@ function pressSong(key)
 
 function loadSongInfo()
 {
+    let song_names;
     fetch("/songs-info")
         .then(response => response.text())
         .then(data =>
         {
             console.log("Message:", data);
-            // devide message into songs and write into element innerHTML
+            song_names = data.split(",");
+            for(let i=0; i<song_names.length; i++)
+            {
+                document.getElementById("song_" + i).innerHTML = song_names[i];
+            }
         })
         .catch(error => console.log("!! ", error));
 }
