@@ -163,7 +163,7 @@ void loadDatabase()  //read the file and save song starting lines
   }
   database.close();
 }
-void loadSongHeader(int which)  //read the first line of a song
+void loadSongHeader(int which)  //read the first line of a song and save into current_song
 {
   if(song_lines[which] == 0)
     return;
@@ -372,6 +372,18 @@ void loadWebSite()  //load html website for client
   Serial.println("** html file loaded");
 }
 //--http requests--
+void loadSongsInfo()
+{
+  String http_message;
+  for(int i=0; i<MAX_SONGS; i++)
+  {
+    if(song_lines[i] < 2)
+      break;
+
+    loadSongHeader(i);
+    http_message += i + " " + current_song.name + " ";
+  }
+}
 void readHttpKey()
 {
   int note = decodeNote(server.arg("note")[0]);
@@ -461,6 +473,7 @@ void setup()
   }
   //--handling http requests--
   server.on("/", loadWebSite);  //load html website on "/" request (loading website)
+  server.on("/songs-info", loadSongsInfo);  //load on web site startup
   server.on("/key-press", readHttpKey);  //read from website piano
   server.on("/play-song", readHttpSong);  //read from website song selection
   server.on("/status", updateStatus);  //check for busy status

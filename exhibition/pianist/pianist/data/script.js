@@ -12,6 +12,10 @@ const songs = document.querySelectorAll('.songs-list li');
 pianoContainer.style.display = 'block';
 songsContainer.style.display = 'none';
 
+window.onload = function() {
+  loadSongInfo();
+};
+
 keyboardBtn.addEventListener('click', () => {
     pianoContainer.style.display = 'block';
     songsContainer.style.display = 'none';
@@ -101,4 +105,16 @@ function pressSong(key)
                 .catch(error => console.log("!! ", error));
         }, 500);
     }
+}
+
+function loadSongInfo()
+{
+    fetch("/songs-info")
+        .then(response => response.text())
+        .then(data =>
+        {
+            console.log("Message:", data);
+            // devide message into songs and write into element innerHTML
+        })
+        .catch(error => console.log("!! ", error));
 }
