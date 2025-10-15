@@ -52,18 +52,50 @@ FastAccelStepperEngine stepper_driver = FastAccelStepperEngine();  //stepper dri
 struct Hand
 {
   FastAccelStepper* stepper;
-  int pressValue;  //value to set servos
-  int releaseValue;  //value to set servos
+  int pressValue[8];
+  int releaseValue[8];
 };
 Hand leftHand = {
   .stepper = NULL,
-  .pressValue = SERVOMAX - 70,
-  .releaseValue = SERVOMAX
+  .pressValue = {
+    SERVOMAX - 80,
+    SERVOMAX - 50,
+    SERVOMAX - 60,
+    SERVOMAX - 60,
+    SERVOMAX - 50,
+    SERVOMAX - 70,
+    SERVOMAX - 50,
+    SERVOMAX - 60},
+  .releaseValue = {
+    SERVOMAX - 30,
+    SERVOMAX - 0,
+    SERVOMAX - 10,
+    SERVOMAX - 10,
+    SERVOMAX - 0,
+    SERVOMAX - 20,
+    SERVOMAX - 0,
+    SERVOMAX - 10}
 };
 Hand rightHand = {
   .stepper = NULL,
-  .pressValue = SERVOMIN + 60,
-  .releaseValue = SERVOMIN
+  .pressValue = {
+    SERVOMIN + 50,
+    SERVOMIN + 70,
+    SERVOMIN + 50,
+    SERVOMIN + 70,
+    SERVOMIN + 50,
+    SERVOMIN + 50,
+    SERVOMIN + 60,
+    SERVOMIN + 50},
+  .releaseValue = {
+    SERVOMIN + 0,
+    SERVOMIN + 20,
+    SERVOMIN + 0,
+    SERVOMIN + 20,
+    SERVOMIN + 0,
+    SERVOMIN + 0,
+    SERVOMIN + 10,
+    SERVOMIN + 0}
 };
 
 //---csv reading---
@@ -253,16 +285,16 @@ void playBar()  //play 1 bar of a song  from current_bar
     for (int j = 0; j < 8; j++)
     {
       if ((current_bar.fingers_left[i] & 1<<j) && !(leftHand.stepper->isRunning()))
-        pca9685left.setPWM(j+8, 0, leftHand.pressValue);
+        pca9685left.setPWM(j+8, 0, leftHand.pressValue[j]);
       if ((current_bar.fingers_right[i] & 1<<j) && !(rightHand.stepper->isRunning()))
-        pca9685right.setPWM(j+8, 0, rightHand.pressValue);
+        pca9685right.setPWM(j+8, 0, rightHand.pressValue[j]);
     }
     
     delay(75);
     for (int j=0; j<8; j++)  //release keys
     {
-      pca9685right.setPWM(j+8, 0, rightHand.releaseValue);
-      pca9685left.setPWM(j+8, 0, leftHand.releaseValue);
+      pca9685right.setPWM(j+8, 0, rightHand.releaseValue[j]);
+      pca9685left.setPWM(j+8, 0, leftHand.releaseValue[j]);
     }
     while (millis() - timer_bar <= current_song.note_length * i) server.handleClient();
   }
@@ -291,9 +323,9 @@ void playNote(byte note, byte octave)  //play 1 note
     leftHand.stepper->moveTo(pos_steps);
     while(leftHand.stepper->isRunning()) server.handleClient();
     //-play 1 note-
-    pca9685left.setPWM(servo_addr, 0, leftHand.pressValue);
+    pca9685left.setPWM(servo_addr, 0, leftHand.pressValue[servo_addr-8]);
     delay(75);
-    pca9685left.setPWM(servo_addr, 0, leftHand.releaseValue);
+    pca9685left.setPWM(servo_addr, 0, leftHand.releaseValue[servo_addr-8]);
     Serial.printf("Left hand pos %d; servo %d\n", pos_steps/stepsPerNote, servo_addr);
   }
   else
@@ -302,9 +334,9 @@ void playNote(byte note, byte octave)  //play 1 note
     rightHand.stepper->moveTo(pos_steps);
     while(rightHand.stepper->isRunning()) server.handleClient();
     //-play 1 note-
-    pca9685right.setPWM(servo_addr, 0, rightHand.pressValue);
+    pca9685right.setPWM(servo_addr, 0, rightHand.pressValue[servo_addr-8]);
     delay(75);
-    pca9685right.setPWM(servo_addr, 0, rightHand.releaseValue);
+    pca9685right.setPWM(servo_addr, 0, rightHand.releaseValue[servo_addr-8]);
     Serial.printf("Right hand pos %d; servo %d\n", pos_steps/stepsPerNote, servo_addr);
   }
 }
@@ -391,8 +423,8 @@ void setup()
   pca9685right.setPWMFreq(50);
   pca9685left.setPWMFreq(50); 
   for (int i = 8; i <= numServos; i++){
-    pca9685right.setPWM(i, 0, rightHand.releaseValue);
-    pca9685left.setPWM(i, 0, leftHand.releaseValue); // 0 stupnov
+    pca9685right.setPWM(i, 0, rightHand.releaseValue[i-8]);
+    pca9685left.setPWM(i, 0, leftHand.releaseValue[i-8]); // 0 stupnov
   }
   //--init steppers--
   stepper_driver.init();
