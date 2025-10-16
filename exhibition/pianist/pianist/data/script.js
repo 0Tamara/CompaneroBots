@@ -116,9 +116,9 @@ function loadSongInfo()
         {
             console.log("Message:", data);
             song_names = data.split(",");
-            for(let i=0; i<song_names.length; i++)
+            for(let i=0; i<song_names.length; i++)  
             {
-                document.getElementById("song_" + i).innerHTML = song_names[i];
+                document.getElementById("song_" + (i+1)).innerHTML = song_names[i];
             }
         })
         .catch(error => console.log("!! ", error));

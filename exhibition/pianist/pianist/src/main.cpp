@@ -58,14 +58,14 @@ struct Hand
 Hand leftHand = {
   .stepper = NULL,
   .pressValue = {
-    SERVOMAX - 80,
-    SERVOMAX - 50,
+    SERVOMAX - 90,
     SERVOMAX - 60,
-    SERVOMAX - 60,
-    SERVOMAX - 50,
     SERVOMAX - 70,
-    SERVOMAX - 50,
-    SERVOMAX - 60},
+    SERVOMAX - 70,
+    SERVOMAX - 60,
+    SERVOMAX - 80,
+    SERVOMAX - 60,
+    SERVOMAX - 70},
   .releaseValue = {
     SERVOMAX - 30,
     SERVOMAX - 0,
@@ -79,14 +79,14 @@ Hand leftHand = {
 Hand rightHand = {
   .stepper = NULL,
   .pressValue = {
-    SERVOMIN + 50,
-    SERVOMIN + 70,
-    SERVOMIN + 50,
-    SERVOMIN + 70,
-    SERVOMIN + 50,
-    SERVOMIN + 50,
     SERVOMIN + 60,
-    SERVOMIN + 50},
+    SERVOMIN + 80,
+    SERVOMIN + 60,
+    SERVOMIN + 80,
+    SERVOMIN + 60,
+    SERVOMIN + 60,
+    SERVOMIN + 70,
+    SERVOMIN + 60},
   .releaseValue = {
     SERVOMIN + 0,
     SERVOMIN + 20,
@@ -381,8 +381,9 @@ void loadSongsInfo()
       break;
 
     loadSongHeader(i);
-    http_message += i + "," + current_song.name + ",";
+    http_message += current_song.name + ",";
   }
+  server.send(200, "text/plain", http_message);
 }
 void readHttpKey()
 {
