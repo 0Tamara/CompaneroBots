@@ -60,12 +60,12 @@ Hand leftHand = {
   .pressValue = {
     SERVOMAX - 90,
     SERVOMAX - 60,
-    SERVOMAX - 70,
-    SERVOMAX - 70,
+    SERVOMAX - 90,
+    SERVOMAX - 90,
     SERVOMAX - 60,
     SERVOMAX - 80,
-    SERVOMAX - 60,
-    SERVOMAX - 70},
+    SERVOMAX - 90,  //D
+    SERVOMAX - 70},  //C
   .releaseValue = {
     SERVOMAX - 30,
     SERVOMAX - 0,
@@ -86,7 +86,7 @@ Hand rightHand = {
     SERVOMIN + 60,
     SERVOMIN + 60,
     SERVOMIN + 70,
-    SERVOMIN + 60},
+    SERVOMIN + 50},
   .releaseValue = {
     SERVOMIN + 0,
     SERVOMIN + 20,
@@ -130,7 +130,7 @@ int decodeNote(char note_coded)  //decode letter to int  C->0; H->6
     case 'D': return D; break;
     case 'E': return E; break;
     case 'F': return F; break;
-    case 'G': return H; break;
+    case 'G': return G; break;
     case 'A': return A; break;
     case 'H': return H; break;
     default: return 8; break;
