@@ -58,7 +58,7 @@ Hand rightHand = {
 };
 
 //--csv reading--
-size_t song_lines[MAX_SONGS] = {0};  //the first line of each song
+size_t header_lines[MAX_SONGS] = {0};  //the first line of each song
 size_t csv_pointer = 0;
 File database;
 
@@ -99,7 +99,7 @@ void loadDatabase()  //read the file and save song starting lines
     line = database.readStringUntil('\n');
     if(line.length() < 2)
     {
-      song_lines[song_index] = (database.position());  //save where the empty line is
+      header_lines[song_index] = (database.position());  //save where the empty line is
       song_index ++;
       if(song_index >= MAX_SONGS)
         break;
@@ -109,14 +109,14 @@ void loadDatabase()  //read the file and save song starting lines
 }
 void loadSongHeader(int which)
 {
-  if(song_lines[which] == 0)
+  if(header_lines[which] == 0)
     return;
   String csv_element;
   int line_data_index = 0;  //which element on the line
   int tempo;
 
   database = SPIFFS.open("/songs.csv", "r");
-  database.seek(song_lines[which]);
+  database.seek(header_lines[which]);
   while (database.available())  //read the line
   {
     csv_element = database.readStringUntil(',');
