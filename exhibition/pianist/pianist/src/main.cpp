@@ -1,6 +1,7 @@
 #include <Arduino.h>
 #include <WiFi.h>
 #include <esp_wifi.h>
+#include <esp_now.h>
 #include <WebServer.h>
 #include <SPIFFS.h>
 #include <Wire.h>
@@ -37,6 +38,16 @@ IPAddress gateway(192, 168, 0, 1);
 IPAddress subnet(255, 255, 255, 0);
 
 bool busy_playing = 0;
+
+//---ESP-NOW---
+uint8_t drummer_MAC_addr[] = {0xA0, 0xA3, 0xB3, 0xFE, 0xE0, 0xBC};  //pianist MAC addr
+esp_now_peer_info_t peer_info;
+typedef struct struct_mes
+{
+  byte song;
+  byte bar;
+} struct_mes;
+struct_mes send_drummer_mes;
 
 //---timers---
 unsigned long timer_general;
@@ -347,6 +358,11 @@ void playSong(int song_index)
   timer_general = millis();
   for(int i=0; i<current_song.length; i++)
   {
+    send_drummer_mes.song = song_index + 1;
+    send_drummer_mes.bar = i;
+    esp_now_send(drummer_MAC_addr, (uint8_t *) &send_drummer_mes, sizeof(send_drummer_mes));
+    Serial.printf("Sent song: %d; bar: %d\n", send_drummer_mes.song, send_drummer_mes.bar);
+
     if(i == current_bar.end)
       loadBar();
     playBar();
@@ -471,7 +487,33 @@ void setup()
     Serial.println("** WiFi started");
     Serial.print(">> IP address: ");
     Serial.println(local_IP);
+    
+    uint8_t baseMac[6];
+    esp_err_t ret = esp_wifi_get_mac(WIFI_IF_STA, baseMac);
+    Serial.printf(">> MAC address: {0x%02X, 0x%02X, 0x%02X, 0x%02X, 0x%02X, 0x%02X}\n",
+                  baseMac[0], baseMac[1], baseMac[2],
+                  baseMac[3], baseMac[4], baseMac[5]);
   }
+  //-init esp-now-
+  if (esp_now_init() != ESP_OK)
+  {
+    Serial.println("!! Error initializing ESP-NOW");
+    return;
+  }
+  else
+  {
+    //-register peer-
+    peer_info.channel = 0;  
+    peer_info.encrypt = false;
+    //-add peer-
+    memcpy(peer_info.peer_addr, drummer_MAC_addr, 6);
+    if (esp_now_add_peer(&peer_info) != ESP_OK)
+    {
+      Serial.println("!! Failed to add peer");
+      return;
+    }
+  }
+
   //--handling http requests--
   server.on("/", loadWebSite);  //load html website on "/" request (loading website)
   server.on("/songs-info", loadSongsInfo);  //load on web site startup
