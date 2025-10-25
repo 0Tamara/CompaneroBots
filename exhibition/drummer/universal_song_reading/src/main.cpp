@@ -186,11 +186,11 @@ void playBar()
   for (int i = current_song.notes_per_bar-1; i >= 0; i--)
   {
     Serial.printf("%d %d %d\n", current_bar.left_notes & 1<<i, current_bar.kick_notes & 1<<i, current_bar.right_notes & 1<<i);
-    if (current_bar.left_notes & 1<<i)
+    if ((current_bar.left_notes & 1<<i) > 0)
       left_servo.write(LEFT_SERVO_HIT);
-    if (current_bar.kick_notes & 1<<i)
+    if ((current_bar.kick_notes & 1<<i) > 0)
       kick_servo.write(KICK_SERVO_HIT);
-    if (current_bar.right_notes & 1<<i)
+    if ((current_bar.right_notes & 1<<i) > 0)
       right_servo.write(RIGHT_SERVO_HIT);
     
     delay(100);
