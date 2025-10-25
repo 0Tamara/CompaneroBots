@@ -185,7 +185,6 @@ void playBar()
 
   for (int i = current_song.notes_per_bar-1; i >= 0; i--)
   {
-    Serial.printf("%d %d %d\n", current_bar.left_notes & 1<<i, current_bar.kick_notes & 1<<i, current_bar.right_notes & 1<<i);
     if ((current_bar.left_notes & 1<<i) > 0)
       left_servo.write(LEFT_SERVO_HIT);
     if ((current_bar.kick_notes & 1<<i) > 0)
@@ -198,7 +197,7 @@ void playBar()
     left_servo.write(LEFT_SERVO_RELEASE);
     kick_servo.write(KICK_SERVO_RELEASE);
     right_servo.write(RIGHT_SERVO_RELEASE);
-    while (millis() - timer_bar <= current_song.note_length * i);
+    while (millis() - timer_bar <= current_song.note_length * (current_song.notes_per_bar - i));
   }
 }
 
@@ -239,5 +238,5 @@ void loop()
     while(millis() - timer_general < current_song.note_length * current_song.notes_per_bar);
     timer_general = millis();
   }
-  delay(1000);
+  delay(10000);
 }
