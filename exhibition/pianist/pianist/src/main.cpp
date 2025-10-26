@@ -295,8 +295,8 @@ void playBar()  //play 1 bar of a song  from current_bar
   {    
     for (int j = 0; j < 8; j++)
     {
-      if ((current_bar.fingers_left[i] & 1<<j) && !(leftHand.stepper->isRunning()))
-        pca9685left.setPWM(j+8, 0, leftHand.pressValue[j]);
+      //if ((current_bar.fingers_left[i] & 1<<j) && !(leftHand.stepper->isRunning()))
+        //pca9685left.setPWM(j+8, 0, leftHand.pressValue[j]);
       if ((current_bar.fingers_right[i] & 1<<j) && !(rightHand.stepper->isRunning()))
         pca9685right.setPWM(j+8, 0, rightHand.pressValue[j]);
     }
@@ -305,7 +305,7 @@ void playBar()  //play 1 bar of a song  from current_bar
     for (int j=0; j<8; j++)  //release keys
     {
       pca9685right.setPWM(j+8, 0, rightHand.releaseValue[j]);
-      pca9685left.setPWM(j+8, 0, leftHand.releaseValue[j]);
+      //pca9685left.setPWM(j+8, 0, leftHand.releaseValue[j]);
     }
     while (millis() - timer_bar <= current_song.note_length * i);
   }
@@ -333,35 +333,40 @@ void playNote(byte note, byte octave)  //play 1 note
     //-move hand into position-
     leftHand.stepper->moveTo(pos_steps);
     while(leftHand.stepper->isRunning());
+    Serial.println("--left hand moved into pos");
     //-play 1 note-
-    pca9685left.setPWM(servo_addr, 0, leftHand.pressValue[servo_addr-8]);
+    //pca9685left.setPWM(servo_addr, 0, leftHand.pressValue[servo_addr-8]);
+    //Serial.printf("--left hand pos %d; servo %d\n", pos_steps/stepsPerNote, servo_addr);
     delay(75);
-    pca9685left.setPWM(servo_addr, 0, leftHand.releaseValue[servo_addr-8]);
-    Serial.printf("Left hand pos %d; servo %d\n", pos_steps/stepsPerNote, servo_addr);
+    //pca9685left.setPWM(servo_addr, 0, leftHand.releaseValue[servo_addr-8]);
+    //Serial.println("--left hand released");
   }
   else
   {
     //-move hand into position-
     rightHand.stepper->moveTo(pos_steps);
     while(rightHand.stepper->isRunning());
+    Serial.println("--right hand moved into pos");
     //-play 1 note-
     pca9685right.setPWM(servo_addr, 0, rightHand.pressValue[servo_addr-8]);
+    Serial.printf("--right hand pos %d; servo %d\n", pos_steps/stepsPerNote, servo_addr);
     delay(75);
     pca9685right.setPWM(servo_addr, 0, rightHand.releaseValue[servo_addr-8]);
-    Serial.printf("Right hand pos %d; servo %d\n", pos_steps/stepsPerNote, servo_addr);
+    Serial.println("--right hand released");
   }
 }
 void playSong(int song_index)
 {
   loadSongHeader(song_index);
   loadBar();
+  Serial.println("First bar loading complete");
   timer_general = millis();
   for(int i=0; i<current_song.length; i++)
   {
     send_drummer_mes.song = song_index + 1;
     send_drummer_mes.bar = i;
-    //esp_now_send(drummer_MAC_addr, (uint8_t *) &send_drummer_mes, sizeof(send_drummer_mes));
-    Serial.printf("Sent song: %d; bar: %d\n", send_drummer_mes.song, send_drummer_mes.bar);
+    esp_now_send(drummer_MAC_addr, (uint8_t *) &send_drummer_mes, sizeof(send_drummer_mes));
+    Serial.printf("Sent via esp-now: song=%d; bar=%d\n", send_drummer_mes.song, send_drummer_mes.bar);
 
     if(i == current_bar.end)
       loadBar();
@@ -405,26 +410,32 @@ void readHttpKey(AsyncWebServerRequest *request)
 {
   int note = decodeNote(request->getParam("note")->value()[0]);
   int octave = request->getParam("octave")->value().toInt();
+  Serial.println("--got key request");
   playNote(note, octave);
+  Serial.printf("--played note %d %d\n", note, octave);
   moveHome();
+  Serial.println("--moved to home position");
   request->send(200, "text/plain", "done");
-  Serial.printf("Played note %d %d", note, octave);
+  Serial.println("--replied with OK, done");
 }
 void readHttpSong(AsyncWebServerRequest *request)
 {
   int song_number = request->getParam("song")->value().toInt()-1;
   request->send(202, "text/plain", "processing");
   busy_playing = 1;
+  Serial.printf("Starting song %d\n", song_number);
   playSong(song_number);
   busy_playing = 0;
-  Serial.printf("Played song %d", song_number);
+  Serial.printf("Played song %d\n", song_number);
 }
 void updateStatus(AsyncWebServerRequest *request)
 {
+  Serial.println("Trying to update status");
   if(busy_playing)
     request->send(202, "text/plain", "processing");
   else
     request->send(200, "text/plain", "done");
+  Serial.println(busy_playing ? "Responded with processing" : "Responded with done");
 }
 
 void setup()
