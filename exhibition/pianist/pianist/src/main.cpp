@@ -2,7 +2,7 @@
 #include <WiFi.h>
 #include <esp_wifi.h>
 #include <esp_now.h>
-#include <ESPAsyncWebServer.h>
+#include <WebServer.h>
 #include <SPIFFS.h>
 #include <Wire.h>
 #include <esp_log.h>
@@ -32,7 +32,7 @@ enum moveNotes {C=0, D=1, E=2, F=3, G=4, A=5, H=6};  //number of notes to the ri
 //---WiFi---
 const char* ssid     = "SPSE_ESP32_main";
 const char* password = "gondek2025";
-AsyncWebServer server(80);
+WebServer server(80);
 IPAddress local_IP(192, 168, 0, 1);
 IPAddress gateway(192, 168, 0, 1);
 IPAddress subnet(255, 255, 255, 0);
@@ -283,7 +283,7 @@ void moveHome()  //move to the sides
 {
   leftHand.stepper->moveTo(stepsPerOctave * 2);
   rightHand.stepper->moveTo(stepsPerOctave * 6);
-  while(leftHand.stepper->isRunning() || rightHand.stepper->isRunning());
+  while(leftHand.stepper->isRunning() || rightHand.stepper->isRunning()) server.handleClient();
 }
 
 //---playing functions---
@@ -307,7 +307,7 @@ void playBar()  //play 1 bar of a song  from current_bar
       pca9685right.setPWM(j+8, 0, rightHand.releaseValue[j]);
       pca9685left.setPWM(j+8, 0, leftHand.releaseValue[j]);
     }
-    while (millis() - timer_bar <= current_song.note_length * i);
+    while (millis() - timer_bar <= current_song.note_length * i) server.handleClient();
   }
 }
 void playNote(byte note, byte octave)  //play 1 note
@@ -332,7 +332,7 @@ void playNote(byte note, byte octave)  //play 1 note
   {
     //-move hand into position-
     leftHand.stepper->moveTo(pos_steps);
-    while(leftHand.stepper->isRunning());
+    while(leftHand.stepper->isRunning()) server.handleClient();
     //-play 1 note-
     pca9685left.setPWM(servo_addr, 0, leftHand.pressValue[servo_addr-8]);
     delay(75);
@@ -343,7 +343,7 @@ void playNote(byte note, byte octave)  //play 1 note
   {
     //-move hand into position-
     rightHand.stepper->moveTo(pos_steps);
-    while(rightHand.stepper->isRunning());
+    while(rightHand.stepper->isRunning()) server.handleClient();
     //-play 1 note-
     pca9685right.setPWM(servo_addr, 0, rightHand.pressValue[servo_addr-8]);
     delay(75);
@@ -360,12 +360,12 @@ void playSong(int song_index)
   {
     send_drummer_mes.song = song_index + 1;
     send_drummer_mes.bar = i;
-    //esp_now_send(drummer_MAC_addr, (uint8_t *) &send_drummer_mes, sizeof(send_drummer_mes));
+    esp_now_send(drummer_MAC_addr, (uint8_t *) &send_drummer_mes, sizeof(send_drummer_mes));
     Serial.printf("Sent song: %d; bar: %d\n", send_drummer_mes.song, send_drummer_mes.bar);
 
     if(i == current_bar.end)
       loadBar();
-    //playBar();
+    playBar();
     Serial.printf("Played bar ending at %d; t= %d bars\n", current_bar.end, i);
     while(millis() - timer_general < current_song.note_length * current_song.notes_per_bar);
     timer_general = millis();
@@ -374,21 +374,21 @@ void playSong(int song_index)
 }
 
 //---Web server functions---
-void loadWebSite(AsyncWebServerRequest *request)  //load html website for client
+void loadWebSite()  //load html website for client
 {
   File html_file = SPIFFS.open("/index.html", "r");
   if(!html_file)
   {
-    request->send(404, "text/plain", "File not found");
+    server.send(404, "text/plain", "File not found");
     Serial.println("!! html not found");
     return;
   }
-  request->send(SPIFFS, "/index.html", "text/html");
+  server.streamFile(html_file, "text/html");
   html_file.close();
   Serial.println("** html file loaded");
 }
 //--http requests--
-void loadSongsInfo(AsyncWebServerRequest *request)
+void loadSongsInfo()
 {
   String http_message;
   for(int i=0; i<MAX_SONGS; i++)
@@ -399,32 +399,32 @@ void loadSongsInfo(AsyncWebServerRequest *request)
     loadSongHeader(i);
     http_message += current_song.name + ",";
   }
-  request->send(200, "text/plain", http_message);
+  server.send(200, "text/plain", http_message);
 }
-void readHttpKey(AsyncWebServerRequest *request)
+void readHttpKey()
 {
-  int note = decodeNote(request->getParam("note")->value()[0]);
-  int octave = request->getParam("octave")->value().toInt();
+  int note = decodeNote(server.arg("note")[0]);
+  int octave = server.arg("octave").toInt();
   playNote(note, octave);
   moveHome();
-  request->send(200, "text/plain", "done");
+  server.send(200, "text/plain", "done");
   Serial.printf("Played note %d %d", note, octave);
 }
-void readHttpSong(AsyncWebServerRequest *request)
+void readHttpSong()
 {
-  int song_number = request->getParam("song")->value().toInt()-1;
-  request->send(202, "text/plain", "processing");
+  int song_number = server.arg("song").toInt()-1;
+  server.send(202, "text/plain", "processing");
   busy_playing = 1;
   playSong(song_number);
   busy_playing = 0;
   Serial.printf("Played song %d", song_number);
 }
-void updateStatus(AsyncWebServerRequest *request)
+void updateStatus()
 {
   if(busy_playing)
-    request->send(202, "text/plain", "processing");
+    server.send(202, "text/plain", "processing");
   else
-    request->send(200, "text/plain", "done");
+    server.send(200, "text/plain", "done");
 }
 
 void setup()
@@ -433,71 +433,6 @@ void setup()
   Serial.begin(115200);
   pinMode(2, OUTPUT);
   digitalWrite(2, LOW);
-
-  //--init WiFi--
-  WiFi.mode(WIFI_AP);
-  WiFi.softAPConfig(local_IP, gateway, subnet);
-  if(!WiFi.softAP(ssid, password))
-    Serial.println("!! WiFi init error");
-  else
-  {
-    Serial.println("** WiFi starting...");
-    Serial.print(">> IP address: ");
-    Serial.println(local_IP);
-  }
-  //---init esp-now---
-  uint8_t baseMac[6];
-  esp_err_t ret = esp_wifi_get_mac(WIFI_IF_STA, baseMac);
-  Serial.printf(">> MAC address: {0x%02X, 0x%02X, 0x%02X, 0x%02X, 0x%02X, 0x%02X}\n",
-                baseMac[0], baseMac[1], baseMac[2],
-                baseMac[3], baseMac[4], baseMac[5]);
-  if (esp_now_init() != ESP_OK)
-  {
-    Serial.println("!! Error initializing ESP-NOW");
-    return;
-  }
-  else
-  {
-    //--register peer--
-    peer_info.channel = 0;  
-    peer_info.encrypt = false;
-    //--add peer--
-    memcpy(peer_info.peer_addr, drummer_MAC_addr, 6);
-    if (esp_now_add_peer(&peer_info) != ESP_OK)
-    {
-      Serial.println("!! Failed to add peer");
-      return;
-    }
-  }
-
-  //--handling http requests--
-  server.on("/", HTTP_GET, [](AsyncWebServerRequest *request){loadWebSite(request);});  //load html website on "/" request (loading website)
-  server.on("/songs-info", HTTP_GET, [](AsyncWebServerRequest *request){loadSongsInfo(request);});  //load on web site startup
-  server.on("/key-press", HTTP_GET, [](AsyncWebServerRequest *request){readHttpKey(request);});  //read from website piano
-  server.on("/play-song", HTTP_GET, [](AsyncWebServerRequest *request){readHttpSong(request);});  //read from website song selection
-  server.on("/status", HTTP_GET, [](AsyncWebServerRequest *request){updateStatus(request);});  //check for busy status
-  server.serveStatic("/", SPIFFS, "/");  //load any other not identified files (css, js)
-  server.onNotFound([](AsyncWebServerRequest *request)  //if no request matches
-  {
-    if (request->url().endsWith("/generate_204") ||  //silence checking for Internet connection
-        request->url().endsWith("/gen_204") ||
-        request->url().endsWith("/hotspot-detect.html") ||
-        request->url().endsWith("/ncsi.txt") ||
-        request->url().endsWith("/success.txt") ||
-        request->url().endsWith("/connecttest.txt"))
-    {
-      request->send(204, "text/plain", "");  //"connected, no Internet"
-      return;
-    }
-    request->send(404, "text/plain", "Not found");
-    Serial.print("!! Couldn't load ");
-    Serial.print(request->url());
-    Serial.println(request->params());
-  });
-
-  server.begin();  //init web server
-  Serial.println("** server running");
-  
   //--init I2C--
   esp_log_level_set("i2c.master", ESP_LOG_NONE);
   if (!Wire.begin(21, 22))
@@ -512,17 +447,13 @@ void setup()
     Serial.println("** SPIFFS started");
   loadDatabase();
   //--init pca9685 (hand servos driver)--
-  if(!pca9685right.begin() || pca9685left.begin())
-    Serial.println("!! PCA9685 init error");
-  else
-  {
-    pca9685right.setPWMFreq(50);
-    pca9685left.setPWMFreq(50); 
-    for (int i = 8; i <= numServos; i++)
-    {
-      pca9685right.setPWM(i, 0, rightHand.releaseValue[i-8]);
-      pca9685left.setPWM(i, 0, leftHand.releaseValue[i-8]); // 0 stupnov
-    }
+  pca9685right.begin();
+  pca9685left.begin();
+  pca9685right.setPWMFreq(50);
+  pca9685left.setPWMFreq(50); 
+  for (int i = 8; i <= numServos; i++){
+    pca9685right.setPWM(i, 0, rightHand.releaseValue[i-8]);
+    pca9685left.setPWM(i, 0, leftHand.releaseValue[i-8]); // 0 stupnov
   }
   //--init steppers--
   stepper_driver.init();
@@ -546,8 +477,73 @@ void setup()
   rightHand.stepper->setSpeedInHz(speedInHz);
   rightHand.stepper->setAcceleration(acceleration);
   rightHand.stepper->setCurrentPosition(stepsPerOctave * 6);  //starting on the right end (C6)
+
+  //--init WiFi--
+  WiFi.softAPConfig(local_IP, gateway, subnet);
+  if(!WiFi.softAP(ssid, password))
+    Serial.println("!! WiFi init error");
+  else
+  {
+    Serial.println("** WiFi started");
+    Serial.print(">> IP address: ");
+    Serial.println(local_IP);
+    
+    uint8_t baseMac[6];
+    esp_err_t ret = esp_wifi_get_mac(WIFI_IF_STA, baseMac);
+    Serial.printf(">> MAC address: {0x%02X, 0x%02X, 0x%02X, 0x%02X, 0x%02X, 0x%02X}\n",
+                  baseMac[0], baseMac[1], baseMac[2],
+                  baseMac[3], baseMac[4], baseMac[5]);
+  }
+  //-init esp-now-
+  if (esp_now_init() != ESP_OK)
+  {
+    Serial.println("!! Error initializing ESP-NOW");
+    return;
+  }
+  else
+  {
+    //-register peer-
+    peer_info.channel = 0;  
+    peer_info.encrypt = false;
+    //-add peer-
+    memcpy(peer_info.peer_addr, drummer_MAC_addr, 6);
+    if (esp_now_add_peer(&peer_info) != ESP_OK)
+    {
+      Serial.println("!! Failed to add peer");
+      return;
+    }
+  }
+
+  //--handling http requests--
+  server.on("/", loadWebSite);  //load html website on "/" request (loading website)
+  server.on("/songs-info", loadSongsInfo);  //load on web site startup
+  server.on("/key-press", readHttpKey);  //read from website piano
+  server.on("/play-song", readHttpSong);  //read from website song selection
+  server.on("/status", updateStatus);  //check for busy status
+  server.serveStatic("/", SPIFFS, "/");  //load any other not identified files (csss, js)
+  server.onNotFound([]()  //if no request matches
+  {
+    if (server.uri().endsWith("/generate_204") ||  //silence checking for Internet connection
+        server.uri().endsWith("/gen_204") ||
+        server.uri().endsWith("/hotspot-detect.html") ||
+        server.uri().endsWith("/ncsi.txt") ||
+        server.uri().endsWith("/success.txt") ||
+        server.uri().endsWith("/connecttest.txt"))
+    {
+      server.send(204, "text/plain", "");  //"connected, no Internet"
+      return;
+    }
+    server.send(404, "text/plain", "Not found");
+    Serial.print("!! Couldn't load ");
+    Serial.print(server.uri());
+    Serial.println(server.args());
+  });
+
+  server.begin();  //init web server
+  Serial.println("** server running");
 }
 
 void loop()
 {
+  server.handleClient();
 }
