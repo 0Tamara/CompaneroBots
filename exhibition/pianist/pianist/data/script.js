@@ -88,7 +88,7 @@ function pressSong(key)
             .catch(error => console.log("!! ", error));
         
         // Start polling for status 2x a second
-        /*const statusInterval = setInterval(() =>
+        const statusInterval = setInterval(() =>
         {
             fetch("/status")
                 .then(response => response.text())
@@ -103,7 +103,7 @@ function pressSong(key)
                     }
                 })
                 .catch(error => console.log("!! ", error));
-        }, 500);*/
+        }, 500);
     }
 }
 
