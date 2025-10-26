@@ -8,8 +8,8 @@
 #include <FastAccelStepper.h>
 
 //---pins---
-#define leftHandStepPin   5
-#define leftHandDirPin    16
+#define leftHandStepPin   5 
+#define leftHandDirPin    16 
 #define leftHandEnPin     18
 #define rightHandStepPin  4
 #define rightHandDirPin   17
@@ -35,9 +35,6 @@ IPAddress gateway(192, 168, 0, 1);
 IPAddress subnet(255, 255, 255, 0);
 AsyncWebServer server(80);
 AsyncWebSocket ws("/ws");
-
-JsonDocument send_drummer_mes;
-String espnow_mes_string;
 
 //http request flags
 struct key_request
@@ -362,12 +359,10 @@ void playSong()
   timer_general = millis();
   for(int i=0; i<current_song.length; i++)
   {
-    send_drummer_mes["song"] = current_song.index + 1;
-    send_drummer_mes["bar"] = i;
-    serializeJson(send_drummer_mes, espnow_mes_string);
-    ws.textAll(espnow_mes_string);
-    Serial.println("Message sent:");
-    Serial.println(espnow_mes_string);
+    //send_drummer_mes.song = current_song.length + 1;
+    //send_drummer_mes.bar = i;
+    //esp_now_send(drummer_MAC_addr, (uint8_t *) &send_drummer_mes, sizeof(send_drummer_mes));
+    //Serial.printf("Sent song: %d; bar: %d\n", send_drummer_mes.song, send_drummer_mes.bar);
 
     if(i == current_bar.end)
       loadBar();
@@ -525,9 +520,6 @@ void setup()
   //--init web server--
   server.begin();
   Serial.println("** server running");
-  //--zero json message--
-  send_drummer_mes["song"] = 0;
-  send_drummer_mes["bar"] = 0;
 
   //--init I2C--
   esp_log_level_set("i2c.master", ESP_LOG_NONE);
