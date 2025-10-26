@@ -1,10 +1,10 @@
 #include <Arduino.h>
+#include <SPIFFS.h>
+#include <WiFi.h>
+#include <WebSocketsClient.h>
+#include <ArduinoJson.h>
 #include <ESP32Servo.h>
 #include <FastLED.h>
-#include <esp_http_client.h>
-#include <WiFi.h>
-#include <esp_wifi.h>
-#include <SPIFFS.h>
 
 //-pins-
 #define LEFT_SERVO_PIN 12
@@ -27,6 +27,21 @@
 
 #define MAX_SONGS 10
 
+//--WiFi--
+const char* ssid     = "SPSE_ESP32_main";  //pianist AP
+const char* password = "gondek2025";
+const char* server_IP = "192.168.0.1";
+WebSocketsClient WSClient;
+
+JsonDocument recieved_drummer_mes;
+String espnow_mes_string;
+
+bool busy_playing; //while busy playing / showing smth, don't read new messages
+
+//--timers--
+unsigned long timer_general;
+unsigned long timer_bar;
+
 //-drivers-
 Servo left_servo;  //80-0 = down-front
 Servo right_servo;  //0-80 = down-front
@@ -35,9 +50,6 @@ CRGB left_LEDs[SIDES_LED_COUNT];
 CRGB right_LEDs[SIDES_LED_COUNT];
 CRGB kick_LEDs[KICK_LED_COUNT];
 CRGB eyes_LEDs[EYES_LED_COUNT];
-
-unsigned long timer_general;
-unsigned long timer_bar;
 
 //--csv reading--
 size_t header_lines[MAX_SONGS] = {0};  //the first line of each song
@@ -61,6 +73,7 @@ TaskHandle_t Task1;
 
 struct song
 {
+  int index;
   String name;
   int length;  //in bars
   int note_length;  //in ms
@@ -208,6 +221,7 @@ void loadBar()  //read from pointer
 void playBar()
 {
   timer_bar = millis();
+  busy_playing = 1;
 
   for (int i = current_song.notes_per_bar-1; i >= 0; i--)
   {
@@ -234,6 +248,44 @@ void playBar()
     right_servo.write(RIGHT_SERVO_RELEASE);
     while (millis() - timer_bar <= current_song.note_length * (current_song.notes_per_bar - i));
   }
+  busy_playing = 0;
+}
+
+//---WebSocket functions---
+void webSocketEvent(WStype_t type, uint8_t * payload, size_t length)
+{
+	Serial.printf(">> recieved message %s\n", payload);
+	switch(type)
+	{
+		case WStype_CONNECTED:
+			Serial.printf(">> connected to url: %s\n", payload);
+			break;
+		case WStype_DISCONNECTED:
+			Serial.printf(">> disconnected!\n");
+			break;
+		case WStype_TEXT:
+      if(!busy_playing)
+      {
+        deserializeJson(recieved_drummer_mes, payload);
+        Serial.println("Recieved JSON:");
+        serializeJsonPretty(recieved_drummer_mes, Serial);
+        int json_element_song = recieved_drummer_mes[String("song")];
+        int json_element_bar = recieved_drummer_mes[String("bar")];
+        Serial.printf("\nRecieved song: %d; bar: %d\n", json_element_song, json_element_bar);
+        /*if(recieved_drummer_mes["song"] > 0)
+        {
+          if(recieved_drummer_mes["song"] != current_song.index)  //if the song is new
+          {
+            loadSongHeader(recieved_drummer_mes["song"]);
+            current_bar.end = 0;
+          }
+          if(recieved_drummer_mes["bar"] == current_bar.end)  //if the bar type is new
+            loadBar();
+          playBar();
+        }*/
+      }
+			break;
+	}
 }
 
 //---loop for LED effects (during music)---
@@ -341,14 +393,47 @@ void setup()
   Serial.begin(115200);
   pinMode(2, OUTPUT);
   digitalWrite(2, LOW);
-
   //--init SPIFFS--
   if (!SPIFFS.begin(true))
     Serial.println("!! SPIFFS init error");
   else
     Serial.println("** SPIFFS started");
   loadDatabase();
-  //-init servos-
+
+  //--init WiFi--
+  WiFi.mode(WIFI_STA);
+  if(!WiFi.begin(ssid, password))
+    Serial.println("!! WiFi init error");
+  else
+  {
+    Serial.println("** WiFi started");
+    Serial.print(">> Connecting to server");
+    while (WiFi.status() != WL_CONNECTED)
+    {
+      Serial.print(".");
+      delay(500);
+      if(millis() >= 10000)
+        break;
+    }
+    if(WiFi.status() == WL_CONNECTED)
+    {
+      Serial.printf("\n** connected to server\n>> IP Address: ");
+      Serial.println(WiFi.localIP());
+      delay(5000);
+      Serial.println(">> Initializing WS");
+      WSClient.begin(server_IP, 80, "/ws");
+      WSClient.onEvent(webSocketEvent);
+      WSClient.setReconnectInterval(5000);
+    }
+    else
+      Serial.printf("\n!! Couldn't connect to server\n");
+  }
+
+  //--zero json message--
+  recieved_drummer_mes["song"] = 0;
+  recieved_drummer_mes["bar"] = 0;
+
+  //--init servos--
   right_servo.attach(RIGHT_SERVO_PIN);
   left_servo.attach(LEFT_SERVO_PIN);
   kick_servo.attach(KICK_SERVO_PIN);
@@ -357,7 +442,7 @@ void setup()
   right_servo.write(RIGHT_SERVO_RELEASE);
   left_servo.write(LEFT_SERVO_RELEASE);
 
-  //-create loop 2-
+  //--create loop 2--
   xTaskCreatePinnedToCore(
       loop_2, /* Function to implement the task */
       "Task1", /* Name of the task */
@@ -367,7 +452,7 @@ void setup()
       &Task1,  /* Task handle. */
       0); /* Core where the task should run */
 
-  //-init LEDs and blink white-
+  //--init LEDs and blink white--
   FastLED.addLeds<WS2811, LED_PIN_LEFT, GRB>(left_LEDs, SIDES_LED_COUNT);
   FastLED.addLeds<WS2811, LED_PIN_KICK, GRB>(kick_LEDs, KICK_LED_COUNT);
   FastLED.addLeds<WS2811, LED_PIN_RIGHT, GRB>(right_LEDs, SIDES_LED_COUNT);
@@ -391,4 +476,5 @@ void setup()
 
 void loop()
 {
+	WSClient.loop();
 }

@@ -364,14 +364,14 @@ void playSong()
   {
     send_drummer_mes["song"] = current_song.index + 1;
     send_drummer_mes["bar"] = i;
-    serializeJson(send_drummer_mes, espnow_mes_string);
+    serializeJsonPretty(send_drummer_mes, espnow_mes_string);
     ws.textAll(espnow_mes_string);
     Serial.println("Message sent:");
     Serial.println(espnow_mes_string);
 
     if(i == current_bar.end)
       loadBar();
-    //playBar();
+    playBar();
     Serial.printf("Played bar ending at %d; t= %d bars\n", current_bar.end, i);
     while(millis() - timer_general < current_song.note_length * current_song.notes_per_bar);
     timer_general = millis();
