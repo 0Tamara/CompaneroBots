@@ -33,8 +33,14 @@ const char* password = "gondek2025";
 const char* server_IP = "192.168.0.1";
 WebSocketsClient WSClient;
 
-JsonDocument recieved_drummer_mes;
-String espnow_mes_string;
+JsonDocument recieved_drummer_mes_json;
+struct json_mes_decoded
+{
+  bool done;
+  int song;
+  int bar;
+};
+json_mes_decoded recieved_drummer_mes;
 
 bool busy_playing; //while busy playing / showing smth, don't read new messages
 
@@ -266,23 +272,11 @@ void webSocketEvent(WStype_t type, uint8_t * payload, size_t length)
 		case WStype_TEXT:
       if(!busy_playing)
       {
-        deserializeJson(recieved_drummer_mes, payload);
-        Serial.println("Recieved JSON:");
-        serializeJsonPretty(recieved_drummer_mes, Serial);
-        int json_element_song = recieved_drummer_mes[String("song")];
-        int json_element_bar = recieved_drummer_mes[String("bar")];
-        Serial.printf("\nRecieved song: %d; bar: %d\n", json_element_song, json_element_bar);
-        /*if(recieved_drummer_mes["song"] > 0)
-        {
-          if(recieved_drummer_mes["song"] != current_song.index)  //if the song is new
-          {
-            loadSongHeader(recieved_drummer_mes["song"]);
-            current_bar.end = 0;
-          }
-          if(recieved_drummer_mes["bar"] == current_bar.end)  //if the bar type is new
-            loadBar();
-          playBar();
-        }*/
+        deserializeJson(recieved_drummer_mes_json, payload);
+        recieved_drummer_mes.song = recieved_drummer_mes_json[String("song")];
+        recieved_drummer_mes.bar = recieved_drummer_mes_json[String("bar")];
+        Serial.printf("\nRecieved song: %d; bar: %d\n", recieved_drummer_mes.song, recieved_drummer_mes.bar);
+        recieved_drummer_mes.done = 0;
       }
 			break;
 	}
@@ -429,9 +423,7 @@ void setup()
       Serial.printf("\n!! Couldn't connect to server\n");
   }
 
-  //--zero json message--
-  recieved_drummer_mes["song"] = 0;
-  recieved_drummer_mes["bar"] = 0;
+  recieved_drummer_mes.done = 1;
 
   //--init servos--
   right_servo.attach(RIGHT_SERVO_PIN);
@@ -476,5 +468,21 @@ void setup()
 
 void loop()
 {
+  if(!recieved_drummer_mes.done)
+  {
+    if(recieved_drummer_mes.song > 0)
+    {
+      if(recieved_drummer_mes.song != current_song.index)  //if the song is new
+      {
+        loadSongHeader(recieved_drummer_mes.song);
+        current_bar.end = 0;
+      }
+      if(recieved_drummer_mes.bar == current_bar.end)  //if the bar type is new
+        loadBar();
+      playBar();
+    }
+    recieved_drummer_mes.done = 1;
+  }
+
 	WSClient.loop();
 }
