@@ -1,0 +1,9 @@
+//bar: playing till _ bar,left,kick,right
+//header: song,tempo,length in bars,time signature
+
+Havasi - Freedom,105,9,4/4,
+2,0000,8888,0000,
+9,9228,8888,9210,
+
+Basic,80,1,4/4,
+1,8888,FFFF,2222,

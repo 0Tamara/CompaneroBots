@@ -431,13 +431,17 @@ void setup()
     Serial.println("** SPIFFS started");
   loadDatabase();
   //--init pca9685 (hand servos driver)--
-  pca9685right.begin();
-  pca9685left.begin();
-  pca9685right.setPWMFreq(50);
-  pca9685left.setPWMFreq(50); 
-  for (int i = 8; i <= numServos; i++){
-    pca9685right.setPWM(i, 0, rightHand.releaseValue[i-8]);
-    pca9685left.setPWM(i, 0, leftHand.releaseValue[i-8]); // 0 stupnov
+  if(!pca9685right.begin() || pca9685left.begin())
+    Serial.println("!! PCA9685 init error");
+  else
+  {
+    pca9685right.setPWMFreq(50);
+    pca9685left.setPWMFreq(50); 
+    for (int i = 8; i <= numServos; i++)
+    {
+      pca9685right.setPWM(i, 0, rightHand.releaseValue[i-8]);
+      pca9685left.setPWM(i, 0, leftHand.releaseValue[i-8]); // 0 stupnov
+    }
   }
   //--init steppers--
   stepper_driver.init();
