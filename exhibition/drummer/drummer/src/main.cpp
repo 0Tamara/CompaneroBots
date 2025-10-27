@@ -247,12 +247,12 @@ void playBar()
       changeColors(2);
     }
 
-    delay(100);
+    while (millis() - timer_bar <= 100) WSClient.loop();  //delay(100);
     //-release keys-
     left_servo.write(LEFT_SERVO_RELEASE);
     kick_servo.write(KICK_SERVO_RELEASE);
     right_servo.write(RIGHT_SERVO_RELEASE);
-    while (millis() - timer_bar <= current_song.note_length * (current_song.notes_per_bar - i));
+    while (millis() - timer_bar <= current_song.note_length * (current_song.notes_per_bar - i)) WSClient.loop();
   }
   busy_playing = 0;
 }
@@ -260,7 +260,7 @@ void playBar()
 //---WebSocket functions---
 void webSocketEvent(WStype_t type, uint8_t * payload, size_t length)
 {
-	Serial.printf(">> recieved message %s\n", payload);
+	//Serial.printf(">> recieved message %s\n", payload);
 	switch(type)
 	{
 		case WStype_CONNECTED:
@@ -413,7 +413,7 @@ void setup()
     {
       Serial.printf("\n** connected to server\n>> IP Address: ");
       Serial.println(WiFi.localIP());
-      delay(5000);
+      delay(1000);
       Serial.println(">> Initializing WS");
       WSClient.begin(server_IP, 80, "/ws");
       WSClient.onEvent(webSocketEvent);

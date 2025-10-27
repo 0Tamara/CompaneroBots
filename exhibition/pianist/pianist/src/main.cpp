@@ -71,44 +71,44 @@ struct Hand
 Hand leftHand = {
   .stepper = NULL,
   .pressValue = {
-    SERVOMAX - 90,
-    SERVOMAX - 60,
-    SERVOMAX - 90,
-    SERVOMAX - 90,
-    SERVOMAX - 60,
-    SERVOMAX - 80,
-    SERVOMAX - 90,  //D
-    SERVOMAX - 70},  //C
+    SERVOMAX - 100,  //C
+    SERVOMAX - 70,  //H
+    SERVOMAX - 100,  //A
+    SERVOMAX - 100,  //G
+    SERVOMAX - 100,  //F
+    SERVOMAX - 90,  //E
+    SERVOMAX - 120, //D
+    SERVOMAX - 80}, //C
   .releaseValue = {
-    SERVOMAX - 30,
-    SERVOMAX - 0,
-    SERVOMAX - 10,
-    SERVOMAX - 10,
-    SERVOMAX - 0,
-    SERVOMAX - 20,
-    SERVOMAX - 0,
-    SERVOMAX - 10}
+    SERVOMAX - 40,  //C
+    SERVOMAX - 10,   //H
+    SERVOMAX - 20,  //A
+    SERVOMAX - 20,  //G
+    SERVOMAX - 40,  //F
+    SERVOMAX - 30,  //E
+    SERVOMAX - 20,  //D
+    SERVOMAX - 15}   //C
 };
 Hand rightHand = {
   .stepper = NULL,
   .pressValue = {
-    SERVOMIN + 60,
-    SERVOMIN + 80,
-    SERVOMIN + 60,
-    SERVOMIN + 80,
-    SERVOMIN + 60,
-    SERVOMIN + 60,
-    SERVOMIN + 70,
-    SERVOMIN + 50},
+    SERVOMIN + 70,  //C
+    SERVOMIN + 90,  //H
+    SERVOMIN + 70,  //A
+    SERVOMIN + 90,  //G
+    SERVOMIN + 70,  //F
+    SERVOMIN + 70,  //E
+    SERVOMIN + 80,  //D
+    SERVOMIN + 60}, //C
   .releaseValue = {
-    SERVOMIN + 0,
-    SERVOMIN + 20,
-    SERVOMIN + 0,
-    SERVOMIN + 20,
-    SERVOMIN + 0,
-    SERVOMIN + 0,
-    SERVOMIN + 10,
-    SERVOMIN + 0}
+    SERVOMIN + 10,   //C
+    SERVOMIN + 30,  //H
+    SERVOMIN + 10,   //A
+    SERVOMIN + 30,  //G
+    SERVOMIN + 10,   //F
+    SERVOMIN + 10,   //E
+    SERVOMIN + 20,  //D
+    SERVOMIN + 10}   //C
 };
 
 //---csv reading---
@@ -541,11 +541,11 @@ void setup()
   //if(pca9685right.begin() && pca9685left.begin())
   //{
     pca9685right.setPWMFreq(50);
-    pca9685left.setPWMFreq(50); 
+    pca9685left.setPWMFreq(50);
     for (int i = 8; i <= numServos; i++)
     {
       pca9685right.setPWM(i, 0, rightHand.releaseValue[i-8]);
-      pca9685left.setPWM(i, 0, leftHand.releaseValue[i-8]); // 0 stupnov
+      pca9685left.setPWM(i, 0, leftHand.releaseValue[i-8]);
     }
   //}
   //else
