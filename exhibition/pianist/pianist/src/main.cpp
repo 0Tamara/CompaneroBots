@@ -52,6 +52,7 @@ bool song_request_done = 1;
 //---timers---
 unsigned long timer_general;
 unsigned long timer_bar;
+unsigned long timer_delay;
 
 bool busy_playing = 0;
 
@@ -80,14 +81,14 @@ Hand leftHand = {
     SERVOMAX - 120, //D
     SERVOMAX - 80}, //C
   .releaseValue = {
-    SERVOMAX - 40,  //C
-    SERVOMAX - 10,   //H
-    SERVOMAX - 20,  //A
-    SERVOMAX - 20,  //G
+    SERVOMAX - 35,  //C
+    SERVOMAX - 5,   //H
+    SERVOMAX - 15,  //A
+    SERVOMAX - 15,  //G
     SERVOMAX - 40,  //F
-    SERVOMAX - 30,  //E
-    SERVOMAX - 20,  //D
-    SERVOMAX - 15}   //C
+    SERVOMAX - 25,  //E
+    SERVOMAX - 15,  //D
+    SERVOMAX - 10}   //C
 };
 Hand rightHand = {
   .stepper = NULL,
@@ -305,13 +306,14 @@ void playBar()  //play 1 bar of a song  from current_bar
         pca9685right.setPWM(j+8, 0, rightHand.pressValue[j]);
     }
     
-    delay(75);
+    timer_delay = millis();
+    while (millis() - timer_delay <= 75) ws.cleanupClients();  //delay(75);
     for (int j=0; j<8; j++)  //release keys
     {
       pca9685right.setPWM(j+8, 0, rightHand.releaseValue[j]);
       pca9685left.setPWM(j+8, 0, leftHand.releaseValue[j]);
     }
-    while (millis() - timer_bar <= current_song.note_length * i);
+    while (millis() - timer_bar <= current_song.note_length * i) ws.cleanupClients();
   }
 }
 void playNote(byte note, byte octave)  //play 1 note
@@ -336,7 +338,7 @@ void playNote(byte note, byte octave)  //play 1 note
   {
     //-move hand into position-
     leftHand.stepper->moveTo(pos_steps);
-    while(leftHand.stepper->isRunning());
+    while(leftHand.stepper->isRunning()) ws.cleanupClients();
     //-play 1 note-
     pca9685left.setPWM(servo_addr, 0, leftHand.pressValue[servo_addr-8]);
     delay(75);
@@ -347,7 +349,7 @@ void playNote(byte note, byte octave)  //play 1 note
   {
     //-move hand into position-
     rightHand.stepper->moveTo(pos_steps);
-    while(rightHand.stepper->isRunning());
+    while(rightHand.stepper->isRunning()) ws.cleanupClients();
     //-play 1 note-
     pca9685right.setPWM(servo_addr, 0, rightHand.pressValue[servo_addr-8]);
     delay(75);
@@ -364,16 +366,17 @@ void playSong()
   {
     send_drummer_mes["song"] = current_song.index + 1;
     send_drummer_mes["bar"] = i;
-    serializeJsonPretty(send_drummer_mes, espnow_mes_string);
+    serializeJson(send_drummer_mes, espnow_mes_string);
     ws.textAll(espnow_mes_string);
     Serial.println("Message sent:");
     Serial.println(espnow_mes_string);
+    ws.cleanupClients();
 
     if(i == current_bar.end)
       loadBar();
     playBar();
     Serial.printf("Played bar ending at %d; t= %d bars\n", current_bar.end, i);
-    while(millis() - timer_general < current_song.note_length * current_song.notes_per_bar);
+    while(millis() - timer_general < current_song.note_length * current_song.notes_per_bar) ws.cleanupClients();
     timer_general = millis();
   }
   moveHome();
