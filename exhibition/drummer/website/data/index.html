@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="sk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Companerobots</title>
+<link rel="icon" type="image/x-icon" href="/images/favicon.ico">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="container">
+
+
+    <header>
+        <h1 class="main-title">Companerobots</h1>
+    </header>
+
+  
+    <nav class="menu">
+        <button id="keyboardBtn" class="menu-btn active">Keyboard</button>
+        <button id="songsBtn" class="menu-btn">Songs</button>
+    </nav>
+
+
+    <div id="pianoContainer">
+
+        <div id="upperPiano" class="piano">
+     
+            <div class="white-key" onclick="pressKey(this)" id="key_C4"><span class="key-label">C</span></div>
+            <div class="white-key" onclick="pressKey(this)" id="key_D4"><span class="key-label">D</span></div>
+            <div class="white-key" onclick="pressKey(this)" id="key_E4"><span class="key-label">E</span></div>
+            <div class="white-key" onclick="pressKey(this)" id="key_F4"><span class="key-label">F</span></div>
+            <div class="white-key" onclick="pressKey(this)" id="key_G4"><span class="key-label">G</span></div>
+            <div class="white-key" onclick="pressKey(this)" id="key_A4"><span class="key-label">A</span></div>
+            <div class="white-key" onclick="pressKey(this)" id="key_H4"><span class="key-label">H</span></div>
+            
+            <div class="white-key" onclick="pressKey(this)" id="key_C5"><span class="key-label">C</span></div>
+            <div class="white-key" onclick="pressKey(this)" id="key_D5"><span class="key-label">D</span></div>
+            <div class="white-key" onclick="pressKey(this)" id="key_E5"><span class="key-label">E</span></div>
+            <div class="white-key" onclick="pressKey(this)" id="key_F5"><span class="key-label">F</span></div>
+            <div class="white-key" onclick="pressKey(this)" id="key_G5"><span class="key-label">G</span></div>
+            <div class="white-key" onclick="pressKey(this)" id="key_A5"><span class="key-label">A</span></div>
+            <div class="white-key" onclick="pressKey(this)" id="key_H5"><span class="key-label">H</span></div>
+
+            <div class="white-key" onclick="pressKey(this)" id="key_C6"><span class="key-label">C</span></div>
+            <div class="white-key" onclick="pressKey(this)" id="key_D6"><span class="key-label">D</span></div>
+            <div class="white-key" onclick="pressKey(this)" id="key_E6"><span class="key-label">E</span></div>
+            <div class="white-key" onclick="pressKey(this)" id="key_F6"><span class="key-label">F</span></div>
+            <div class="white-key" onclick="pressKey(this)" id="key_G6"><span class="key-label">G</span></div>
+            <div class="white-key" onclick="pressKey(this)" id="key_A6"><span class="key-label">A</span></div>
+            <div class="white-key" onclick="pressKey(this)" id="key_H6"><span class="key-label">H</span></div>
+
+            <div class="white-key" onclick="pressKey(this)" id="key_C7"><span class="key-label">C</span></div>
+
+            <div class="black-key" style="left: 45px;"></div>
+            <div class="black-key" style="left: 105px;"></div>
+            <div class="black-key" style="left: 225px;"></div>
+            <div class="black-key" style="left: 285px;"></div>
+            <div class="black-key" style="left: 345px;"></div>
+            
+            <div class="black-key" style="left: 465px;"></div>
+            <div class="black-key" style="left: 525px;"></div>
+            <div class="black-key" style="left: 645px;"></div>
+            <div class="black-key" style="left: 705px;"></div>
+            <div class="black-key" style="left: 765px;"></div>
+    
+            <div class="black-key" style="left: 885px;"></div>
+            <div class="black-key" style="left: 945px;"></div>
+            <div class="black-key" style="left: 1065px;"></div>
+            <div class="black-key" style="left: 1125px;"></div>
+            <div class="black-key" style="left: 1185px;"></div>
+        </div>
+
+        <div id="lowerPiano" class="piano lower">
+            <div class="white-key" onclick="pressKey(this)" id="key_C2"><span class="key-label">C</span></div>
+            <div class="white-key" onclick="pressKey(this)" id="key_D2"><span class="key-label">D</span></div>
+            <div class="white-key" onclick="pressKey(this)" id="key_E2"><span class="key-label">E</span></div>
+            <div class="white-key" onclick="pressKey(this)" id="key_F2"><span class="key-label">F</span></div>
+            <div class="white-key" onclick="pressKey(this)" id="key_G2"><span class="key-label">G</span></div>
+            <div class="white-key" onclick="pressKey(this)" id="key_A2"><span class="key-label">A</span></div>
+            <div class="white-key" onclick="pressKey(this)" id="key_H2"><span class="key-label">H</span></div>
+            <div class="white-key" onclick="pressKey(this)" id="key_C3"><span class="key-label">C</span></div>
+            <div class="white-key" onclick="pressKey(this)" id="key_D3"><span class="key-label">D</span></div>
+            <div class="white-key" onclick="pressKey(this)" id="key_E3"><span class="key-label">E</span></div>
+            <div class="white-key" onclick="pressKey(this)" id="key_F3"><span class="key-label">F</span></div>
+            <div class="white-key" onclick="pressKey(this)" id="key_G3"><span class="key-label">G</span></div>
+            <div class="white-key" onclick="pressKey(this)" id="key_A3"><span class="key-label">A</span></div>
+            <div class="white-key" onclick="pressKey(this)" id="key_H3"><span class="key-label">H</span></div>
+
+
+            <div class="black-key" style="left: 42px;"></div>
+            <div class="black-key" style="left: 102px;"></div>
+            <div class="black-key" style="left: 222px;"></div>
+            <div class="black-key" style="left: 282px;"></div>
+            <div class="black-key" style="left: 342px;"></div>
+            <div class="black-key" style="left: 462px;"></div>
+            <div class="black-key" style="left: 522px;"></div>
+            <div class="black-key" style="left: 642px;"></div>
+            <div class="black-key" style="left: 702px;"></div>
+            <div class="black-key" style="left: 762px;"></div>
+        </div>
+
+    </div>
+
+    <div id="songsContainer" class="hidden">
+        <ul class="songs-list">
+            <li onclick="pressSong(this)" id="song_1">Song 1</li>
+            <li onclick="pressSong(this)" id="song_2">Song 2</li>
+            <!--<li onclick="pressSong(this)" id="song_3">Song 3</li>
+            <li onclick="pressSong(this)" id="song_4">Song 4</li>
+            <li onclick="pressSong(this)" id="song_5">Song 5</li>-->
+        </ul>
+    </div>
+
+</div>
+<script src="script.js"></script>
+</body>
+</html>
