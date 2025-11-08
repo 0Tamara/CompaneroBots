@@ -161,6 +161,11 @@ void loadSongHeader(int which)
           current_song.notes_per_bar = 12;
           current_song.note_length = 30000/tempo;  //((60,000/bpm)*6)/12
         }
+        else if(csv_element == "1")
+        {
+          current_song.notes_per_bar = 1;
+          current_song.note_length = tempo;
+        }
         break;
     }
 
@@ -244,7 +249,8 @@ void playBar()
     left_servo.write(LEFT_SERVO_RELEASE);
     kick_servo.write(KICK_SERVO_RELEASE);
     right_servo.write(RIGHT_SERVO_RELEASE);
-    while (millis() - timer_bar <= current_song.note_length * (current_song.notes_per_bar - i));
+    while (millis() - timer_bar <= current_song.note_length * (current_song.notes_per_bar - i))
+      server.handleClient();
   }
 }
 
