@@ -1,15 +1,18 @@
 //bar: playing till _ bar,left,kick,right
 //header: song,tempo,length in bars,time signature
 
-Havasi - Freedom,105,9,4/4,
-2,0000,8888,0000,
-9,9228,8888,9210,
-
-Left,150,1,1,
+Left drum,150,1,1,
 1,1,0,0,
 
-Kick,150,1,1,
+Kick drum,150,1,1,
 1,0,1,0,
 
-Right,150,1,1,
+Right drum,150,1,1,
 1,0,0,1,
+
+Queen - We will rock you,81,4,4/4
+4,0080,8800,0080
+
+Havasi - Freedom,105,4,4/4,
+1,0000,8888,0000,
+4,9228,8888,9210,
