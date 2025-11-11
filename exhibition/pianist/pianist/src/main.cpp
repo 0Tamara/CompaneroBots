@@ -20,7 +20,7 @@
 #define SERVOMAX  575
 #define stepsPerNote 929
 #define stepsPerOctave 6498
-#define speedInHz 15000
+#define speedInHz 13000
 #define acceleration 40000
 
 #define MAX_SONGS 10  //max number of songs you can load
@@ -28,7 +28,7 @@
 enum moveNotes {C=0, D=1, E=2, F=3, G=4, A=5, H=6};  //number of notes to the right from C
 
 //---WiFi---
-const char* ssid     = "SPSE_ESP32_main";
+const char* ssid     = "SPSE_pianist_ESP32";
 const char* password = "gondek2025";
 IPAddress local_IP(192, 168, 0, 1);
 IPAddress gateway(192, 168, 0, 1);
@@ -78,7 +78,7 @@ Hand leftHand = {
     SERVOMAX - 100,  //G
     SERVOMAX - 100,  //F
     SERVOMAX - 90,  //E
-    SERVOMAX - 120, //D
+    SERVOMAX - 110, //D
     SERVOMAX - 80}, //C
   .releaseValue = {
     SERVOMAX - 35,  //C
@@ -87,7 +87,7 @@ Hand leftHand = {
     SERVOMAX - 15,  //G
     SERVOMAX - 40,  //F
     SERVOMAX - 25,  //E
-    SERVOMAX - 15,  //D
+    SERVOMAX - 30,  //D
     SERVOMAX - 10}   //C
 };
 Hand rightHand = {
@@ -100,7 +100,7 @@ Hand rightHand = {
     SERVOMIN + 70,  //F
     SERVOMIN + 70,  //E
     SERVOMIN + 80,  //D
-    SERVOMIN + 60}, //C
+    SERVOMIN + 50}, //C
   .releaseValue = {
     SERVOMIN + 10,   //C
     SERVOMIN + 30,  //H
@@ -109,7 +109,7 @@ Hand rightHand = {
     SERVOMIN + 10,   //F
     SERVOMIN + 10,   //E
     SERVOMIN + 20,  //D
-    SERVOMIN + 10}   //C
+    SERVOMIN + 5}   //C
 };
 
 //---csv reading---
