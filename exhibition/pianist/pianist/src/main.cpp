@@ -69,47 +69,48 @@ struct Hand
   int pressValue[8];
   int releaseValue[8];
 };
+
 Hand leftHand = {
   .stepper = NULL,
   .pressValue = {
-    SERVOMAX - 100,  //C
-    SERVOMAX - 70,  //H
-    SERVOMAX - 100,  //A
-    SERVOMAX - 100,  //G
-    SERVOMAX - 100,  //F
-    SERVOMAX - 90,  //E
-    SERVOMAX - 110, //D
-    SERVOMAX - 80}, //C
+    SERVOMAX - 90,
+    SERVOMAX - 60,
+    SERVOMAX - 90,
+    SERVOMAX - 90,
+    SERVOMAX - 60,
+    SERVOMAX - 80,
+    SERVOMAX - 90,  //D
+    SERVOMAX - 70},  //C
   .releaseValue = {
-    SERVOMAX - 35,  //C
-    SERVOMAX - 5,   //H
-    SERVOMAX - 15,  //A
-    SERVOMAX - 15,  //G
-    SERVOMAX - 40,  //F
-    SERVOMAX - 25,  //E
-    SERVOMAX - 30,  //D
-    SERVOMAX - 10}   //C
+    SERVOMAX - 30,
+    SERVOMAX - 0,
+    SERVOMAX - 10,
+    SERVOMAX - 10,
+    SERVOMAX - 0,
+    SERVOMAX - 20,
+    SERVOMAX - 0,
+    SERVOMAX - 10}
 };
 Hand rightHand = {
   .stepper = NULL,
   .pressValue = {
-    SERVOMIN + 70,  //C
-    SERVOMIN + 90,  //H
-    SERVOMIN + 70,  //A
-    SERVOMIN + 90,  //G
-    SERVOMIN + 70,  //F
-    SERVOMIN + 70,  //E
-    SERVOMIN + 80,  //D
-    SERVOMIN + 50}, //C
+    SERVOMIN + 60,
+    SERVOMIN + 80,
+    SERVOMIN + 60,
+    SERVOMIN + 80,
+    SERVOMIN + 60,
+    SERVOMIN + 60,
+    SERVOMIN + 70,
+    SERVOMIN + 50},
   .releaseValue = {
-    SERVOMIN + 10,   //C
-    SERVOMIN + 30,  //H
-    SERVOMIN + 10,   //A
-    SERVOMIN + 30,  //G
-    SERVOMIN + 10,   //F
-    SERVOMIN + 10,   //E
-    SERVOMIN + 20,  //D
-    SERVOMIN + 5}   //C
+    SERVOMIN + 0,
+    SERVOMIN + 20,
+    SERVOMIN + 0,
+    SERVOMIN + 20,
+    SERVOMIN + 0,
+    SERVOMIN + 0,
+    SERVOMIN + 10,
+    SERVOMIN + 0}
 };
 
 //---csv reading---
